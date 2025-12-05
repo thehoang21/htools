@@ -1,174 +1,156 @@
-// 1. Sidebar Toggle (Mobile) - Optimized
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('mobileOverlay');
+        // --- MODAL LOGIC ---
+        const resetModal = document.getElementById('resetModal');
+        const resetModalBackdrop = document.getElementById('resetModalBackdrop');
+        const resetModalPanel = document.getElementById('resetModalPanel');
 
-function toggleMobileSidebar() {
-    const isClosed = sidebar.classList.contains('-translate-x-full');
-    if (isClosed) {
-        // Mở sidebar
-        overlay.classList.remove('hidden');
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
+        function showResetModal() {
+            resetModal.classList.remove('hidden');
+            setTimeout(() => {
+                resetModalBackdrop.classList.remove('opacity-0');
+                resetModalPanel.classList.remove('scale-95', 'opacity-0');
+                resetModalPanel.classList.add('scale-100', 'opacity-100');
+            }, 10);
+            if (navigator.vibrate) navigator.vibrate(20);
+        }
+
+        function closeResetModal() {
+            resetModalBackdrop.classList.add('opacity-0');
+            resetModalPanel.classList.remove('scale-100', 'opacity-100');
+            resetModalPanel.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { resetModal.classList.add('hidden'); }, 200);
+        }
+
+        function confirmReset() {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        }
+
+        // --- SIDEBAR & TABS LOGIC ---
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+        const collapseIcon = document.getElementById('collapseIcon');
+
+        function toggleMobileSidebar() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
                 sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('opacity-0');
-            });
-        });
-    } else {
-        // Đóng sidebar
-        sidebar.classList.add('-translate-x-full');
-        overlay.classList.add('opacity-0');
-        setTimeout(() => {
-            overlay.classList.add('hidden');
-        }, 300);
-    }
-}
-
-// 2. Sidebar Collapse (Desktop)
-function toggleSidebarCollapse() {
-    const isCollapsed = sidebar.classList.contains('sidebar-collapsed');
-    const icon = document.getElementById('collapseIcon');
-
-    if (isCollapsed) {
-        // Expand
-        sidebar.classList.remove('w-20', 'sidebar-collapsed');
-        sidebar.classList.add('w-64');
-        icon.innerText = 'chevron_left';
-    } else {
-        // Collapse
-        sidebar.classList.remove('w-64');
-        sidebar.classList.add('w-20', 'sidebar-collapsed');
-        icon.innerText = 'chevron_right';
-    }
-}
-
-// 3. Tab Switching
-function switchTab(tabName) {
-    // Update Navigation UI
-    document.querySelectorAll('.nav-item').forEach(el => {
-        el.classList.remove('active');
-    });
-    document.getElementById('nav-' + tabName).classList.add('active');
-
-    // Show Content
-    document.querySelectorAll('.tab-content').forEach(el => {
-        el.classList.add('hidden');
-    });
-    const activeContent = document.getElementById('tab-' + tabName);
-    activeContent.classList.remove('hidden');
-
-    // Trigger simple animation
-    activeContent.classList.remove('opacity-0');
-    activeContent.classList.add('animate-fade-in');
-
-    // Update Header Title
-    const titles = {
-        'calculator': 'Tính Công',
-        'grammar': 'Kiểm Tra Ngữ Pháp',
-        'salary': 'Tính Lương Tháng'
-    };
-    document.getElementById('pageTitle').innerText = titles[tabName];
-
-    // Close mobile sidebar if open
-    if (window.innerWidth < 1024) {
-        toggleMobileSidebar();
-    }
-}
-
-
-// --- EXISTING CALCULATION LOGIC ---
-const STORAGE_KEY = 'tinhcong_settings_v5';
-
-function loadSettings() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-        const settings = JSON.parse(saved);
-        document.querySelectorAll('.save-target').forEach(input => {
-            if (settings[input.id] !== undefined) {
-                input.value = settings[input.id];
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
             }
-        });
-    }
-}
+        }
 
-function saveSettings() {
-    const settings = {};
-    document.querySelectorAll('.save-target').forEach(input => {
-        settings[input.id] = input.value;
-    });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-}
+        function toggleSidebarCollapse() {
+            const isCollapsed = sidebar.classList.contains('w-20');
+            if (!isCollapsed) {
+                sidebar.classList.remove('w-64');
+                sidebar.classList.add('w-20', 'sidebar-collapsed');
+                collapseIcon.innerText = 'chevron_right';
+            } else {
+                sidebar.classList.remove('w-20', 'sidebar-collapsed');
+                sidebar.classList.add('w-64');
+                collapseIcon.innerText = 'chevron_left';
+            }
+        }
 
-function resetData() {
-    if (navigator.vibrate) navigator.vibrate(20);
-    if (confirm('Bạn có chắc muốn đặt lại dữ liệu?')) {
-        localStorage.removeItem(STORAGE_KEY);
-        location.reload();
-    }
-}
+        function switchTab(tabName) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('nav-' + tabName).classList.add('active');
 
-function timeToMins(timeStr) {
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    return hours * 60 + minutes;
-}
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            const activeContent = document.getElementById('tab-' + tabName);
+            activeContent.classList.remove('hidden');
+            activeContent.classList.remove('opacity-0');
+            activeContent.classList.add('animate-fade-in');
 
-function fmt(num, decimals = 2) {
-    return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: decimals });
-}
+            const titles = {
+                'calculator': 'Tính Công',
+                'salary': 'Tính Lương Tháng'
+            };
+            document.getElementById('pageTitle').innerText = titles[tabName];
 
-function calculate() {
-    saveSettings();
+            if (window.innerWidth < 1024) {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
 
-    const start = timeToMins(document.getElementById('startTime').value);
-    const end = timeToMins(document.getElementById('endTime').value);
-    const breakStart = timeToMins(document.getElementById('breakStart').value);
-    const breakEnd = timeToMins(document.getElementById('breakEnd').value);
-    const otThreshold = timeToMins(document.getElementById('otThreshold').value);
+        // --- CALCULATION LOGIC ---
+        const STORAGE_KEY = 'tinhcong_settings_v9';
 
-    const otCoeff = parseFloat(document.getElementById('otCoeff').value);
-    const workDays = parseFloat(document.getElementById('workDays').value);
-    const standardWorkDayHours = 8;
+        function loadSettings() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const settings = JSON.parse(saved);
+                document.querySelectorAll('.save-target').forEach(input => {
+                    if (settings[input.id] !== undefined) {
+                        input.value = settings[input.id];
+                    }
+                });
+            }
+        }
 
-    let breakDuration = 0;
-    if (breakEnd > breakStart) breakDuration = breakEnd - breakStart;
+        function saveSettings() {
+            const settings = {};
+            document.querySelectorAll('.save-target').forEach(input => {
+                settings[input.id] = input.value;
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+        }
 
-    let totalPresentMins = end - start;
-    let actualWorkMins = totalPresentMins - breakDuration;
+        function timeToMins(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
 
-    let normalMins = 0;
-    let otRawMins = 0;
+        function fmt(num, decimals = 2) {
+            return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: decimals });
+        }
 
-    if (end > otThreshold) {
-        otRawMins = end - otThreshold;
-        normalMins = actualWorkMins - otRawMins;
-    } else {
-        otRawMins = 0;
-        normalMins = actualWorkMins;
-    }
+        function calculate() {
+            saveSettings();
+            const start = timeToMins(document.getElementById('startTime').value);
+            const end = timeToMins(document.getElementById('endTime').value);
+            const breakStart = timeToMins(document.getElementById('breakStart').value);
+            const breakEnd = timeToMins(document.getElementById('breakEnd').value);
+            const otThreshold = timeToMins(document.getElementById('otThreshold').value);
+            const otCoeff = parseFloat(document.getElementById('otCoeff').value);
+            const workDays = parseFloat(document.getElementById('workDays').value);
+            const standardWorkDayHours = 8;
 
-    const otConvertedMins = otRawMins * otCoeff;
-    const totalConvertedMins = normalMins + otConvertedMins;
+            let breakDuration = 0;
+            if (breakEnd > breakStart) breakDuration = breakEnd - breakStart;
+            let totalPresentMins = end - start;
+            let actualWorkMins = totalPresentMins - breakDuration;
+            let normalMins = 0;
+            let otRawMins = 0;
+            if (end > otThreshold) {
+                otRawMins = end - otThreshold;
+                normalMins = actualWorkMins - otRawMins; 
+            } else {
+                otRawMins = 0;
+                normalMins = actualWorkMins;
+            }
+            const otConvertedMins = otRawMins * otCoeff;
+            const totalConvertedMins = normalMins + otConvertedMins;
+            const dailyHours = totalConvertedMins / 60;
+            const dailyCong = dailyHours / standardWorkDayHours;
+            const monthTotalMins = totalConvertedMins * workDays;
+            const monthTotalHours = monthTotalMins / 60;
+            const monthTotalCong = monthTotalHours / standardWorkDayHours;
 
-    const dailyHours = totalConvertedMins / 60;
-    const dailyCong = dailyHours / standardWorkDayHours;
+            document.getElementById('displayDays').innerText = workDays;
+            document.getElementById('dailyNormalMins').innerText = normalMins + ' phút';
+            document.getElementById('dailyOtRawMins').innerText = otRawMins + ' phút';
+            document.getElementById('dailyTotalConvertedMins').innerText = fmt(totalConvertedMins) + ' phút';
+            document.getElementById('dailyCong').innerText = fmt(dailyCong, 4);
+            document.getElementById('monthlyMins').innerText = fmt(monthTotalMins);
+            document.getElementById('monthlyHours').innerText = fmt(monthTotalHours, 2);
+            document.getElementById('monthlyCong').innerText = fmt(monthTotalCong, 4);
+            document.getElementById('monthlyCongRounded').innerText = Math.floor(monthTotalCong) + ' công';
 
-    const monthTotalMins = totalConvertedMins * workDays;
-    const monthTotalHours = monthTotalMins / 60;
-    const monthTotalCong = monthTotalHours / standardWorkDayHours;
-
-    // UI Updates
-    document.getElementById('displayDays').innerText = workDays;
-    document.getElementById('dailyNormalMins').innerText = normalMins + ' phút';
-    document.getElementById('dailyOtRawMins').innerText = otRawMins + ' phút';
-    document.getElementById('dailyTotalConvertedMins').innerText = fmt(totalConvertedMins) + ' phút';
-    document.getElementById('dailyCong').innerText = fmt(dailyCong, 4);
-
-    document.getElementById('monthlyMins').innerText = fmt(monthTotalMins);
-    document.getElementById('monthlyHours').innerText = fmt(monthTotalHours, 2);
-    document.getElementById('monthlyCong').innerText = fmt(monthTotalCong, 4);
-    document.getElementById('monthlyCongRounded').innerText = Math.floor(monthTotalCong) + ' công';
-
-    // Report Generation
-    const report = `BẢNG TÍNH CÔNG CHI TIẾT
+            const report = `BẢNG TÍNH CÔNG CHI TIẾT
 ==============================
 1. CẤU HÌNH
 • Ca làm việc: ${document.getElementById('startTime').value} → ${document.getElementById('endTime').value}
@@ -177,8 +159,8 @@ function calculate() {
 • Số ngày làm: ${workDays} ngày
 
 2. KẾT QUẢ 1 NGÀY
-• Giờ làm thường: ${normalMins} phút (${(normalMins / 60).toFixed(2)}h)
-• Giờ OT thực tế: ${otRawMins} phút (${(otRawMins / 60).toFixed(2)}h)
+• Giờ làm thường: ${normalMins} phút (${(normalMins/60).toFixed(2)}h)
+• Giờ OT thực tế: ${otRawMins} phút (${(otRawMins/60).toFixed(2)}h)
 • Quy đổi công:   ${normalMins} + (${otRawMins} × ${otCoeff}) = ${fmt(totalConvertedMins)} phút
 => Số công/ngày:  ${fmt(dailyCong, 4)} công
 
@@ -187,697 +169,479 @@ function calculate() {
 • Tổng số công:   ${fmt(monthTotalCong, 4)} công
 • Làm tròn xuống: ${Math.floor(monthTotalCong)} công
 ==============================`;
-    document.getElementById('reportText').value = report;
-}
+            document.getElementById('reportText').value = report;
+        }
 
-function copyReport() {
-    const copyText = document.getElementById("reportText");
-    copyText.select();
-    copyText.setSelectionRange(0, 99999);
-    document.execCommand("copy");
-    
-    showNotification({
-        type: 'success',
-        title: 'Sao chép thành công',
-        message: 'Báo cáo tính công đã được sao chép vào clipboard.',
-        buttons: [{ text: 'OK', style: 'success' }]
-    });
-    
-    if (navigator.vibrate) navigator.vibrate(50);
+        function exportToWord() {
+            const { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, Header, Footer } = docx;
 
-    const btn = document.querySelector('button[onclick="copyReport()"]');
-    const originalContent = btn.innerHTML;
-    btn.innerHTML = '<span class="material-symbols-outlined text-[16px] mr-1.5">check</span> Đã sao chép';
-    
-    // Remove original classes and add success classes
-    btn.classList.remove('bg-slate-900', 'hover:bg-slate-800');
-    btn.classList.add('bg-green-600', 'hover:bg-green-700');
-
-    setTimeout(() => {
-        btn.innerHTML = originalContent;
-        btn.classList.remove('bg-green-600', 'hover:bg-green-700');
-        btn.classList.add('bg-slate-900', 'hover:bg-slate-800');
-    }, 2000);
-}
-
-// Init
-loadSettings();
-calculate();
-
-// ===== IPAD DETECTION & OPTIMIZATIONS =====
-function isIPad() {
-    return (navigator.userAgent.match(/iPad/i) || 
-            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
-}
-
-function getIPadOrientation() {
-    return window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
-}
-
-if (isIPad()) {
-    document.body.classList.add('is-ipad');
-    document.body.classList.add(`ipad-${getIPadOrientation()}`);
-    
-    // Update orientation class on rotate
-    window.addEventListener('orientationchange', () => {
-        setTimeout(() => {
-            document.body.classList.remove('ipad-portrait', 'ipad-landscape');
-            document.body.classList.add(`ipad-${getIPadOrientation()}`);
+            // Recalculate values to ensure freshness
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const breakStart = document.getElementById('breakStart').value;
+            const breakEnd = document.getElementById('breakEnd').value;
+            const otThreshold = document.getElementById('otThreshold').value;
+            const otCoeff = document.getElementById('otCoeff').value;
+            const workDays = document.getElementById('workDays').value;
             
-            // Adjust sidebar on orientation change
-            const isLandscape = getIPadOrientation() === 'landscape';
-            if (isLandscape && window.innerWidth >= 1024) {
-                // Auto-expand sidebar in landscape
-                if (sidebar.classList.contains('sidebar-collapsed')) {
-                    toggleSidebarCollapse();
-                }
+            const start = timeToMins(startTime);
+            const end = timeToMins(endTime);
+            const breakStartMins = timeToMins(breakStart);
+            const breakEndMins = timeToMins(breakEnd);
+            const otThresholdMins = timeToMins(otThreshold);
+            const otCoeffVal = parseFloat(otCoeff);
+            const workDaysVal = parseFloat(workDays);
+            
+            let breakDuration = 0;
+            if (breakEndMins > breakStartMins) breakDuration = breakEndMins - breakStartMins;
+            let totalPresentMins = end - start;
+            let actualWorkMins = totalPresentMins - breakDuration;
+            let normalMins = 0;
+            let otRawMins = 0;
+            if (end > otThresholdMins) {
+                otRawMins = end - otThresholdMins;
+                normalMins = actualWorkMins - otRawMins; 
+            } else {
+                otRawMins = 0;
+                normalMins = actualWorkMins;
             }
-        }, 100);
-    });
-    
-    // Prevent double-tap zoom on iPad
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', (event) => {
-        const now = Date.now();
-        if (now - lastTouchEnd <= 300) {
-            event.preventDefault();
-        }
-        lastTouchEnd = now;
-    }, { passive: false });
-}
+            const otConvertedMins = otRawMins * otCoeffVal;
+            const totalConvertedMins = normalMins + otConvertedMins;
+            const dailyHours = totalConvertedMins / 60;
+            const dailyCong = dailyHours / 8;
+            const monthTotalMins = totalConvertedMins * workDaysVal;
+            const monthTotalHours = monthTotalMins / 60;
+            const monthTotalCong = monthTotalHours / 8;
 
-// Auto-adjust sidebar on window resize (iPad rotation, split view)
-let resizeTimeout;
-window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-        const width = window.innerWidth;
-        
-        // iPad Portrait or Split View: collapse sidebar
-        if (isIPad() && width >= 768 && width < 1024) {
-            if (!sidebar.classList.contains('sidebar-collapsed')) {
-                sidebar.classList.add('sidebar-collapsed', 'w-20');
-                sidebar.classList.remove('w-64');
-            }
-        }
-        
-        // iPad Landscape: expand sidebar
-        if (isIPad() && width >= 1024) {
-            if (sidebar.classList.contains('sidebar-collapsed')) {
-                sidebar.classList.remove('sidebar-collapsed', 'w-20');
-                sidebar.classList.add('w-64');
-            }
-        }
-    }, 150);
-});
+            const doc = new Document({
+                sections: [{
+                    properties: {},
+                    headers: {
+                        default: new Header({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: "HTools",
+                                            color: "E2E8F0", // Very light gray
+                                            size: 60, // 30pt
+                                            bold: true,
+                                        }),
+                                    ],
+                                    alignment: AlignmentType.RIGHT,
+                                }),
+                            ],
+                        }),
+                    },
+                    children: [
+                        new Paragraph({
+                            text: "BẢNG TÍNH CÔNG CHI TIẾT",
+                            heading: HeadingLevel.HEADING_1,
+                            alignment: AlignmentType.CENTER,
+                            spacing: { after: 300 }
+                        }),
+                        
+                        // 1. CẤU HÌNH
+                        new Paragraph({
+                            text: "1. CẤU HÌNH",
+                            heading: HeadingLevel.HEADING_2,
+                            spacing: { before: 200, after: 100 }
+                        }),
+                        new Paragraph({ text: `• Ca làm việc: ${startTime} → ${endTime}`, bullet: { level: 0 } }),
+                        new Paragraph({ text: `• Nghỉ trưa: ${breakStart} → ${breakEnd}`, bullet: { level: 0 } }),
+                        new Paragraph({ text: `• Tính OT từ: ${otThreshold} (Hệ số ${otCoeff})`, bullet: { level: 0 } }),
+                        new Paragraph({ text: `• Số ngày làm: ${workDays} ngày`, bullet: { level: 0 } }),
 
-// --- GRAMMAR CHECKER LOGIC (COMPLETE IMPLEMENTATION) ---
-let currentMatches = [];
-let originalText = ''; // Lưu văn bản gốc
-let correctedText = ''; // Lưu văn bản đã sửa
-const grammarInput = document.getElementById('grammarInput');
-const grammarOutput = document.getElementById('grammarOutput');
-const grammarLoading = document.getElementById('grammarLoading');
-const grammarTooltip = document.getElementById('grammarTooltip');
-const fixAllBtn = document.getElementById('fixAllBtn');
-const copyOutputBtn = document.getElementById('copyOutputBtn');
-const errorCountEl = document.getElementById('errorCount');
-const errorBadge = document.getElementById('errorBadge');
+                        // 2. KẾT QUẢ 1 NGÀY
+                        new Paragraph({
+                            text: "2. KẾT QUẢ 1 NGÀY",
+                            heading: HeadingLevel.HEADING_2,
+                            spacing: { before: 200, after: 100 }
+                        }),
+                        new Paragraph({ text: `• Giờ làm thường: ${normalMins} phút (${(normalMins/60).toFixed(2)}h)`, bullet: { level: 0 } }),
+                        new Paragraph({ text: `• Giờ OT thực tế: ${otRawMins} phút (${(otRawMins/60).toFixed(2)}h)`, bullet: { level: 0 } }),
+                        new Paragraph({ text: `• Quy đổi công: ${normalMins} + (${otRawMins} × ${otCoeff}) = ${fmt(totalConvertedMins)} phút`, bullet: { level: 0 } }),
+                        new Paragraph({ 
+                            children: [
+                                new TextRun({ text: "=> Số công/ngày: ", bold: true }),
+                                new TextRun({ text: `${fmt(dailyCong, 4)} công`, bold: true, color: "2563EB" })
+                            ],
+                            bullet: { level: 0 } 
+                        }),
 
-// Debounced updateStats for better performance
-let statsTimeout;
-function updateStats() {
-    clearTimeout(statsTimeout);
-    statsTimeout = setTimeout(() => {
-        const text = grammarInput.value;
-        const charCount = text.length;
-        document.getElementById('charCount').innerText = charCount.toLocaleString();
-    }, 100);
-}
-
-function clearGrammar() {
-    grammarInput.value = '';
-    originalText = '';
-    correctedText = '';
-    grammarOutput.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center py-20">
-        <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-5">
-            <span class="material-symbols-outlined text-slate-400 text-[40px]">search</span>
-        </div>
-        <span class="text-slate-400 text-sm font-medium mb-1">Kết quả sẽ hiển thị tại đây</span>
-        <span class="text-slate-300 text-xs">Nhấn "Kiểm tra ngay" để bắt đầu</span>
-    </div>`;
-    currentMatches = [];
-    fixAllBtn.classList.add('hidden');
-    copyOutputBtn.classList.add('hidden');
-    errorBadge.classList.add('hidden');
-    grammarTooltip.classList.add('hidden');
-    document.getElementById('totalErrors').innerText = '0';
-    updateStats();
-}
-
-async function pasteFromClipboard() {
-    try {
-        const text = await navigator.clipboard.readText();
-        grammarInput.value = text;
-        updateStats();
-        if (navigator.vibrate) navigator.vibrate(20);
-        showNotification({
-            type: 'success',
-            title: 'Dán thành công',
-            message: 'Văn bản đã được dán từ clipboard.',
-            buttons: [{ text: 'OK', style: 'success' }]
-        });
-    } catch (err) {
-        showNotification({
-            type: 'error',
-            title: 'Lỗi clipboard',
-            message: 'Không thể truy cập clipboard. Vui lòng dán thủ công (Ctrl+V).',
-            buttons: [{ text: 'Đã hiểu', style: 'danger' }]
-        });
-    }
-}
-
-async function checkGrammar() {
-    const text = grammarInput.value.trim();
-    if (!text) {
-        showNotification({
-            type: 'warning',
-            title: 'Thiếu văn bản',
-            message: 'Vui lòng nhập văn bản tiếng Anh cần kiểm tra.',
-            buttons: [{ text: 'Đã hiểu', style: 'primary', onClick: () => { closeNotification(); grammarInput.focus(); } }]
-        });
-        return;
-    }
-
-    if (text.length > 20000) {
-        showNotification({
-            type: 'warning',
-            title: 'Văn bản quá dài',
-            message: 'Vui lòng giới hạn dưới 20,000 ký tự.',
-            buttons: [{ text: 'OK', style: 'primary' }]
-        });
-        return;
-    }
-
-    // Lưu văn bản gốc
-    originalText = text;
-    correctedText = text;
-
-    grammarLoading.classList.remove('hidden');
-    fixAllBtn.classList.add('hidden');
-    copyOutputBtn.classList.add('hidden');
-    errorBadge.classList.add('hidden');
-    grammarTooltip.classList.add('hidden');
-    
-    try {
-        const response = await fetch('https://api.languagetool.org/v2/check', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-                text: text,
-                language: 'en-US',
-                enabledOnly: false,
-                level: 'picky', // Chế độ kiểm tra kỹ lưỡng
-                enabledCategories: 'TYPOS,GRAMMAR,PUNCTUATION,CASING,STYLE,SEMANTICS,CONFUSED_WORDS' // Tất cả loại lỗi
-            })
-        });
-
-        if (!response.ok) throw new Error('API request failed');
-
-        const data = await response.json();
-        currentMatches = data.matches;
-        renderHighlights(correctedText, currentMatches);
-        
-        if (navigator.vibrate) navigator.vibrate(50);
-    } catch (error) {
-        grammarOutput.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center py-20">
-            <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-5">
-                <span class="material-symbols-outlined text-red-500 text-[40px]">error</span>
-            </div>
-            <span class="text-red-600 text-sm font-semibold mb-2">Lỗi kết nối</span>
-            <span class="text-slate-500 text-xs">Không thể kết nối đến server. Vui lòng thử lại.</span>
-        </div>`;
-        console.error(error);
-    } finally {
-        grammarLoading.classList.add('hidden');
-    }
-}
-
-function renderHighlights(text, matches) {
-    const errorCount = matches.length;
-    document.getElementById('totalErrors').innerText = errorCount;
-
-    if (matches.length === 0) {
-        grammarOutput.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center py-20">
-            <div class="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mb-5 animate-bounce">
-                <span class="material-symbols-outlined text-green-600 text-[56px]">check_circle</span>
-            </div>
-            <span class="text-green-700 text-lg font-bold mb-2">Xuất sắc!</span>
-            <span class="text-slate-600 text-sm">Không tìm thấy lỗi ngữ pháp nào.</span>
-        </div>`;
-        copyOutputBtn.classList.add('hidden');
-        errorBadge.classList.add('hidden');
-        return;
-    }
-
-    fixAllBtn.classList.remove('hidden');
-    copyOutputBtn.classList.remove('hidden');
-    errorBadge.classList.remove('hidden');
-    errorCountEl.innerText = matches.length;
-
-    let html = '';
-    let lastIndex = 0;
-
-    matches.sort((a, b) => a.offset - b.offset);
-
-    matches.forEach((match, index) => {
-        html += escapeHtml(text.slice(lastIndex, match.offset));
-        
-        const errorText = escapeHtml(text.slice(match.offset, match.offset + match.length));
-        const replacements = JSON.stringify(match.replacements.slice(0, 5).map(r => r.value));
-        const message = escapeHtml(match.message || 'Lỗi ngữ pháp');
-        
-        html += `<span class="error-highlight" onclick="showTooltip(event, ${index})" data-replacements='${replacements}' data-message='${message}' title="${message}">${errorText}</span>`;
-        
-        lastIndex = match.offset + match.length;
-    });
-
-    html += escapeHtml(text.slice(lastIndex));
-    grammarOutput.innerHTML = html;
-}
-
-function escapeHtml(unsafe) {
-    return unsafe
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
-}
-
-function showTooltip(event, matchIndex) {
-    event.stopPropagation();
-    const target = event.currentTarget;
-    const replacements = JSON.parse(target.dataset.replacements);
-    const message = target.dataset.message;
-    
-    document.getElementById('tooltipMessage').innerText = message;
-    
-    const listEl = document.getElementById('suggestionList');
-    listEl.innerHTML = '';
-
-    if (replacements.length === 0) {
-        listEl.innerHTML = '<div class="text-xs text-slate-500 italic p-3 text-center bg-slate-50 rounded-lg border border-slate-200">Không có gợi ý thay thế</div>';
-    } else {
-        replacements.forEach((rep, idx) => {
-            const btn = document.createElement('button');
-            btn.className = 'text-left px-3.5 py-2.5 text-sm hover:bg-indigo-50 text-slate-700 rounded-lg transition-all font-medium border border-transparent hover:border-indigo-200 flex items-center gap-2 group';
-            btn.innerHTML = `
-                <span class="material-symbols-outlined text-indigo-600 text-[16px] group-hover:scale-110 transition-transform">check_small</span>
-                <span>${escapeHtml(rep)}</span>
-            `;
-            btn.onclick = () => applyFix(matchIndex, rep);
-            listEl.appendChild(btn);
-        });
-    }
-
-    const rect = target.getBoundingClientRect();
-    let left = rect.left + window.scrollX;
-    let top = rect.bottom + window.scrollY + 10;
-
-    const tooltipWidth = 320;
-    const tooltipHeight = 280;
-
-    if (left + tooltipWidth > window.innerWidth) {
-        left = window.innerWidth - tooltipWidth - 20;
-    }
-    
-    if (top + tooltipHeight > window.innerHeight + window.scrollY) {
-        top = rect.top + window.scrollY - tooltipHeight - 10;
-    }
-
-    grammarTooltip.style.left = `${Math.max(10, left)}px`;
-    grammarTooltip.style.top = `${top}px`;
-    grammarTooltip.classList.remove('hidden');
-}
-
-function hideTooltip() {
-    grammarTooltip.classList.add('hidden');
-}
-
-async function recheckCorrectedText() {
-    grammarLoading.classList.remove('hidden');
-    grammarTooltip.classList.add('hidden');
-    
-    try {
-        const response = await fetch('https://api.languagetool.org/v2/check', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-                text: correctedText,
-                language: 'en-US',
-                enabledOnly: false,
-                level: 'picky', // Chế độ kiểm tra kỹ lưỡng
-                enabledCategories: 'TYPOS,GRAMMAR,PUNCTUATION,CASING,STYLE,SEMANTICS,CONFUSED_WORDS' // Tất cả loại lỗi
-            })
-        });
-
-        if (!response.ok) throw new Error('API request failed');
-
-        const data = await response.json();
-        currentMatches = data.matches;
-        renderHighlights(correctedText, currentMatches);
-        
-        if (navigator.vibrate) navigator.vibrate(50);
-    } catch (error) {
-        console.error(error);
-        showNotification({
-            type: 'error',
-            title: 'Lỗi kiểm tra',
-            message: 'Không thể kiểm tra lại văn bản. Vui lòng thử lại.',
-            buttons: [{ text: 'OK', style: 'danger' }]
-        });
-    } finally {
-        grammarLoading.classList.add('hidden');
-    }
-}
-
-function applyFix(matchIndex, replacement) {
-    const match = currentMatches[matchIndex];
-    if (!match) return;
-
-    // Áp dụng sửa lỗi vào correctedText, KHÔNG thay đổi grammarInput
-    const pre = correctedText.slice(0, match.offset);
-    const post = correctedText.slice(match.offset + match.length);
-    
-    correctedText = pre + replacement + post;
-
-    grammarTooltip.classList.add('hidden');
-    
-    if (navigator.vibrate) navigator.vibrate(30);
-    
-    // Kiểm tra lại văn bản đã sửa
-    recheckCorrectedText();
-}
-
-function fixAllErrors() {
-    if (currentMatches.length === 0) return;
-
-    showNotification({
-        type: 'confirm',
-        title: 'Xác nhận sửa lỗi',
-        message: `Bạn có chắc muốn tự động sửa tất cả ${currentMatches.length} lỗi không?`,
-        buttons: [
-            { text: 'Hủy', style: 'secondary', onClick: closeNotification },
-            { 
-                text: 'Sửa tất cả', 
-                style: 'primary', 
-                onClick: () => {
-                    closeNotification();
-                    
-                    let text = correctedText;
-                    const fixableMatches = currentMatches.filter(m => m.replacements && m.replacements.length > 0);
-                    
-                    fixableMatches.sort((a, b) => b.offset - a.offset);
-
-                    fixableMatches.forEach(match => {
-                        const replacement = match.replacements[0].value;
-                        const pre = text.slice(0, match.offset);
-                        const post = text.slice(match.offset + match.length);
-                        text = pre + replacement + post;
-                    });
-
-                    correctedText = text;
-                    
-                    if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
-                    
-                    // Kiểm tra lại văn bản đã sửa
-                    recheckCorrectedText();
-                    
-                    showNotification({
-                        type: 'success',
-                        title: 'Hoàn thành',
-                        message: `Đã sửa ${fixableMatches.length} lỗi thành công!`,
-                        buttons: [{ text: 'OK', style: 'success' }]
-                    });
-                }
-            }
-        ]
-    });
-}
-
-function copyOutput() {
-    // Copy văn bản đã sửa (correctedText), không phải HTML
-    const outputText = correctedText || grammarOutput.innerText;
-    navigator.clipboard.writeText(outputText).then(() => {
-        showNotification({
-            type: 'success',
-            title: 'Sao chép thành công',
-            message: 'Văn bản đã được sao chép vào clipboard.',
-            buttons: [{ text: 'OK', style: 'success' }]
-        });
-        
-        const btn = copyOutputBtn;
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">check</span><span class="hidden sm:inline ml-1.5">Đã copy</span>';
-        btn.classList.add('!bg-green-50', '!text-green-700', '!border-green-300');
-        
-        if (navigator.vibrate) navigator.vibrate(30);
-        
-        setTimeout(() => {
-            btn.innerHTML = originalHTML;
-            btn.classList.remove('!bg-green-50', '!text-green-700', '!border-green-300');
-        }, 2000);
-    }).catch(err => {
-        showNotification({
-            type: 'error',
-            title: 'Lỗi sao chép',
-            message: 'Không thể sao chép. Vui lòng chọn và copy thủ công.',
-            buttons: [{ text: 'OK', style: 'danger' }]
-        });
-    });
-}
-
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.error-highlight') && !e.target.closest('.grammar-tooltip')) {
-        grammarTooltip.classList.add('hidden');
-    }
-});
-
-// Initialize grammar stats on page load
-if (grammarInput) {
-    updateStats();
-}
-
-// ===== NOTIFICATION MODAL SYSTEM =====
-function showNotification(options) {
-    const modal = document.getElementById('notificationModal');
-    const backdrop = document.getElementById('notificationBackdrop');
-    const panel = document.getElementById('notificationPanel');
-    const iconEl = document.getElementById('notificationIcon');
-    const titleEl = document.getElementById('notificationTitle');
-    const messageEl = document.getElementById('notificationMessage');
-    const buttonsEl = document.getElementById('notificationButtons');
-    
-    // Set type (success, error, warning, info, confirm)
-    const type = options.type || 'info';
-    const title = options.title || 'Thông báo';
-    const message = options.message || '';
-    const buttons = options.buttons || [{ text: 'OK', style: 'primary', onClick: closeNotification }];
-    
-    // Configure icon and colors
-    const config = {
-        success: {
-            icon: 'check_circle',
-            iconClass: 'text-green-600',
-            bgClass: 'bg-green-50',
-            ringClass: 'ring-green-50/50'
-        },
-        error: {
-            icon: 'error',
-            iconClass: 'text-red-600',
-            bgClass: 'bg-red-50',
-            ringClass: 'ring-red-50/50'
-        },
-        warning: {
-            icon: 'warning',
-            iconClass: 'text-amber-600',
-            bgClass: 'bg-amber-50',
-            ringClass: 'ring-amber-50/50'
-        },
-        info: {
-            icon: 'info',
-            iconClass: 'text-blue-600',
-            bgClass: 'bg-blue-50',
-            ringClass: 'ring-blue-50/50'
-        },
-        confirm: {
-            icon: 'help',
-            iconClass: 'text-indigo-600',
-            bgClass: 'bg-indigo-50',
-            ringClass: 'ring-indigo-50/50'
-        }
-    };
-    
-    const cfg = config[type];
-    
-    // Update icon
-    iconEl.className = `w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ring-8 ${cfg.bgClass} ${cfg.ringClass}`;
-    iconEl.querySelector('span').className = `material-symbols-outlined text-[32px] ${cfg.iconClass}`;
-    iconEl.querySelector('span').textContent = cfg.icon;
-    
-    // Update content
-    titleEl.textContent = title;
-    messageEl.textContent = message;
-    
-    // Create buttons
-    buttonsEl.innerHTML = '';
-    buttons.forEach(btn => {
-        const button = document.createElement('button');
-        const buttonStyles = {
-            primary: 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200',
-            success: 'bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-200',
-            danger: 'bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-200',
-            secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-        };
-        
-        button.className = `flex-1 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all active:scale-95 ${buttonStyles[btn.style] || buttonStyles.secondary}`;
-        button.textContent = btn.text;
-        button.onclick = () => {
-            if (btn.onClick) btn.onClick();
-            else closeNotification();
-        };
-        buttonsEl.appendChild(button);
-    });
-    
-    // Show modal
-    modal.classList.remove('hidden');
-    setTimeout(() => {
-        backdrop.classList.remove('opacity-0');
-        panel.classList.remove('scale-95', 'opacity-0');
-        panel.classList.add('scale-100', 'opacity-100', 'modal-animate-in');
-    }, 10);
-    
-    if (navigator.vibrate) navigator.vibrate(30);
-}
-
-function closeNotification() {
-    const modal = document.getElementById('notificationModal');
-    const backdrop = document.getElementById('notificationBackdrop');
-    const panel = document.getElementById('notificationPanel');
-    
-    backdrop.classList.add('opacity-0');
-    panel.classList.remove('scale-100', 'opacity-100', 'modal-animate-in');
-    panel.classList.add('scale-95', 'opacity-0');
-    
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 200);
-}
-
-// Keyboard support for modal
-document.addEventListener('keydown', (e) => {
-    const modal = document.getElementById('notificationModal');
-    if (!modal.classList.contains('hidden') && e.key === 'Escape') {
-        closeNotification();
-    }
-});
-
-// Reset Modal Functions (for Calculator tab)
-function showResetModal() {
-    const modal = document.getElementById('resetModal');
-    const backdrop = document.getElementById('resetModalBackdrop');
-    const panel = document.getElementById('resetModalPanel');
-    
-    modal.classList.remove('hidden');
-    setTimeout(() => {
-        backdrop.classList.remove('opacity-0');
-        panel.classList.remove('scale-95', 'opacity-0');
-        panel.classList.add('scale-100', 'opacity-100');
-    }, 10);
-}
-
-function closeResetModal() {
-    const modal = document.getElementById('resetModal');
-    const backdrop = document.getElementById('resetModalBackdrop');
-    const panel = document.getElementById('resetModalPanel');
-    
-    backdrop.classList.add('opacity-0');
-    panel.classList.remove('scale-100', 'opacity-100');
-    panel.classList.add('scale-95', 'opacity-0');
-    
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 200);
-}
-
-function confirmReset() {
-    if (navigator.vibrate) navigator.vibrate(50);
-    localStorage.removeItem(STORAGE_KEY);
-    closeResetModal();
-    setTimeout(() => {
-        location.reload();
-    }, 300);
-}
-
-// --- SCROLL TO TOP FUNCTIONALITY (Mobile Only) - Optimized ---
-const scrollToTopBtn = document.getElementById('scrollToTopBtn');
-const mainContent = document.getElementById('mainContent');
-
-if (mainContent && scrollToTopBtn) {
-    let scrollTimeout;
-    let ticking = false;
-    
-    // Throttle scroll event with requestAnimationFrame
-    mainContent.addEventListener('scroll', () => {
-        if (!ticking) {
-            requestAnimationFrame(() => {
-                const scrollTop = mainContent.scrollTop;
-                
-                if (scrollTop > 200) {
-                    scrollToTopBtn.style.transform = 'translateY(0) scale(1)';
-                    scrollToTopBtn.classList.remove('opacity-0', 'pointer-events-none');
-                    scrollToTopBtn.classList.add('opacity-100');
-                } else {
-                    scrollToTopBtn.style.transform = 'translateY(20px) scale(0.8)';
-                    scrollToTopBtn.classList.add('opacity-0', 'pointer-events-none');
-                    scrollToTopBtn.classList.remove('opacity-100');
-                }
-                
-                ticking = false;
+                        // 3. TỔNG KẾT THÁNG
+                        new Paragraph({
+                            text: `3. TỔNG KẾT THÁNG (${workDays} ngày)`,
+                            heading: HeadingLevel.HEADING_2,
+                            spacing: { before: 200, after: 100 }
+                        }),
+                        new Paragraph({ text: `• Tổng thời gian: ${fmt(monthTotalHours, 2)} giờ`, bullet: { level: 0 } }),
+                        new Paragraph({ text: `• Tổng số công: ${fmt(monthTotalCong, 4)} công`, bullet: { level: 0 } }),
+                        new Paragraph({ 
+                            children: [
+                                new TextRun({ text: "• Làm tròn xuống: ", bold: true }),
+                                new TextRun({ text: `${Math.floor(monthTotalCong)} công`, bold: true, color: "16A34A" })
+                            ],
+                            bullet: { level: 0 } 
+                        }),
+                        
+                        // Footer
+                        new Paragraph({
+                            text: `Xuất lúc: ${new Date().toLocaleString('vi-VN')}`,
+                            alignment: AlignmentType.RIGHT,
+                            spacing: { before: 400 },
+                            style: "Subtitle"
+                        })
+                    ],
+                }]
             });
-            ticking = true;
-        }
-    }, { passive: true });
-}
 
-function scrollToTop() {
-    if (!mainContent) return;
-    
-    const start = mainContent.scrollTop;
-    const duration = 400;
-    const startTime = performance.now();
-    
-    function easeInOutCubic(t) {
-        return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-    }
-    
-    function animate(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const easeProgress = easeInOutCubic(progress);
-        
-        mainContent.scrollTop = start * (1 - easeProgress);
-        
-        if (progress < 1) {
-            requestAnimationFrame(animate);
+            Packer.toBlob(doc).then(blob => {
+                saveAs(blob, "Bang_Tinh_Cong_HTools.docx");
+            });
         }
-    }
-    
-    requestAnimationFrame(animate);
-    if (navigator.vibrate) navigator.vibrate(20);
-}
+
+        function copyReport() {
+            const copyText = document.getElementById("reportText");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            document.execCommand("copy");
+            if (navigator.vibrate) navigator.vibrate(50);
+            const btn = document.querySelector('button[onclick="copyReport()"]');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<span class="material-symbols-outlined text-[16px] mr-1.5">check</span> Đã sao chép';
+            btn.classList.add('bg-green-600', 'hover:bg-green-700', 'text-white', 'border-transparent');
+            setTimeout(() => {
+                btn.innerHTML = originalContent;
+                btn.classList.remove('bg-green-600', 'hover:bg-green-700', 'text-white', 'border-transparent');
+            }, 2000);
+        }
+
+        // --- SALARY CALCULATION LOGIC ---
+        function formatCurrencyInput(input) {
+            // Remove non-digit chars
+            let value = input.value.replace(/\D/g, '');
+            if (value === '') {
+                input.value = '';
+                return;
+            }
+            // Format with commas
+            input.value = parseInt(value).toLocaleString('en-US');
+        }
+
+        function parseCurrency(valueStr) {
+            if (!valueStr) return 0;
+            return parseInt(valueStr.replace(/,/g, '')) || 0;
+        }
+
+        function resetSalaryForm() {
+            document.getElementById('salaryGross').value = '0';
+            document.getElementById('salaryInsurance').value = '';
+            document.getElementById('actualWorkDays').value = '26';
+            document.getElementById('paidLeaveDays').value = '0';
+            document.getElementById('dependents').value = '0';
+            document.getElementById('allowance').value = '0';
+            document.getElementById('otherDeductions').value = '0';
+            calculateSalary();
+        }
+
+        function calculateSalary() {
+            saveSettings();
+            
+            // 1. Get Inputs
+            const salaryGross = parseCurrency(document.getElementById('salaryGross').value);
+            const salaryInsuranceInput = parseCurrency(document.getElementById('salaryInsurance').value);
+            const salaryInsurance = salaryInsuranceInput > 0 ? salaryInsuranceInput : salaryGross;
+            
+            const actualWorkDays = parseFloat(document.getElementById('actualWorkDays').value) || 0;
+            const paidLeaveDays = parseFloat(document.getElementById('paidLeaveDays').value) || 0;
+            const dependents = parseInt(document.getElementById('dependents').value) || 0;
+            const allowance = parseCurrency(document.getElementById('allowance').value);
+            const otherDeductions = parseCurrency(document.getElementById('otherDeductions').value);
+            const stdWorkDays = parseFloat(document.getElementById('stdWorkDays').value) || 26;
+
+            // 2. Calculate Income
+            // Logic:
+            // - Dưới 22 công: (Lương thỏa thuận / 22) × Số ngày công thực tế
+            // - Từ 22 - 26 công: 100% Lương thỏa thuận
+            // - Trên 26 công: (Lương thỏa thuận / 26) × Số ngày công thực tế
+            
+            const totalDays = actualWorkDays + paidLeaveDays;
+            let totalSalaryFromDays = 0;
+
+            if (totalDays === 0) {
+                totalSalaryFromDays = 0;
+            } else if (totalDays < 22) {
+                totalSalaryFromDays = (salaryGross / 22) * totalDays;
+            } else if (totalDays <= 26) {
+                totalSalaryFromDays = salaryGross;
+            } else {
+                totalSalaryFromDays = (salaryGross / 26) * totalDays;
+            }
+
+            // Split for display
+            const salaryByWork = totalDays > 0 ? (totalSalaryFromDays * actualWorkDays / totalDays) : 0;
+            
+            // Paid Leave Salary: Based on Insurance Salary / 26 * Paid Leave Days
+            const salaryByLeave = (salaryInsurance / 26) * paidLeaveDays;
+            
+            const grossTotal = salaryByWork + salaryByLeave + allowance;
+
+            // 3. Calculate Insurance (Vietnam 2025 Rules)
+            // Base Salary (Lương cơ sở) = 2,340,000 VND (from 1/7/2024)
+            // Max BHXH/BHYT Base = 20 * 2,340,000 = 46,800,000
+            // Max BHTN Base (Region 1) = 20 * 4,960,000 = 99,200,000
+            
+            const BASE_SALARY = 2340000;
+            const REGION_MIN_WAGE = 4960000;
+            const MAX_BHXH_BASE = 20 * BASE_SALARY;
+            const MAX_BHTN_BASE = 20 * REGION_MIN_WAGE;
+
+            const bhxhBase = Math.min(salaryInsurance, MAX_BHXH_BASE);
+            const bhtnBase = Math.min(salaryInsurance, MAX_BHTN_BASE);
+
+            const bhxh = bhxhBase * 0.08;
+            const bhyt = bhxhBase * 0.015;
+            const bhtn = bhtnBase * 0.01;
+            
+            const totalInsurance = bhxh + bhyt + bhtn;
+
+            // 4. Calculate PIT (Thuế TNCN)
+            // Taxable Income = Gross Total - Insurance - Personal Deductions
+            // Note: Allowance might be tax-exempt (e.g. lunch, phone), but for simplicity we assume taxable unless specified.
+            // Usually Lunch (730k) is exempt. We'll assume "Allowance" is fully taxable for this simple tool, 
+            // or user subtracts exempt part from input.
+            
+            const PERSONAL_DEDUCTION = 11000000;
+            const DEPENDENT_DEDUCTION = 4400000;
+            
+            const totalDeductionsForTax = totalInsurance + PERSONAL_DEDUCTION + (dependents * DEPENDENT_DEDUCTION);
+            const taxableIncome = Math.max(0, grossTotal - totalDeductionsForTax);
+            
+            let pit = 0;
+            if (taxableIncome > 0) {
+                if (taxableIncome <= 5000000) pit = taxableIncome * 0.05;
+                else if (taxableIncome <= 10000000) pit = (taxableIncome * 0.1) - 250000;
+                else if (taxableIncome <= 18000000) pit = (taxableIncome * 0.15) - 750000;
+                else if (taxableIncome <= 32000000) pit = (taxableIncome * 0.2) - 1650000;
+                else if (taxableIncome <= 52000000) pit = (taxableIncome * 0.25) - 3250000;
+                else if (taxableIncome <= 80000000) pit = (taxableIncome * 0.3) - 5850000;
+                else pit = (taxableIncome * 0.35) - 9850000;
+            }
+
+            // 5. Final Net
+            const totalDeductions = totalInsurance + otherDeductions + pit; // PIT is deducted from Net payout usually? 
+            // Wait, Net = Gross - Insurance - PIT - Other Deductions.
+            // The UI shows "Total Deductions" (B) which includes Insurance + Other.
+            // Then Net = Gross - Total Deductions (B) - PIT? Or is PIT included in B?
+            // In the UI image: "B. Các khoản khấu trừ" lists Insurance + Other.
+            // Then "Tổng khấu trừ" (Total Deductions).
+            // Then "Lương thực nhận (NET)".
+            // Then "Thuế TNCN" is listed separately at bottom.
+            // Usually Net = Gross - Insurance - Other - PIT.
+            // I will calculate Net = Gross - Insurance - Other - PIT.
+            
+            const netSalary = grossTotal - totalInsurance - otherDeductions - pit;
+
+            // 6. Update UI
+            const fmt = (n) => Math.round(n).toLocaleString('en-US') + ' ₫';
+            
+            document.getElementById('outSalaryWork').innerText = fmt(salaryByWork);
+            document.getElementById('outWorkDays').innerText = `(${actualWorkDays} ngày)`;
+            
+            document.getElementById('outSalaryLeave').innerText = fmt(salaryByLeave);
+            document.getElementById('outLeaveDays').innerText = `(${paidLeaveDays} ngày)`;
+            
+            document.getElementById('outAllowance').innerText = '+' + fmt(allowance);
+            
+            document.getElementById('outGrossTotal').innerText = fmt(grossTotal);
+            
+            document.getElementById('outBHXH').innerText = '-' + fmt(bhxh);
+            document.getElementById('outBHYT').innerText = '-' + fmt(bhyt);
+            document.getElementById('outBHTN').innerText = '-' + fmt(bhtn);
+            document.getElementById('outOtherDeductions').innerText = '-' + fmt(otherDeductions);
+            
+            const displayTotalDeductions = totalInsurance + otherDeductions; // Excludes PIT in the "Total Deductions" line usually, or includes?
+            // Let's follow standard: Total Deductions usually means Insurance + Union Fee etc. PIT is separate.
+            document.getElementById('outTotalDeductions').innerText = '-' + fmt(displayTotalDeductions);
+            
+            document.getElementById('outNetSalary').innerText = fmt(netSalary);
+            document.getElementById('outPIT').innerText = fmt(pit);
+        }
+
+        function exportSalaryReport() {
+            const { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, Header, Table, TableRow, TableCell, WidthType, BorderStyle } = docx;
+
+            // 1. Get Inputs & Recalculate (to get raw numbers)
+            const salaryGross = parseCurrency(document.getElementById('salaryGross').value);
+            const salaryInsuranceInput = parseCurrency(document.getElementById('salaryInsurance').value);
+            const salaryInsurance = salaryInsuranceInput > 0 ? salaryInsuranceInput : salaryGross;
+            
+            const actualWorkDays = parseFloat(document.getElementById('actualWorkDays').value) || 0;
+            const paidLeaveDays = parseFloat(document.getElementById('paidLeaveDays').value) || 0;
+            const dependents = parseInt(document.getElementById('dependents').value) || 0;
+            const allowance = parseCurrency(document.getElementById('allowance').value);
+            const otherDeductions = parseCurrency(document.getElementById('otherDeductions').value);
+            const stdWorkDays = parseFloat(document.getElementById('stdWorkDays').value) || 26;
+
+            // Calculation Logic (Same as calculateSalary)
+            const totalDays = actualWorkDays + paidLeaveDays;
+            let totalSalaryFromDays = 0;
+            if (totalDays === 0) totalSalaryFromDays = 0;
+            else if (totalDays < 22) totalSalaryFromDays = (salaryGross / 22) * totalDays;
+            else if (totalDays <= 26) totalSalaryFromDays = salaryGross;
+            else totalSalaryFromDays = (salaryGross / 26) * totalDays;
+
+            const salaryByWork = totalDays > 0 ? (totalSalaryFromDays * actualWorkDays / totalDays) : 0;
+            
+            // Paid Leave Salary: Based on Insurance Salary / 26 * Paid Leave Days
+            const salaryByLeave = (salaryInsurance / 26) * paidLeaveDays;
+            
+            const grossTotal = salaryByWork + salaryByLeave + allowance;
+
+            const BASE_SALARY = 2340000;
+            const REGION_MIN_WAGE = 4960000;
+            const MAX_BHXH_BASE = 20 * BASE_SALARY;
+            const MAX_BHTN_BASE = 20 * REGION_MIN_WAGE;
+            const bhxhBase = Math.min(salaryInsurance, MAX_BHXH_BASE);
+            const bhtnBase = Math.min(salaryInsurance, MAX_BHTN_BASE);
+            const bhxh = bhxhBase * 0.08;
+            const bhyt = bhxhBase * 0.015;
+            const bhtn = bhtnBase * 0.01;
+            const totalInsurance = bhxh + bhyt + bhtn;
+
+            const PERSONAL_DEDUCTION = 11000000;
+            const DEPENDENT_DEDUCTION = 4400000;
+            const totalDeductionsForTax = totalInsurance + PERSONAL_DEDUCTION + (dependents * DEPENDENT_DEDUCTION);
+            const taxableIncome = Math.max(0, grossTotal - totalDeductionsForTax);
+            
+            let pit = 0;
+            if (taxableIncome > 0) {
+                if (taxableIncome <= 5000000) pit = taxableIncome * 0.05;
+                else if (taxableIncome <= 10000000) pit = (taxableIncome * 0.1) - 250000;
+                else if (taxableIncome <= 18000000) pit = (taxableIncome * 0.15) - 750000;
+                else if (taxableIncome <= 32000000) pit = (taxableIncome * 0.2) - 1650000;
+                else if (taxableIncome <= 52000000) pit = (taxableIncome * 0.25) - 3250000;
+                else if (taxableIncome <= 80000000) pit = (taxableIncome * 0.3) - 5850000;
+                else pit = (taxableIncome * 0.35) - 9850000;
+            }
+
+            const netSalary = grossTotal - totalInsurance - otherDeductions - pit;
+            const fmt = (n) => Math.round(n).toLocaleString('en-US') + ' VND';
+
+            // 2. Create Document
+            const doc = new Document({
+                sections: [{
+                    properties: {},
+                    headers: {
+                        default: new Header({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: "HTools",
+                                            color: "E2E8F0", // Watermark style
+                                            size: 80, 
+                                            bold: true,
+                                        }),
+                                    ],
+                                    alignment: AlignmentType.RIGHT,
+                                }),
+                            ],
+                        }),
+                    },
+                    children: [
+                        new Paragraph({
+                            text: "PHIẾU LƯƠNG CHI TIẾT",
+                            heading: HeadingLevel.HEADING_1,
+                            alignment: AlignmentType.CENTER,
+                            spacing: { after: 300 }
+                        }),
+                        new Paragraph({
+                            text: `Tháng: ${new Date().getMonth() + 1}/${new Date().getFullYear()}`,
+                            alignment: AlignmentType.CENTER,
+                            spacing: { after: 500 }
+                        }),
+
+                        // A. INCOME
+                        new Paragraph({
+                            text: "A. TỔNG THU NHẬP (GROSS)",
+                            heading: HeadingLevel.HEADING_2,
+                            spacing: { before: 200, after: 100 }
+                        }),
+                        new Paragraph({ text: `1. Lương theo ngày công (${actualWorkDays} ngày): ${fmt(salaryByWork)}`, bullet: { level: 0 } }),
+                        new Paragraph({ text: `2. Lương ngày nghỉ (${paidLeaveDays} ngày): ${fmt(salaryByLeave)}`, bullet: { level: 0 } }),
+                        new Paragraph({ text: `3. Phụ cấp & Thưởng: ${fmt(allowance)}`, bullet: { level: 0 } }),
+                        new Paragraph({ 
+                            children: [
+                                new TextRun({ text: "=> Tổng Gross: ", bold: true }),
+                                new TextRun({ text: fmt(grossTotal), bold: true })
+                            ],
+                            bullet: { level: 0 } 
+                        }),
+
+                        // B. DEDUCTIONS
+                        new Paragraph({
+                            text: "B. CÁC KHOẢN KHẤU TRỪ",
+                            heading: HeadingLevel.HEADING_2,
+                            spacing: { before: 200, after: 100 }
+                        }),
+                        new Paragraph({ text: `1. Bảo hiểm xã hội (8%): ${fmt(bhxh)}`, bullet: { level: 0 } }),
+                        new Paragraph({ text: `2. Bảo hiểm y tế (1.5%): ${fmt(bhyt)}`, bullet: { level: 0 } }),
+                        new Paragraph({ text: `3. Bảo hiểm thất nghiệp (1%): ${fmt(bhtn)}`, bullet: { level: 0 } }),
+                        new Paragraph({ text: `4. Khấu trừ khác: ${fmt(otherDeductions)}`, bullet: { level: 0 } }),
+                        new Paragraph({ text: `5. Thuế TNCN: ${fmt(pit)}`, bullet: { level: 0 } }),
+                        new Paragraph({ 
+                            children: [
+                                new TextRun({ text: "=> Tổng khấu trừ: ", bold: true }),
+                                new TextRun({ text: fmt(totalInsurance + otherDeductions + pit), bold: true, color: "DC2626" })
+                            ],
+                            bullet: { level: 0 } 
+                        }),
+
+                        // NET SALARY
+                        new Paragraph({
+                            text: "C. LƯƠNG THỰC NHẬN (NET)",
+                            heading: HeadingLevel.HEADING_2,
+                            spacing: { before: 400, after: 100 }
+                        }),
+                        new Paragraph({
+                            children: [
+                                new TextRun({
+                                    text: fmt(netSalary),
+                                    bold: true,
+                                    size: 48, // 24pt
+                                    color: "16A34A"
+                                })
+                            ],
+                            alignment: AlignmentType.CENTER,
+                            spacing: { after: 400 }
+                        }),
+
+                        // Footer Note
+                        new Paragraph({
+                            text: "Lưu ý: Cách tính lương này áp dụng cho Công ty Cổ phần Thương mại và Dược phẩm Ngọc Thiện",
+                            alignment: AlignmentType.CENTER,
+                            italics: true,
+                            size: 16,
+                            color: "64748B"
+                        }),
+                        new Paragraph({
+                            text: `Xuất lúc: ${new Date().toLocaleString('vi-VN')}`,
+                            alignment: AlignmentType.RIGHT,
+                            spacing: { before: 400 },
+                            size: 16,
+                            color: "94A3B8"
+                        })
+                    ],
+                }]
+            });
+
+            Packer.toBlob(doc).then(blob => {
+                saveAs(blob, "Phieu_Luong_HTools.docx");
+            });
+        }
+
+        loadSettings();
+        calculate();
+        calculateSalary(); // Initial calculation for salary tab
