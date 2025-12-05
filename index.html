@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    
+    <!-- iPad Specific Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HTools">
+    
+    <meta name="theme-color" content="#2563eb">
+    <meta name="description" content="HTools - Công cụ tính công, OT và kiểm tra ngữ pháp tiếng Anh">
+    <title>HTools</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Google Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- favicon -->
+    <link rel="icon" type="image/png" href="./images/favicon.png">
+</head>
+<body class="h-screen overflow-hidden flex bg-slate-50">
+
+    <!-- Mobile Overlay Backdrop -->
+    <div id="mobileOverlay" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 hidden lg:hidden transition-all duration-300 ease-in-out opacity-0"></div>
+
+    <!-- CUSTOM CONFIRM MODAL -->
+    <div id="resetModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0 duration-300" id="resetModalBackdrop" onclick="closeResetModal()"></div>
+        <div class="relative w-full max-w-[320px] sm:max-w-sm bg-white rounded-2xl shadow-2xl transform scale-95 opacity-0 transition-all duration-200" id="resetModalPanel">
+            <div class="p-6 text-center">
+                <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 ring-8 ring-red-50/50">
+                    <span class="material-symbols-outlined text-[32px] text-red-500">warning</span>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-2">Đặt lại dữ liệu?</h3>
+                <p class="text-[13px] sm:text-sm text-slate-500 mb-6 leading-relaxed">
+                    Hành động này sẽ xóa toàn bộ cấu hình giờ làm và dữ liệu tính công đã lưu trên trình duyệt này.
+                </p>
+                <div class="flex gap-3">
+                    <button onclick="closeResetModal()" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-colors active:scale-95">Hủy bỏ</button>
+                    <button onclick="confirmReset()" class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl shadow-lg shadow-red-200 transition-all active:scale-95">Đồng ý</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION MODAL (Reusable) -->
+    <div id="notificationModal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0 duration-300" id="notificationBackdrop" onclick="closeNotification()"></div>
+        <div class="relative w-full max-w-[320px] sm:max-w-sm bg-white rounded-2xl shadow-2xl transform scale-95 opacity-0 transition-all duration-200" id="notificationPanel">
+            <div class="p-6 text-center">
+                <div id="notificationIcon" class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ring-8">
+                    <span class="material-symbols-outlined text-[32px]"></span>
+                </div>
+                <h3 id="notificationTitle" class="text-lg font-bold text-slate-800 mb-2"></h3>
+                <p id="notificationMessage" class="text-[13px] sm:text-sm text-slate-500 mb-6 leading-relaxed"></p>
+                <div id="notificationButtons" class="flex gap-3">
+                    <!-- Buttons will be injected dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-50 bg-white border-r border-slate-200 flex flex-col w-64 sidebar-transition transform -translate-x-full lg:translate-x-0 shadow-xl lg:shadow-none">
+        <button onclick="toggleSidebarCollapse()" class="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-slate-200 rounded-full items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-400 shadow-sm z-50 transition-all focus:outline-none hover:scale-110 active:scale-95">
+            <span id="collapseIcon" class="material-symbols-outlined text-[16px]">chevron_left</span>
+        </button>
+
+        <div class="h-16 flex items-center px-5 border-b border-slate-100 shrink-0 overflow-hidden whitespace-nowrap bg-white">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-600/20">
+                    <span class="material-symbols-outlined text-[22px]">calculate</span>
+                </div>
+                <div class="flex flex-col nav-text">
+                    <span class="font-bold text-lg text-slate-800 tracking-tight leading-tight">HTools</span>
+                    <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Phiên bản 1.5</span>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-2">
+            <button onclick="switchTab('calculator')" id="nav-calculator" class="nav-item active w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-left group/item relative overflow-hidden">
+                <span class="material-symbols-outlined shrink-0">pending_actions</span>
+                <span class="nav-text font-medium text-sm">Tính Công</span>
+            </button>
+
+            <button onclick="switchTab('salary')" id="nav-salary" class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-left group/item relative overflow-hidden">
+                <span class="material-symbols-outlined shrink-0">payments</span>
+                <span class="nav-text font-medium text-sm">Tính Lương Tháng</span>
+            </button>
+
+            <button onclick="switchTab('grammar')" id="nav-grammar" class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-left group/item relative overflow-hidden">
+                <span class="material-symbols-outlined shrink-0">spellcheck</span>
+                <span class="nav-text font-medium text-sm">Kiểm Tra Ngữ Pháp</span>
+            </button>
+
+        </nav>
+        
+        <div class="p-4 border-t border-slate-100 nav-text bg-slate-50/50">
+            <div class="flex items-center gap-2 text-xs text-slate-400">
+                <span class="material-symbols-outlined text-[14px]">verified_user</span>
+                <span>Dữ liệu lưu trên máy bạn</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden w-full bg-slate-50 relative">
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-8 shrink-0 shadow-sm z-30 relative">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleMobileSidebar()" class="lg:hidden p-2.5 -ml-2 rounded-lg hover:bg-slate-100 text-slate-600 active:bg-slate-200 transition-colors">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <h2 id="pageTitle" class="text-lg font-bold text-slate-800 tracking-tight truncate max-w-[200px] sm:max-w-none">Tính Công</h2>
+            </div>
+            <!-- Global header buttons removed, now specific to tabs -->
+        </header>
+
+        <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-8" id="mainContent">
+            
+            <!-- TAB 1: CALCULATOR -->
+            <div id="tab-calculator" class="tab-content w-full space-y-5 animate-fade-in">
+                <!-- Info Bar & Reset Button Row -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
+                    <div class="flex items-center gap-2 text-xs font-medium text-blue-600 bg-white px-4 py-2.5 rounded-lg border border-blue-100 shadow-sm flex-1">
+                        <span class="material-symbols-outlined text-blue-500 text-sm">info</span>
+                        <span>Dữ liệu được tự động lưu. Tính toán tức thì.</span>
+                    </div>
+                    
+                    <button onclick="showResetModal()" class="group text-xs font-semibold flex items-center text-slate-600 hover:text-red-600 transition-colors px-3 py-2.5 border border-slate-200 rounded-lg bg-white hover:bg-red-50 shadow-sm active:scale-95 w-full sm:w-auto justify-center">
+                        <span class="material-symbols-outlined text-[18px] mr-1.5 transition-transform group-hover:rotate-180">restart_alt</span>
+                        Đặt lại dữ liệu
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 relative">
+                    <!-- Left Column: Inputs -->
+                    <div class="lg:col-span-5 space-y-5">
+                        <div class="shadcn-card p-4 sm:p-5 space-y-4">
+                            <div class="flex items-center gap-2 mb-1 border-b pb-3 border-slate-50">
+                                <div class="p-1.5 bg-blue-50 rounded text-blue-600">
+                                    <span class="material-symbols-outlined text-[20px]">schedule</span>
+                                </div>
+                                <h3 class="font-semibold text-sm text-slate-900 uppercase tracking-wide">Thời gian làm việc</h3>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="shadcn-label">Giờ bắt đầu</label>
+                                    <input type="time" id="startTime" value="07:30" class="shadcn-input save-target touch-manipulation" oninput="calculate()">
+                                </div>
+                                <div>
+                                    <label class="shadcn-label">Giờ kết thúc</label>
+                                    <input type="time" id="endTime" value="18:00" class="shadcn-input save-target touch-manipulation" oninput="calculate()">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="shadcn-label">Nghỉ trưa từ</label>
+                                    <input type="time" id="breakStart" value="11:30" class="shadcn-input save-target touch-manipulation" oninput="calculate()">
+                                </div>
+                                <div>
+                                    <label class="shadcn-label">Nghỉ trưa đến</label>
+                                    <input type="time" id="breakEnd" value="13:00" class="shadcn-input save-target touch-manipulation" oninput="calculate()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="shadcn-card p-4 sm:p-5 space-y-4">
+                            <div class="flex items-center gap-2 mb-1 border-b pb-3 border-slate-50">
+                                <div class="p-1.5 bg-blue-50 rounded text-blue-600">
+                                    <span class="material-symbols-outlined text-[20px]">tune</span>
+                                </div>
+                                <h3 class="font-semibold text-sm text-slate-900 uppercase tracking-wide">Thông số tính toán</h3>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="shadcn-label">Tính OT sau</label>
+                                    <input type="time" id="otThreshold" value="17:00" class="shadcn-input save-target touch-manipulation" oninput="calculate()">
+                                </div>
+                                <div>
+                                    <label class="shadcn-label">Hệ số OT</label>
+                                    <input type="number" id="otCoeff" value="1.5" step="0.1" class="shadcn-input save-target touch-manipulation" oninput="calculate()">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="shadcn-label">Số ngày làm</label>
+                                    <input type="number" id="workDays" value="27" class="shadcn-input save-target touch-manipulation" oninput="calculate()">
+                                </div>
+                                <div>
+                                    <label class="shadcn-label">Giờ chuẩn/ngày</label>
+                                    <input type="number" id="standardHours" value="8" readonly class="shadcn-input bg-slate-50 text-slate-400 cursor-not-allowed border-dashed">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Results -->
+                    <div class="lg:col-span-7 space-y-5 lg:sticky lg:top-0 self-start">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="shadcn-card p-5 flex flex-col justify-between hover:border-blue-300 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <span class="material-symbols-outlined text-blue-500 bg-blue-50 p-1.5 rounded-md">today</span>
+                                        <h3 class="text-sm font-semibold text-slate-700">Kết quả 1 Ngày</h3>
+                                    </div>
+                                    <div class="text-3xl font-bold tracking-tight text-slate-900 mb-4 flex items-baseline gap-1">
+                                        <span id="dailyCong" class="text-blue-600">-</span> 
+                                        <span class="text-base font-medium text-slate-400">công</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex justify-between py-1 border-b border-slate-50">
+                                        <span class="text-slate-500">Giờ thường</span>
+                                        <span class="font-mono font-medium text-slate-700" id="dailyNormalMins">-</span>
+                                    </div>
+                                    <div class="flex justify-between py-1 border-b border-slate-50">
+                                        <span class="text-slate-500">Giờ OT thực</span>
+                                        <span class="font-mono font-medium text-slate-700" id="dailyOtRawMins">-</span>
+                                    </div>
+                                    <div class="flex justify-between py-1 pt-1">
+                                        <span class="text-slate-500 font-medium">Tổng quy đổi</span>
+                                        <span class="font-mono font-bold text-slate-900" id="dailyTotalConvertedMins">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="shadcn-card p-5 flex flex-col justify-between bg-gradient-to-br from-white to-green-50/50 border-green-100 hover:border-green-300 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <span class="material-symbols-outlined text-green-600 bg-green-100 p-1.5 rounded-md">calendar_month</span>
+                                        <h3 class="text-sm font-semibold text-slate-700">Tổng tháng (<span id="displayDays">27</span> ngày)</h3>
+                                    </div>
+                                    <div class="text-3xl font-bold tracking-tight text-slate-900 mb-4 flex items-baseline gap-1">
+                                        <span id="monthlyCong" class="text-green-600">-</span>
+                                        <span class="text-base font-medium text-slate-400">công</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex justify-between py-1 border-b border-green-100/50">
+                                        <span class="text-slate-500">Tổng phút</span>
+                                        <span class="font-mono font-medium text-slate-700" id="monthlyMins">-</span>
+                                    </div>
+                                    <div class="flex justify-between py-1 border-b border-green-100/50">
+                                        <span class="text-slate-500">Tổng giờ</span>
+                                        <span class="font-mono font-medium text-slate-700" id="monthlyHours">-</span>
+                                    </div>
+                                    <div class="flex justify-between py-1 pt-1">
+                                        <span class="text-slate-500 font-medium">Làm tròn</span>
+                                        <span class="font-mono font-bold text-slate-900" id="monthlyCongRounded">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="shadcn-card p-0 overflow-hidden flex flex-col shadow-sm">
+                            <div class="p-3 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between backdrop-blur-sm">
+                                <h3 class="font-semibold text-xs md:text-sm text-slate-700 flex items-center gap-2 uppercase tracking-wide ml-1">
+                                    <span class="material-symbols-outlined text-slate-400">description</span>
+                                    Chi tiết báo cáo
+                                </h3>
+                                <button onclick="copyReport()" class="group inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-slate-900 text-white hover:bg-slate-800 h-8 px-3 shadow-sm active:scale-95">
+                                    <span class="material-symbols-outlined text-[16px] mr-1.5 group-hover:scale-110 transition-transform">content_copy</span>
+                                    Sao chép
+                                </button>
+                            </div>
+                            <div class="relative">
+                                <textarea id="reportText" rows="8" class="w-full p-4 bg-white text-slate-600 font-mono text-xs md:text-sm resize-none focus:outline-none leading-relaxed" readonly></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: GRAMMAR (New Design - Like Screenshot) -->
+            <div id="tab-grammar" class="tab-content hidden w-full flex-1">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 grammar-panel">
+                    
+                    <!-- Left Panel: Input -->
+                    <div class="flex flex-col h-full">
+                        <!-- Header -->
+                        <div class="bg-white border border-slate-200 rounded-t-xl px-4 py-3 flex items-center justify-between shadow-sm">
+                            <div class="flex items-center gap-2.5">
+                                <span class="material-symbols-outlined text-blue-600 text-[20px]">edit_note</span>
+                                <h3 class="text-sm font-semibold text-slate-700">Văn bản gốc</h3>
+                            </div>
+                            <button onclick="clearGrammar()" class="px-3 py-2 text-sm font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-95 flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-[16px]">delete</span>
+                                Xóa
+                            </button>
+                        </div>
+
+                        <!-- Input Area -->
+                        <div class="flex-1 bg-white border-x border-slate-200 relative">
+                            <textarea 
+                                id="grammarInput" 
+                                oninput="updateStats()" 
+                                class="w-full h-full p-5 pb-28 text-slate-800 resize-none focus:outline-none placeholder:text-slate-400 bg-white"
+                                placeholder="Nhập văn bản tiếng Anh..."></textarea>
+                            
+                            <!-- Stats Footer Inside Textarea -->
+                            <div class="absolute bottom-0 left-0 right-0 bg-slate-50/95 backdrop-blur-sm border-t border-slate-200 px-5 py-3 flex items-center justify-between">
+                                <div class="flex items-center gap-1.5 text-xs text-slate-500">
+                                    <span id="charCount">0</span>
+                                    <span>ký tự</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Action Bar -->
+                        <div class="bg-white border border-t-0 border-slate-200 rounded-b-xl px-4 py-3 flex items-center justify-end gap-2 shadow-sm">
+                            <button 
+                                onclick="pasteFromClipboard()" 
+                                class="px-4 py-2.5 text-sm font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-95 flex items-center gap-1.5"
+                                title="Dán từ clipboard">
+                                <span class="material-symbols-outlined text-[16px]">content_paste</span>
+                                <span class="hidden sm:inline">Dán</span>
+                            </button>
+                            
+                            <button 
+                                id="checkBtn" 
+                                onclick="checkGrammar()" 
+                                class="px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">search_check</span>
+                                Kiểm tra ngay
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: Results -->
+                    <div class="flex flex-col h-full mb-6 lg:mb-0">
+                        <!-- Header -->
+                        <div class="bg-white border border-slate-200 rounded-t-xl px-4 py-3 flex items-center justify-between shadow-sm">
+                            <div class="flex items-center gap-2.5">
+                                <span class="material-symbols-outlined text-green-600 text-[20px]">fact_check</span>
+                                <h3 class="text-sm font-semibold text-slate-700">Kết quả phân tích</h3>
+                            </div>
+                            
+                            <div class="flex items-center gap-2">
+                                <!-- Total Errors Badge -->
+                                <div id="errorBadge" class="hidden px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs font-bold text-blue-700 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px]">error</span>
+                                    Tất cả (<span id="totalErrors">0</span>)
+                                </div>
+                                
+                                <button 
+                                    id="copyOutputBtn" 
+                                    onclick="copyOutput()" 
+                                    class="hidden px-3 py-2 text-sm font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all active:scale-95 flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                                    <span class="hidden sm:inline">Sao chép</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Output Area -->
+                        <div class="flex-1 bg-white border-x border-slate-200 relative overflow-hidden">
+                            <!-- Loading Overlay -->
+                            <div id="grammarLoading" class="hidden absolute inset-0 z-30 bg-white/98 backdrop-blur-sm flex items-center justify-center">
+                                <div class="flex flex-col items-center">
+                                    <span class="material-symbols-outlined animate-spin text-5xl text-indigo-600 mb-3">progress_activity</span>
+                                    <span class="text-sm font-semibold text-slate-700">Đang phân tích văn bản</span>
+                                    <span class="text-xs text-slate-500 mt-1">Vui lòng đợi...</span>
+                                </div>
+                            </div>
+
+                            <!-- Output Content -->
+                            <div class="h-full overflow-y-auto">
+                                <div id="grammarOutput" class="p-5 text-[15px] leading-[1.8] text-slate-800 whitespace-pre-wrap min-h-full">
+                                    <!-- Empty State -->
+                                    <div class="flex flex-col items-center justify-center h-full text-center py-20">
+                                        <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-5">
+                                            <span class="material-symbols-outlined text-slate-400 text-[40px]">search</span>
+                                        </div>
+                                        <span class="text-slate-400 text-sm font-medium mb-1">Kết quả sẽ hiển thị tại đây</span>
+                                        <span class="text-slate-300 text-xs">Nhấn "Kiểm tra ngay" để bắt đầu</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Action Bar -->
+                        <div class="bg-green-50/50 border border-t-0 border-slate-200 rounded-b-xl px-4 py-3 flex items-center justify-between shadow-sm">
+                            <div class="flex items-center gap-2 text-xs text-slate-600">
+                                <span class="material-symbols-outlined text-green-600 text-[16px]">info</span>
+                                <span>Click vào lỗi để xem gợi ý sửa</span>
+                            </div>
+                            
+                            <button 
+                                id="fixAllBtn" 
+                                onclick="fixAllErrors()" 
+                                class="hidden items-center gap-1.5 px-4 py-2 text-sm font-bold text-green-800 bg-green-100 border border-green-300 rounded-lg hover:bg-green-200 transition-all active:scale-95">
+                                <span class="material-symbols-outlined text-[16px]">auto_fix_high</span>
+                                Sửa lỗi (<span id="errorCount">0</span>)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: SALARY (Placeholder) -->
+            <div id="tab-salary" class="tab-content hidden w-full h-full flex items-center justify-center min-h-[50vh]">
+                <div class="text-center max-w-md mx-auto p-8">
+                    <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500 shadow-sm">
+                        <span class="material-symbols-outlined text-5xl">payments</span>
+                    </div>
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-2">Đang phát triển</h2>
+                    <p class="text-sm sm:text-base text-slate-500">Chức năng "Tính lương tháng" sẽ sớm ra mắt.</p>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- FOOTER (Fixed at bottom) -->
+        <footer class="h-auto bg-white border-t border-slate-200 py-4 lg:py-3 shrink-0 z-20">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-center">
+                    <p class="text-xs text-slate-500">
+                        © 2025 <span class="font-semibold text-slate-700">HTools</span>
+                    </p>
+                    <span class="hidden sm:inline text-slate-300">•</span>
+                    <p class="text-xs text-slate-500">
+                        Phát triển bởi <span class="font-semibold text-blue-600">Nguyễn Thế Hoàng</span>
+                    </p>
+                    <span class="hidden sm:inline text-slate-300">•</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- GRAMMAR TOOLTIP (Enhanced Styling) -->
+    <div id="grammarTooltip" class="hidden grammar-tooltip max-w-[320px]">
+        <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-200">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-amber-600 text-[18px]">lightbulb</span>
+                <span class="text-xs font-bold text-slate-800 uppercase tracking-wide">Gợi ý sửa đổi</span>
+            </div>
+            <button onclick="hideTooltip()" class="text-slate-400 hover:text-slate-600 transition-colors p-1 hover:bg-slate-100 rounded">
+                <span class="material-symbols-outlined text-[16px]">close</span>
+            </button>
+        </div>
+        <div id="tooltipMessage" class="text-xs text-slate-700 mb-3 leading-relaxed bg-amber-50 p-2.5 rounded-lg border border-amber-100"></div>
+        <div id="suggestionList" class="flex flex-col gap-1.5 max-h-[220px] overflow-y-auto">
+            <!-- Items injected by JS -->
+        </div>
+    </div>
+
+    <!-- SCROLL TO TOP BUTTON (Mobile Only) -->
+    <button 
+        id="scrollToTopBtn" 
+        onclick="scrollToTop()" 
+        class="fixed bottom-20 right-4 lg:hidden w-12 h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-500 ease-out opacity-0 pointer-events-none z-50 active:scale-95 hover:shadow-xl"
+        aria-label="Scroll to top">
+        <span class="material-symbols-outlined text-[24px]">arrow_upward</span>
+    </button>
+
+    <script src="script.js"></script>
+</body>
+</html>
