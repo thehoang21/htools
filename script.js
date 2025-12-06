@@ -65,11 +65,23 @@ function switchTab(tabName) {
     activeContent.classList.add('animate-fade-in');
 
     const titles = {
+        'time': 'Thời gian',
         'calculator': 'Tính Công',
         'salary': 'Tính Lương Tháng',
-        'tax': 'Tính Thuế TNCN'
+        'tax': 'Tính Thuế TNCN',
+        'compound': 'Tính Lãi Suất Kép',
+        'sorting': 'Biểu Diễn Thuật Toán',
+        'typing': 'Kiểm Tra Tốc Độ Gõ'
     };
     document.getElementById('pageTitle').innerText = titles[tabName];
+
+    if (tabName === 'time') {
+        initTime();
+    } else if (tabName === 'sorting') {
+        initSorting();
+    } else if (tabName === 'typing') {
+        initTypingTest();
+    }
 
     if (window.innerWidth < 1024) {
         sidebar.classList.add('-translate-x-full');
@@ -717,6 +729,13 @@ calculate();
 calculateSalary();
 calculateTax();
 
+// Initialize time tab on first load (it's the default tab)
+setTimeout(() => {
+    if (document.getElementById('tab-time') && !document.getElementById('tab-time').classList.contains('hidden')) {
+        initTime();
+    }
+}, 100);
+
 // --- CUSTOM DROPDOWN LOGIC ---
 function toggleRegionDropdown(event) {
     if (event) {
@@ -765,18 +784,6 @@ function selectRegion(value, text) {
     calculateTax();
     saveSettings(); 
 }
-
-// Close dropdown when clicking outside
-document.addEventListener('click', function(event) {
-    const menu = document.getElementById('regionDropdownMenu');
-    const btn = document.getElementById('regionDropdownBtn');
-    
-    if (menu && !menu.classList.contains('hidden') && !btn.contains(event.target) && !menu.contains(event.target)) {
-        menu.classList.add('hidden');
-        const arrow = document.getElementById('regionDropdownArrow');
-        if (arrow) arrow.style.transform = 'rotate(0deg)';
-    }
-});
 
 // Initialize dropdown state on load
 document.addEventListener('DOMContentLoaded', () => {
@@ -1068,3 +1075,1078 @@ function exportTaxReport() {
         saveAs(blob, "Bang_Tinh_Thue_TNCN_HTools.docx");
     });
 }
+
+// --- COMPOUND INTEREST LOGIC ---
+function toggleFrequencyDropdown(event) {
+    event.stopPropagation();
+    const menu = document.getElementById('frequencyDropdownMenu');
+    const arrow = document.getElementById('frequencyDropdownArrow');
+    
+    // Close other dropdowns if open
+    const regionMenu = document.getElementById('regionDropdownMenu');
+    if (regionMenu && !regionMenu.classList.contains('hidden')) {
+        regionMenu.classList.add('hidden');
+        const regionArrow = document.getElementById('regionDropdownArrow');
+        if (regionArrow) regionArrow.style.transform = 'rotate(0deg)';
+    }
+
+    if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+    } else {
+        menu.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+function selectFrequency(value, text) {
+    const input = document.getElementById('compoundFrequency');
+    const textSpan = document.getElementById('frequencySelectedText');
+    const menu = document.getElementById('frequencyDropdownMenu');
+    const arrow = document.getElementById('frequencyDropdownArrow');
+
+    input.value = value;
+    textSpan.innerText = text;
+
+    // Update UI selection state
+    document.querySelectorAll('.frequency-option').forEach(option => {
+        const checkIcon = option.querySelector('.check-icon');
+        if (option.dataset.value == value) {
+            option.classList.add('bg-blue-50', 'text-blue-700');
+            checkIcon.classList.remove('opacity-0');
+        } else {
+            option.classList.remove('bg-blue-50', 'text-blue-700');
+            checkIcon.classList.add('opacity-0');
+        }
+    });
+
+    // Close dropdown
+    menu.classList.add('hidden');
+    arrow.style.transform = 'rotate(0deg)';
+    
+    // Trigger calculation
+    calculateCompoundInterest();
+}
+
+// Close dropdown when clicking outside (Updated to handle both dropdowns)
+document.addEventListener('click', function(event) {
+    // Region Dropdown
+    const regionMenu = document.getElementById('regionDropdownMenu');
+    const regionBtn = document.getElementById('regionDropdownBtn');
+    if (regionMenu && !regionMenu.classList.contains('hidden') && !regionBtn.contains(event.target) && !regionMenu.contains(event.target)) {
+        regionMenu.classList.add('hidden');
+        const arrow = document.getElementById('regionDropdownArrow');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+
+    // Frequency Dropdown
+    const freqMenu = document.getElementById('frequencyDropdownMenu');
+    const freqBtn = document.getElementById('frequencyDropdownBtn');
+    if (freqMenu && !freqMenu.classList.contains('hidden') && !freqBtn.contains(event.target) && !freqMenu.contains(event.target)) {
+        freqMenu.classList.add('hidden');
+        const arrow = document.getElementById('frequencyDropdownArrow');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+});
+
+function calculateCompoundInterest() {
+    const principal = parseCurrency(document.getElementById('compoundPrincipal').value) || 0;
+    const rate = parseFloat(document.getElementById('compoundRate').value) || 0;
+    const years = parseFloat(document.getElementById('compoundYears').value) || 0;
+    const frequency = parseInt(document.getElementById('compoundFrequency').value) || 12;
+    const contribution = parseCurrency(document.getElementById('compoundContribution').value) || 0;
+
+    let balance = principal;
+    let totalPrincipal = principal;
+    const months = years * 12;
+    const rateDecimal = rate / 100;
+
+    // Loop through each month
+    for (let i = 1; i <= months; i++) {
+        // Add monthly contribution
+        balance += contribution;
+        totalPrincipal += contribution;
+
+        // Apply interest based on frequency
+        // Frequency 12: Apply every month (i % 1 === 0)
+        // Frequency 4: Apply every 3 months (i % 3 === 0)
+        // Frequency 1: Apply every 12 months (i % 12 === 0)
+        
+        const monthsPerPeriod = 12 / frequency;
+        
+        if (i % monthsPerPeriod === 0) {
+            const interest = balance * (rateDecimal / frequency);
+            balance += interest;
+        }
+    }
+
+    const totalInterest = balance - totalPrincipal;
+
+    document.getElementById('resCompoundTotal').innerText = fmtVND(balance) + ' ₫';
+    document.getElementById('resCompoundPrincipal').innerText = fmtVND(totalPrincipal) + ' ₫';
+    document.getElementById('resCompoundInterest').innerText = fmtVND(totalInterest) + ' ₫';
+}
+
+// --- TIME LOGIC ---
+let timeMap = null;
+let timeClockInterval = null;
+let countryMetadata = {}; // Cache for country data
+
+function initTime() {
+    startTimeClock();
+    initMap();
+    fetchCountryMetadata();
+}
+
+function fetchCountryMetadata() {
+    // Fetch all countries data once to improve speed and get capitals/timezones
+    fetch('https://restcountries.com/v3.1/all?fields=name,capital,cca3,timezones')
+        .then(res => res.json())
+        .then(data => {
+            data.forEach(country => {
+                if (country.cca3) {
+                    countryMetadata[country.cca3] = {
+                        name: country.name.official || country.name.common,
+                        capital: country.capital ? country.capital[0] : '',
+                        timezones: country.timezones || []
+                    };
+                }
+            });
+        })
+        .catch(err => console.error('Error fetching country metadata:', err));
+}
+
+function startTimeClock() {
+    if (timeClockInterval) clearInterval(timeClockInterval);
+    
+    const updateClock = () => {
+        const now = new Date();
+        const dateEl = document.getElementById('timeDate');
+        const timeEl = document.getElementById('timeClock');
+        
+        if (dateEl && timeEl) {
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dateEl.innerText = now.toLocaleDateString('vi-VN', dateOptions);
+            timeEl.innerText = now.toLocaleTimeString('vi-VN', { hour12: false });
+        }
+    };
+    
+    updateClock();
+    timeClockInterval = setInterval(updateClock, 1000);
+}
+
+function initMap() {
+    if (timeMap) {
+        // If map exists, just invalidate size
+        setTimeout(() => {
+            timeMap.invalidateSize();
+        }, 100);
+        return;
+    }
+    
+    const mapContainer = document.getElementById('worldMap');
+    if (!mapContainer) return;
+
+    // Initialize map
+    timeMap = L.map('worldMap', {
+        center: [20, 0],
+        zoom: 2,
+        minZoom: 2,
+        maxZoom: 6,
+        zoomControl: false,
+        attributionControl: false
+    });
+
+    // Add Tile Layer (CartoDB Voyager for a clean look)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 19
+    }).addTo(timeMap);
+
+    // Add Zoom Control to bottom right
+    L.control.zoom({
+        position: 'bottomright'
+    }).addTo(timeMap);
+
+    // Fetch and add GeoJSON for countries
+    fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+        .then(response => response.json())
+        .then(data => {
+            L.geoJSON(data, {
+                style: {
+                    fillColor: '#3b82f6',
+                    weight: 1,
+                    opacity: 1,
+                    color: 'white',
+                    dashArray: '3',
+                    fillOpacity: 0.1
+                },
+                onEachFeature: onEachFeature
+            }).addTo(timeMap);
+        })
+        .catch(err => console.error('Error loading map data:', err));
+}
+
+function onEachFeature(feature, layer) {
+    layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight,
+        click: (e) => {
+            const countryId = feature.id; // CCA3 code
+            const countryName = feature.properties.name;
+            showCountryInfo(countryId, countryName, e.latlng);
+            highlightFeature(e); // Keep highlighted
+        }
+    });
+}
+
+function highlightFeature(e) {
+    const layer = e.target;
+    layer.setStyle({
+        weight: 2,
+        color: '#2563eb',
+        dashArray: '',
+        fillOpacity: 0.3
+    });
+    layer.bringToFront();
+}
+
+function resetHighlight(e) {
+    const layer = e.target;
+    // Reset to default style
+    layer.setStyle({
+        fillColor: '#3b82f6',
+        weight: 1,
+        opacity: 1,
+        color: 'white',
+        dashArray: '3',
+        fillOpacity: 0.1
+    });
+}
+
+// Helper to parse "UTC+07:00" to hours (float)
+function parseUtcOffset(offsetStr) {
+    if (!offsetStr || offsetStr === 'UTC') return 0;
+    // Remove "UTC"
+    const sign = offsetStr.includes('+') ? 1 : -1;
+    const parts = offsetStr.replace('UTC', '').replace('+', '').replace('-', '').split(':');
+    const hours = parseInt(parts[0]);
+    const minutes = parts[1] ? parseInt(parts[1]) : 0;
+    return sign * (hours + (minutes / 60));
+}
+
+async function showCountryInfo(countryId, fallbackName, latlng) {
+    const overlay = document.getElementById('countryInfoOverlay');
+    const nameEl = document.getElementById('overlayCountryName');
+    const dateEl = document.getElementById('overlayDate');
+    const timeEl = document.getElementById('overlayTime');
+    const timezoneEl = document.getElementById('overlayTimezone');
+    
+    // Determine display name (Official Name)
+    let displayName = fallbackName;
+    let meta = null;
+    
+    if (countryMetadata[countryId]) {
+        meta = countryMetadata[countryId];
+        displayName = meta.name; // Official name
+    }
+
+    // Show loading state
+    nameEl.innerText = displayName;
+    dateEl.innerText = 'Đang tính toán...';
+    timeEl.innerText = '--:--';
+    timezoneEl.innerText = '...';
+    
+    overlay.classList.remove('translate-y-[120%]');
+    
+    try {
+        // Calculate time locally using cached timezone data
+        let offset = 0;
+        let timezoneStr = 'UTC';
+
+        if (meta && meta.timezones && meta.timezones.length > 0) {
+            if (meta.timezones.length === 1) {
+                timezoneStr = meta.timezones[0];
+                offset = parseUtcOffset(timezoneStr);
+            } else {
+                // Estimate based on longitude: Longitude / 15 = Offset
+                const estimatedOffset = Math.round(latlng.lng / 15);
+                
+                // Find closest timezone in the list
+                let minDiff = Infinity;
+                let bestTz = meta.timezones[0];
+                
+                meta.timezones.forEach(tz => {
+                    const tzOffset = parseUtcOffset(tz);
+                    const diff = Math.abs(tzOffset - estimatedOffset);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        bestTz = tz;
+                    }
+                });
+                
+                timezoneStr = bestTz;
+                offset = parseUtcOffset(bestTz);
+            }
+        } else {
+            // Fallback: Estimate purely on longitude if no metadata
+            offset = Math.round(latlng.lng / 15);
+            const sign = offset >= 0 ? '+' : '-';
+            timezoneStr = `UTC${sign}${Math.abs(offset)}:00 (Ước tính)`;
+        }
+
+        // Calculate target time
+        const now = new Date();
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const targetTime = new Date(utc + (3600000 * offset));
+
+        // Update UI
+        dateEl.innerText = targetTime.toLocaleDateString('vi-VN');
+        timeEl.innerText = targetTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        timezoneEl.innerText = timezoneStr;
+        
+    } catch (error) {
+        console.error(error);
+        dateEl.innerText = 'Lỗi';
+        timeEl.innerText = 'Lỗi';
+    }
+}
+
+function closeCountryOverlay() {
+    const overlay = document.getElementById('countryInfoOverlay');
+    overlay.classList.add('translate-y-[120%]');
+}
+
+// --- SORTING VISUALIZER LOGIC ---
+let sortingArray = [];
+let isSorting = false;
+let isPaused = false;
+let sortingSpeed = 50;
+
+function initSorting() {
+    generateNewArray();
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('algoDropdownMenu');
+        const btn = document.getElementById('algoDropdownBtn');
+        if (!dropdown || !btn) return;
+        
+        if (!btn.contains(event.target) && !dropdown.contains(event.target)) {
+            dropdown.classList.add('hidden');
+            document.getElementById('algoDropdownArrow').classList.remove('rotate-180');
+        }
+    });
+}
+
+function toggleAlgoDropdown(event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById('algoDropdownMenu');
+    const arrow = document.getElementById('algoDropdownArrow');
+    const btn = document.getElementById('algoDropdownBtn');
+    
+    if (btn.disabled) return;
+
+    dropdown.classList.toggle('hidden');
+    arrow.classList.toggle('rotate-180');
+}
+
+function selectAlgo(value, text) {
+    document.getElementById('sortAlgorithm').value = value;
+    document.getElementById('algoSelectedText').innerText = text;
+    
+    // Update check icons
+    document.querySelectorAll('.algo-option').forEach(option => {
+        const check = option.querySelector('.check-icon');
+        const textSpan = option.querySelector('span');
+        if (option.dataset.value === value) {
+            check.classList.remove('opacity-0');
+            check.classList.add('opacity-100');
+            textSpan.classList.add('text-blue-700');
+            textSpan.classList.add('font-semibold');
+        } else {
+            check.classList.remove('opacity-100');
+            check.classList.add('opacity-0');
+            textSpan.classList.remove('text-blue-700');
+            textSpan.classList.remove('font-semibold');
+        }
+    });
+    
+    // Close dropdown
+    document.getElementById('algoDropdownMenu').classList.add('hidden');
+    document.getElementById('algoDropdownArrow').classList.remove('rotate-180');
+}
+
+function generateNewArray() {
+    if (isSorting) return;
+    
+    const container = document.getElementById('sortingContainer');
+    const size = parseInt(document.getElementById('arraySize').value);
+    container.innerHTML = '';
+    sortingArray = [];
+    
+    for (let i = 0; i < size; i++) {
+        const value = Math.floor(Math.random() * 100) + 5; // 5 to 100
+        sortingArray.push(value);
+        
+        const bar = document.createElement('div');
+        bar.style.height = `${value}%`;
+        bar.style.width = `${100/size}%`;
+        bar.className = 'bg-blue-500 rounded-t-sm transition-all duration-100';
+        bar.id = `bar-${i}`;
+        container.appendChild(bar);
+    }
+}
+
+function resetSorting() {
+    isSorting = false;
+    isPaused = false;
+    
+    const btn = document.getElementById('startSortBtn');
+    btn.innerHTML = '<span class="material-symbols-outlined text-[20px]">play_arrow</span> Bắt đầu';
+    btn.classList.remove('bg-red-600', 'hover:bg-red-700', 'shadow-red-200', 'bg-amber-500', 'hover:bg-amber-600', 'shadow-amber-200');
+    btn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'shadow-blue-200');
+    
+    document.getElementById('arraySize').disabled = false;
+    document.getElementById('sortSpeed').disabled = false;
+    document.getElementById('algoDropdownBtn').disabled = false;
+    document.getElementById('algoDropdownBtn').classList.remove('opacity-50', 'cursor-not-allowed');
+    
+    generateNewArray();
+}
+
+function getSpeedDelay() {
+    const speedVal = parseInt(document.getElementById('sortSpeed').value);
+    // Map 1-100 to 500ms-5ms
+    return 505 - (speedVal * 5);
+}
+
+async function sleep(ms) {
+    // If paused, wait until unpaused or stopped
+    while (isPaused && isSorting) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function startSorting() {
+    const btn = document.getElementById('startSortBtn');
+    
+    // If currently sorting
+    if (isSorting) {
+        if (isPaused) {
+            // RESUME
+            isPaused = false;
+            btn.innerHTML = '<span class="material-symbols-outlined text-[15px]">pause</span> Tạm dừng';
+            btn.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'shadow-blue-200');
+            btn.classList.add('bg-amber-500', 'hover:bg-amber-600', 'shadow-amber-200');
+        } else {
+            // PAUSE
+            isPaused = true;
+            btn.innerHTML = '<span class="material-symbols-outlined text-[15px]">play_arrow</span> Tiếp tục';
+            btn.classList.remove('bg-amber-500', 'hover:bg-amber-600', 'shadow-amber-200');
+            btn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'shadow-blue-200');
+        }
+        return;
+    }
+
+    // START NEW SORT
+    isSorting = true;
+    isPaused = false;
+    
+    // Change button to Pause
+    btn.innerHTML = '<span class="material-symbols-outlined text-[20px]">pause</span> Tạm dừng';
+    btn.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'shadow-blue-200');
+    btn.classList.add('bg-amber-500', 'hover:bg-amber-600', 'shadow-amber-200');
+    
+    document.getElementById('arraySize').disabled = true;
+    document.getElementById('sortSpeed').disabled = true;
+    document.getElementById('algoDropdownBtn').disabled = true;
+    document.getElementById('algoDropdownBtn').classList.add('opacity-50', 'cursor-not-allowed');
+    
+    const algorithm = document.getElementById('sortAlgorithm').value;
+    
+    if (algorithm === 'bubble') {
+        await bubbleSort();
+    } else if (algorithm === 'quick') {
+        await quickSort(0, sortingArray.length - 1);
+    } else if (algorithm === 'selection') {
+        await selectionSort();
+    } else if (algorithm === 'insertion') {
+        await insertionSort();
+    } else if (algorithm === 'merge') {
+        await mergeSort(0, sortingArray.length - 1);
+    }
+    
+    // If finished naturally (not stopped by reset)
+    if (isSorting) {
+        isSorting = false;
+        isPaused = false;
+        btn.innerHTML = '<span class="material-symbols-outlined text-[20px]">play_arrow</span> Bắt đầu';
+        btn.classList.remove('bg-amber-500', 'hover:bg-amber-600', 'shadow-amber-200');
+        btn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'shadow-blue-200');
+        
+        document.getElementById('arraySize').disabled = false;
+        document.getElementById('sortSpeed').disabled = false;
+        document.getElementById('algoDropdownBtn').disabled = false;
+        document.getElementById('algoDropdownBtn').classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+}
+
+async function bubbleSort() {
+    const len = sortingArray.length;
+    for (let i = 0; i < len; i++) {
+        for (let j = 0; j < len - i - 1; j++) {
+            if (!isSorting) return;
+            
+            changeColor(j, 'yellow');
+            changeColor(j + 1, 'yellow');
+            await sleep(getSpeedDelay());
+            
+            if (sortingArray[j] > sortingArray[j + 1]) {
+                changeColor(j, 'red');
+                changeColor(j + 1, 'red');
+                await sleep(getSpeedDelay());
+                
+                swap(j, j + 1);
+            }
+            
+            changeColor(j, 'blue');
+            changeColor(j + 1, 'blue');
+        }
+        changeColor(len - i - 1, 'green');
+    }
+}
+
+async function selectionSort() {
+    const len = sortingArray.length;
+    for (let i = 0; i < len; i++) {
+        if (!isSorting) return;
+        let minIdx = i;
+        changeColor(i, 'red'); // Current position
+        
+        for (let j = i + 1; j < len; j++) {
+            if (!isSorting) return;
+            changeColor(j, 'yellow'); // Scanning
+            await sleep(getSpeedDelay());
+            
+            if (sortingArray[j] < sortingArray[minIdx]) {
+                if (minIdx !== i) changeColor(minIdx, 'blue'); // Reset old min
+                minIdx = j;
+                changeColor(minIdx, 'red'); // New min
+            } else {
+                changeColor(j, 'blue');
+            }
+        }
+        
+        if (minIdx !== i) {
+            swap(i, minIdx);
+        }
+        changeColor(minIdx, 'blue');
+        changeColor(i, 'green'); // Sorted
+    }
+}
+
+async function insertionSort() {
+    const len = sortingArray.length;
+    changeColor(0, 'green'); // First element is trivially sorted
+    
+    for (let i = 1; i < len; i++) {
+        if (!isSorting) return;
+        
+        let key = sortingArray[i];
+        let j = i - 1;
+        
+        changeColor(i, 'yellow'); // Element to insert
+        await sleep(getSpeedDelay());
+        
+        while (j >= 0 && sortingArray[j] > key) {
+            if (!isSorting) return;
+            
+            changeColor(j, 'red'); // Compare
+            await sleep(getSpeedDelay());
+            
+            sortingArray[j + 1] = sortingArray[j];
+            updateBarHeight(j + 1, sortingArray[j]);
+            changeColor(j + 1, 'green'); // Part of sorted section
+            
+            // Temporarily color j as red to show movement
+            changeColor(j, 'red'); 
+            
+            j = j - 1;
+            
+            // Restore color of the moved element (it was part of sorted)
+            if (j >= 0) changeColor(j, 'green');
+        }
+        sortingArray[j + 1] = key;
+        updateBarHeight(j + 1, key);
+        changeColor(j + 1, 'green');
+    }
+}
+
+async function mergeSort(start, end) {
+    if (!isSorting) return;
+    if (start >= end) {
+        return;
+    }
+    
+    const mid = Math.floor((start + end) / 2);
+    
+    await mergeSort(start, mid);
+    await mergeSort(mid + 1, end);
+    
+    await merge(start, mid, end);
+}
+
+async function merge(start, mid, end) {
+    if (!isSorting) return;
+    
+    let left = start;
+    let right = mid + 1;
+    let tempArr = [];
+    
+    // Visualize the range being merged
+    for(let i=start; i<=end; i++) {
+        changeColor(i, 'yellow');
+    }
+    await sleep(getSpeedDelay());
+
+    while (left <= mid && right <= end) {
+        if (!isSorting) return;
+        
+        // Highlight comparison
+        changeColor(left, 'red');
+        changeColor(right, 'red');
+        await sleep(getSpeedDelay());
+        
+        if (sortingArray[left] <= sortingArray[right]) {
+            tempArr.push(sortingArray[left]);
+            changeColor(left, 'yellow'); // Done comparing
+            left++;
+        } else {
+            tempArr.push(sortingArray[right]);
+            changeColor(right, 'yellow'); // Done comparing
+            right++;
+        }
+    }
+    
+    while (left <= mid) {
+        if (!isSorting) return;
+        tempArr.push(sortingArray[left]);
+        changeColor(left, 'yellow');
+        left++;
+    }
+    
+    while (right <= end) {
+        if (!isSorting) return;
+        tempArr.push(sortingArray[right]);
+        changeColor(right, 'yellow');
+        right++;
+    }
+    
+    // Copy back to original array and visualize
+    for (let i = 0; i < tempArr.length; i++) {
+        if (!isSorting) return;
+        
+        sortingArray[start + i] = tempArr[i];
+        updateBarHeight(start + i, tempArr[i]);
+        changeColor(start + i, 'green'); // Merged part is sorted relative to itself
+        await sleep(getSpeedDelay());
+    }
+}
+
+async function quickSort(start, end) {
+    if (!isSorting) return;
+    if (start >= end) {
+        if (start >= 0 && start < sortingArray.length) changeColor(start, 'green');
+        return;
+    }
+    
+    let index = await partition(start, end);
+    if (!isSorting) return;
+    
+    await Promise.all([
+        quickSort(start, index - 1),
+        quickSort(index + 1, end)
+    ]);
+}
+
+async function partition(start, end) {
+    let pivotIndex = start;
+    let pivotValue = sortingArray[end];
+    
+    changeColor(end, 'red'); // Pivot
+    
+    for (let i = start; i < end; i++) {
+        if (!isSorting) return start;
+        
+        changeColor(i, 'yellow');
+        await sleep(getSpeedDelay());
+        
+        if (sortingArray[i] < pivotValue) {
+            swap(i, pivotIndex);
+            changeColor(pivotIndex, 'blue'); // Reset old pivot pos color
+            pivotIndex++;
+        } else {
+            changeColor(i, 'blue');
+        }
+    }
+    
+    swap(pivotIndex, end);
+    changeColor(end, 'blue');
+    changeColor(pivotIndex, 'green'); // Pivot sorted
+    
+    return pivotIndex;
+}
+
+function swap(i, j) {
+    const temp = sortingArray[i];
+    sortingArray[i] = sortingArray[j];
+    sortingArray[j] = temp;
+    
+    updateBarHeight(i, sortingArray[i]);
+    updateBarHeight(j, sortingArray[j]);
+}
+
+function updateBarHeight(index, value) {
+    const bar = document.getElementById(`bar-${index}`);
+    if (bar) bar.style.height = `${value}%`;
+}
+
+function changeColor(index, color) {
+    const bar = document.getElementById(`bar-${index}`);
+    if (!bar) return;
+    
+    const colors = {
+        'blue': 'bg-blue-500',
+        'yellow': 'bg-yellow-400',
+        'red': 'bg-red-500',
+        'green': 'bg-green-500'
+    };
+    
+    // Remove all color classes
+    Object.values(colors).forEach(c => bar.classList.remove(c));
+    // Add new color
+    bar.classList.add(colors[color]);
+}
+
+// --- TYPING SPEED TEST LOGIC ---
+const SAMPLE_TEXTS_EN = [
+    "The quick brown fox jumps over the lazy dog",
+    "Pack my box with five dozen liquor jugs",
+    "How vexingly quick daft zebras jump",
+    "Sphinx of black quartz judge my vow",
+    "Two driven jocks help fax my big quiz",
+    "Life is like a box of chocolates you never know what you are going to get",
+    "To be or not to be that is the question",
+    "All that glitters is not gold",
+    "A journey of a thousand miles begins with a single step",
+    "Knowledge is power but enthusiasm pulls the switch",
+    "Success is not final failure is not fatal it is the courage to continue that counts",
+    "In the middle of difficulty lies opportunity",
+    "Happiness depends upon ourselves",
+    "Believe you can and you are halfway there",
+    "It does not matter how slowly you go as long as you do not stop",
+    "The only way to do great work is to love what you do",
+    "Change your thoughts and you change your world",
+    "It always seems impossible until it is done",
+    "Keep your face always toward the sunshine and shadows will fall behind you",
+    "The best way to predict the future is to create it"
+];
+
+const SAMPLE_TEXTS_VI = [
+    "Trăm năm trong cõi người ta chữ tài chữ mệnh khéo là ghét nhau",
+    "Trải qua một cuộc bể dâu những điều trông thấy mà đau đớn lòng",
+    "Lạ gì bỉ sắc tư phong trời xanh quen thói má hồng đánh ghen",
+    "Cảo thơm lần giở trước đèn phong tình cổ lục còn truyền sử xanh",
+    "Rằng năm Gia Tĩnh triều Minh bốn phương phẳng lặng hai kinh vững vàng",
+    "Có hai chị em Thúy Kiều là con gái đầu lòng của vương viên ngoại",
+    "Đầu lòng hai ả tố nga Thúy Kiều là chị em là Thúy Vân",
+    "Mai cốt cách tuyết tinh thần mỗi người một vẻ mười phân vẹn mười",
+    "Vân xem trang trọng khác vời khuôn trăng đầy đặn nét ngài nở nang",
+    "Hoa cười ngọc thốt đoan trang mây thua nước tóc tuyết nhường màu da",
+    "Kiều càng sắc sảo mặn mà so bề tài sắc lại là phần hơn",
+    "Làn thu thủy nét xuân sơn hoa ghen thua thắm liễu hờn kém xanh",
+    "Một hai nghiêng nước nghiêng thành sắc đành đòi một tài đành họa hai",
+    "Thông minh vốn sẵn tính trời pha nghề thi họa đủ mùi ca ngâm",
+    "Cung thương làu bậc ngũ âm nghề riêng ăn đứt hồ cầm một trương",
+    "Khúc nhà tay lựa nên chương một thiên bạc mệnh lại càng não nhân",
+    "Phong lưu rất mực hồng quần xuân xanh xấp xỉ tới tuần cập kê",
+    "Êm đềm trướng rủ màn che tường đông ong bướm đi về mặc ai",
+    "Ngày xuân con én đưa thoi thiều quang chín chục đã ngoài sáu mươi",
+    "Cỏ non xanh tận chân trời cành lê trắng điểm một vài bông hoa"
+];
+
+let typingTimer = null;
+let timeLeft = 60;
+let timeLimit = 60;
+let isTyping = false;
+let totalChars = 0;
+let correctChars = 0;
+let wpmHistory = [];
+let typingChart = null;
+let currentText = "";
+let currentLang = 'vi';
+
+function initTypingTest() {
+    resetTypingTest();
+    
+    // Setup Input Listener
+    const input = document.getElementById('typingInput');
+    input.removeEventListener('input', handleTyping); // Prevent duplicates
+    input.addEventListener('input', handleTyping);
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        ['lang', 'time'].forEach(type => {
+            const dropdown = document.getElementById(`${type}DropdownMenu`);
+            const btn = document.getElementById(`${type}DropdownBtn`);
+            if (!dropdown || !btn) return;
+            
+            if (!btn.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.add('hidden');
+                document.getElementById(`${type}DropdownArrow`).classList.remove('rotate-180');
+            }
+        });
+    });
+}
+
+function toggleTypingDropdown(type) {
+    // Close other dropdowns first
+    ['lang', 'time'].forEach(t => {
+        if (t !== type) {
+            document.getElementById(`${t}DropdownMenu`).classList.add('hidden');
+            document.getElementById(`${t}DropdownArrow`).classList.remove('rotate-180');
+        }
+    });
+
+    const dropdown = document.getElementById(`${type}DropdownMenu`);
+    const arrow = document.getElementById(`${type}DropdownArrow`);
+    
+    dropdown.classList.toggle('hidden');
+    arrow.classList.toggle('rotate-180');
+}
+
+function selectTypingOption(type, value, text) {
+    document.getElementById(`${type}SelectedText`).innerText = text;
+    
+    // Update check icons
+    document.querySelectorAll(`.typing-option-${type}`).forEach(option => {
+        const check = option.querySelector('.check-icon');
+        const textSpan = option.querySelector('span');
+        if (option.dataset.value === value) {
+            check.classList.remove('opacity-0');
+            check.classList.add('opacity-100');
+            textSpan.classList.add('text-blue-700');
+            textSpan.classList.add('font-semibold');
+        } else {
+            check.classList.remove('opacity-100');
+            check.classList.add('opacity-0');
+            textSpan.classList.remove('text-blue-700');
+            textSpan.classList.remove('font-semibold');
+        }
+    });
+    
+    // Close dropdown
+    document.getElementById(`${type}DropdownMenu`).classList.add('hidden');
+    document.getElementById(`${type}DropdownArrow`).classList.remove('rotate-180');
+
+    // Logic updates
+    if (type === 'lang') {
+        currentLang = value;
+        document.getElementById('typingLang').value = value;
+        resetTypingTest();
+    } else if (type === 'time') {
+        timeLimit = parseInt(value);
+        document.getElementById('timeLimitSelect').value = value;
+        resetTypingTest();
+    }
+}
+
+function generateText() {
+    // Generate random text (about 50 words)
+    let text = "";
+    const source = currentLang === 'vi' ? SAMPLE_TEXTS_VI : SAMPLE_TEXTS_EN;
+    
+    for(let i=0; i<10; i++) {
+        text += source[Math.floor(Math.random() * source.length)] + " ";
+    }
+    currentText = text.trim();
+    
+    const display = document.getElementById('typingTextDisplay');
+    display.innerHTML = '';
+    
+    // Split into spans for individual character styling
+    currentText.split('').forEach(char => {
+        const span = document.createElement('span');
+        span.innerText = char;
+        display.appendChild(span);
+    });
+}
+
+function resetTypingTest() {
+    clearInterval(typingTimer);
+    isTyping = false;
+    timeLeft = timeLimit;
+    totalChars = 0;
+    correctChars = 0;
+    wpmHistory = [];
+    
+    document.getElementById('typingInput').value = '';
+    document.getElementById('typingInput').disabled = false;
+    document.getElementById('typingInput').focus();
+    
+    document.getElementById('timeDisplay').innerText = timeLeft + 's';
+    document.getElementById('wpmDisplay').innerText = '0';
+    document.getElementById('accuracyDisplay').innerText = '100%';
+    document.getElementById('charCountDisplay').innerText = '0';
+    document.getElementById('focusOverlay').classList.remove('hidden');
+    
+    generateText();
+    initChart();
+}
+
+function handleTyping(e) {
+    if (!isTyping) {
+        startTyping();
+    }
+    
+    const inputVal = e.target.value;
+    const spans = document.getElementById('typingTextDisplay').querySelectorAll('span');
+    
+    totalChars = inputVal.length;
+    correctChars = 0;
+    
+    // Update UI for each character
+    spans.forEach((span, index) => {
+        const char = inputVal[index];
+        
+        if (char == null) {
+            span.classList.remove('text-green-600', 'text-red-500', 'bg-red-100', 'bg-green-100');
+            span.classList.add('text-slate-400');
+        } else if (char === span.innerText) {
+            span.classList.remove('text-slate-400', 'text-red-500', 'bg-red-100');
+            span.classList.add('text-green-600', 'bg-green-100');
+            correctChars++;
+        } else {
+            span.classList.remove('text-slate-400', 'text-green-600', 'bg-green-100');
+            span.classList.add('text-red-500', 'bg-red-100');
+        }
+    });
+    
+    // Auto scroll to current line if needed (simple implementation)
+    // In a real app, we'd calculate offsetTop
+    
+    updateStats();
+    
+    // If finished text, generate more
+    if (inputVal.length >= currentText.length) {
+        generateText();
+        e.target.value = ''; // Clear input but keep stats? 
+        // For simplicity, let's just append text or reset input. 
+        // Resetting input complicates index matching.
+        // Let's just generate a very long text initially or append.
+        // For this version, let's just stop if they finish (unlikely with 10 sentences)
+    }
+}
+
+function startTyping() {
+    isTyping = true;
+    document.getElementById('focusOverlay').classList.add('hidden');
+    
+    typingTimer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timeDisplay').innerText = timeLeft + 's';
+        
+        // Update WPM every second for chart
+        const timeElapsed = timeLimit - timeLeft;
+        const wpm = Math.round((correctChars / 5) / (timeElapsed / 60));
+        if (timeElapsed > 0) {
+            updateChart(timeElapsed, wpm);
+        }
+        
+        if (timeLeft <= 0) {
+            endTypingTest();
+        }
+    }, 1000);
+}
+
+function endTypingTest() {
+    clearInterval(typingTimer);
+    isTyping = false;
+    document.getElementById('typingInput').disabled = true;
+    
+    // Final Stats
+    updateStats();
+}
+
+function updateStats() {
+    const timeElapsed = timeLimit - timeLeft;
+    if (timeElapsed === 0) return;
+    
+    const wpm = Math.round((correctChars / 5) / (timeElapsed / 60));
+    const accuracy = totalChars > 0 ? Math.round((correctChars / totalChars) * 100) : 100;
+    
+    document.getElementById('wpmDisplay').innerText = wpm;
+    document.getElementById('accuracyDisplay').innerText = accuracy + '%';
+    document.getElementById('charCountDisplay').innerText = correctChars;
+}
+
+function initChart() {
+    const ctx = document.getElementById('typingChart').getContext('2d');
+    
+    if (typingChart) {
+        typingChart.destroy();
+    }
+    
+    typingChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'WPM',
+                data: [],
+                borderColor: 'rgb(37, 99, 235)', // blue-600
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#f1f5f9' // slate-100
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            animation: {
+                duration: 0
+            }
+        }
+    });
+}
+
+function updateChart(time, wpm) {
+    if (!typingChart) return;
+    
+    typingChart.data.labels.push(time + 's');
+    typingChart.data.datasets[0].data.push(wpm);
+    typingChart.update();
+}
+
+

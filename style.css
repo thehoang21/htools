@@ -1,351 +1,363 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-            --sidebar-width: 16rem;
-            --sidebar-collapsed-width: 5rem;
-        }
+  --sidebar-width: 16rem;
+  --sidebar-collapsed-width: 5rem;
+}
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* slate-50 */
-            color: #0f172a; /* slate-900 */
-            -webkit-tap-highlight-color: transparent;
-            overscroll-behavior-y: none; 
-        }
-        
-        /* --- CUSTOM SCROLLBAR --- */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #f8fafc; /* slate-50 */
+  color: #0f172a; /* slate-900 */
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
 
-        /* --- INPUT STYLES --- */
-        .shadcn-input {
-            height: 2.75rem;
-            width: 100%;
-            border-radius: 0.5rem;
-            border: 1px solid #e2e8f0;
-            background-color: #ffffff;
-            padding: 0.5rem 0.75rem;
-            font-size: 0.95rem;
-            line-height: 1.25rem;
-            transition: all 0.2s ease;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        
-        /* Fix iOS/iPad Zoom on focus: Force 16px */
-        @media screen and (max-width: 768px) {
-            .shadcn-input, input, textarea, select {
-                font-size: 16px !important; 
-            }
-        }
-        
-        .shadcn-input:focus {
-            outline: none;
-            border-color: #2563eb; 
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); 
-        }
+/* --- CUSTOM SCROLLBAR --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
 
-        .shadcn-input:disabled {
-            cursor: not-allowed;
-            opacity: 0.7;
-            background-color: #f8fafc;
-            border-color: #e2e8f0;
-        }
+/* --- INPUT STYLES --- */
+.shadcn-input {
+  height: 2.75rem;
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.25rem;
+  transition: all 0.2s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
 
-        .shadcn-label {
-            font-size: 0.875rem;
-            font-weight: 500;
-            line-height: 1;
-            color: #334155;
-            margin-bottom: 0.4rem;
-            display: block;
-        }
+/* Fix iOS/iPad Zoom on focus: Force 16px */
+@media screen and (max-width: 768px) {
+  .shadcn-input,
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
 
-        .material-symbols-outlined {
-            font-size: 20px;
-            vertical-align: middle;
-            user-select: none;
-        }
+.shadcn-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
 
-        /* Smaller info icon */
-        .text-\[16px\] {
-            font-size: 18px !important;
-        }
-        
-        .shadcn-card {
-            border-radius: 0.75rem;
-            border: 1px solid #e2e8f0;
-            background-color: white;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        }
+.shadcn-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+}
 
-        .tooltip-trigger {
-            cursor: help;
-        }
+.shadcn-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  color: #334155;
+  margin-bottom: 0.4rem;
+  display: block;
+}
 
-        /* --- SIDEBAR ANIMATION --- */
-        .sidebar-transition {
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+.material-symbols-outlined {
+  font-size: 20px;
+  vertical-align: middle;
+  user-select: none;
+}
 
-        .nav-text {
-            transition: opacity 0.2s ease-in-out, width 0.2s ease-in-out;
-            opacity: 1;
-            white-space: nowrap;
-            overflow: hidden;
-        }
+/* Smaller info icon */
+.text-\[16px\] {
+  font-size: 18px !important;
+}
 
-        .sidebar-collapsed .nav-text {
-            opacity: 0;
-            width: 0;
-            pointer-events: none;
-        }
-        
-        .sidebar-collapsed .nav-item {
-            justify-content: center;
-            padding-left: 0;
-            padding-right: 0;
-        }
+.shadcn-card {
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  background-color: white;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
 
-        .nav-item.active {
-            background-color: #eff6ff; 
-            color: #2563eb; 
-            font-weight: 600;
-            border: 1px solid #dbeafe;
-        }
-        
-        .nav-item:hover:not(.active) {
-            background-color: #f8fafc;
-            color: #0f172a;
-        }
+.tooltip-trigger {
+  cursor: help;
+}
 
-        .nav-item {
-            color: #64748b;
-            border: 1px solid transparent;
-        }
-        
-        /* Safe Area Padding for iOS Devices */
-        .pb-safe {
-            padding-bottom: env(safe-area-inset-bottom, 20px);
-        }
+/* --- SIDEBAR ANIMATION --- */
+.sidebar-transition {
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-text {
+  transition: opacity 0.2s ease-in-out, width 0.2s ease-in-out;
+  opacity: 1;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar-collapsed .nav-text {
+  opacity: 0;
+  width: 0;
+  pointer-events: none;
+}
+
+.sidebar-collapsed .nav-item {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.nav-item.active {
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-weight: 600;
+  border: 1px solid #dbeafe;
+}
+
+.nav-item:hover:not(.active) {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.nav-item {
+  color: #64748b;
+  border: 1px solid transparent;
+}
+
+/* Safe Area Padding for iOS Devices */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
 
 /* --- RESPONSIVE OPTIMIZATIONS --- */
 
 /* Mobile & Tablet (Small Screens) - Updated to include iPad Pro Portrait (1024px) and Landscape (1194px) */
 @media (max-width: 1279px) {
-    /* Allow body scroll instead of nested scroll for better mobile feel */
-    .h-screen {
-        height: auto !important;
-        min-height: 100vh;
-    }
-    .overflow-hidden {
-        overflow: visible !important;
-    }
-    main.overflow-y-auto {
-        overflow: visible !important;
-    }
+  /* Allow body scroll instead of nested scroll for better mobile feel */
+  .h-screen {
+    height: auto !important;
+    min-height: 100vh;
+  }
+  .overflow-hidden {
+    overflow: visible !important;
+  }
+  main.overflow-y-auto {
+    overflow: visible !important;
+  }
 
-    /* Input font size fix for iOS to prevent zoom */
-    .shadcn-input, input, textarea, select {
-        font-size: 16px !important; 
-        min-height: 44px; /* Larger touch target */
-    }
-    
-    /* Button touch targets */
-    button {
-        min-height: 44px;
-    }
-    
-    /* Footer: Static position, full width, white background */
-    footer {
-        position: static !important;
-        width: 100% !important;
-        padding-bottom: env(safe-area-inset-bottom, 20px);
-        background-color: white !important;
-        border-top: 1px solid #f1f5f9;
-        margin-top: auto; /* Push to bottom if flex container */
-    }
-    
-    /* Main content area adjustments */
-    main {
-        min-height: auto !important;
-        padding: 1rem !important; /* Reduced padding */
-    }
-    
-    /* Card adjustments */
-    .shadcn-card {
-        padding: 1rem !important; /* Reduced padding */
-    }
-    
-    /* Typography adjustments */
-    h2#pageTitle {
-        font-size: 1.125rem; /* 18px */
-    }
-    
-    h3 {
-        font-size: 1rem !important; /* 16px */
-    }
-    
-    .shadcn-label {
-        font-size: 0.875rem; /* 14px */
-        margin-bottom: 0.25rem;
-        display: block;
-    }
-    
-    /* Spacing adjustments */
-    .space-y-5 {
-        gap: 1rem !important; /* Reduced gap */
-    }
-    
-    .gap-5 {
-        gap: 1rem !important;
-    }
-    
-    /* Salary Tab: Reorder Result to Top */
-    #tab-salary .grid {
-        display: flex;
-        flex-direction: column;
-    }
-    
-    #tab-salary .grid > div:last-child {
-        order: -1; /* Move Results column to top */
-    }
+  /* Input font size fix for iOS to prevent zoom */
+  .shadcn-input,
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+    min-height: 44px; /* Larger touch target */
+  }
 
-    /* Ensure full width for flex children in Salary Tab */
-    #tab-salary .grid > div {
-        width: 100% !important;
-    }
-    
-    /* Sticky header disabled on mobile */
-    .lg\:sticky, .xl\:sticky {
-        position: static !important;
-    }
+  /* Button touch targets */
+  button {
+    min-height: 44px;
+  }
+
+  /* Footer: Static position, full width, white background */
+  footer {
+    position: static !important;
+    width: 100% !important;
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+    background-color: white !important;
+    border-top: 1px solid #f1f5f9;
+    margin-top: auto; /* Push to bottom if flex container */
+  }
+
+  /* Main content area adjustments */
+  main {
+    min-height: auto !important;
+    padding: 1rem !important; /* Reduced padding */
+  }
+
+  /* Card adjustments */
+  .shadcn-card {
+    padding: 1rem !important; /* Reduced padding */
+  }
+
+  /* Typography adjustments */
+  h2#pageTitle {
+    font-size: 1.125rem; /* 18px */
+  }
+
+  h3 {
+    font-size: 1rem !important; /* 16px */
+  }
+
+  .shadcn-label {
+    font-size: 0.875rem; /* 14px */
+    margin-bottom: 0.25rem;
+    display: block;
+  }
+
+  /* Spacing adjustments */
+  .space-y-5 {
+    gap: 1rem !important; /* Reduced gap */
+  }
+
+  .gap-5 {
+    gap: 1rem !important;
+  }
+
+  /* Salary Tab: Reorder Result to Top */
+  #tab-salary .grid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #tab-salary .grid > div:last-child {
+    order: -1; /* Move Results column to top */
+  }
+
+  /* Ensure full width for flex children in Salary Tab */
+  #tab-salary .grid > div {
+    width: 100% !important;
+  }
+
+  /* Sticky header disabled on mobile */
+  .lg\:sticky,
+  .xl\:sticky {
+    position: static !important;
+  }
 }
 
 /* Small Mobile (Phones) */
 @media (max-width: 640px) {
-    /* Further reduce padding */
-    main {
-        padding: 0.75rem !important;
-    }
-    
-    .shadcn-card {
-        padding: 0.875rem !important;
-    }
-    
-    /* Adjust button sizes */
-    button {
-        padding-left: 0.75rem !important;
-        padding-right: 0.75rem !important;
-        font-size: 0.8125rem !important; /* 13px */
-    }
-    
-    /* Report text area */
-    #reportText {
-        max-height: 200px;
-        font-size: 12px;
-    }
-    
-    /* Note box text size */
-    .note-box, .text-xs {
-        font-size: 0.75rem !important; /* 12px */
-    }
+  /* Further reduce padding */
+  main {
+    padding: 0.75rem !important;
+  }
+
+  .shadcn-card {
+    padding: 0.875rem !important;
+  }
+
+  /* Adjust button sizes */
+  button {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    font-size: 0.8125rem !important; /* 13px */
+  }
+
+  /* Report text area */
+  #reportText {
+    max-height: 200px;
+    font-size: 12px;
+  }
+
+  /* Note box text size */
+  .note-box,
+  .text-xs {
+    font-size: 0.75rem !important; /* 12px */
+  }
 }
 
 /* Desktop (Large Screens) */
 @media (min-width: 1280px) {
-    .export-btn-icon-only {
-        display: none;
-    }
-    
-    /* Ensure footer stays at bottom if content is short */
-    body > div {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    main {
-        flex: 1;
-    }
+  .export-btn-icon-only {
+    display: none;
+  }
+
+  /* Ensure footer stays at bottom if content is short */
+  body > div {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  main {
+    flex: 1;
+  }
 }
 
 /* Cải thiện scroll cho textarea report */
 #reportText {
-    max-height: 300px;
-    overflow-y: auto;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 @media (max-width: 640px) {
-    #reportText {
-        max-height: 200px;
-        font-size: 11px;
-    }
+  #reportText {
+    max-height: 200px;
+    font-size: 11px;
+  }
 }
 
 /* --- DROPDOWN ANIMATION --- */
 @keyframes fadeInZoom {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .animate-in {
-    animation: fadeInZoom 0.1s ease-out forwards;
+  animation: fadeInZoom 0.1s ease-out forwards;
 }
 
-/* --- CUSTOM CHECKBOX --- */
+/* --- CUSTOM CHECKBOX (Giữ lại vì sử dụng SVG background phức tạp) --- */
 .custom-checkbox {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 1.25rem; /* 20px */
-    height: 1.25rem;
-    min-width: 1.25rem; /* Prevent shrinking */
-    min-height: 1.25rem;
-    border: 2px solid #cbd5e1; /* slate-300 */
-    border-radius: 0.35rem; /* rounded-md approx */
-    background-color: white;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.2s ease;
-    flex-shrink: 0; /* Prevent checkbox from shrinking in flex containers */
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  min-width: 1.25rem;
+  min-height: 1.25rem;
+  border: 2px solid #cbd5e1;
+  border-radius: 0.35rem;
+  background-color: white;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .custom-checkbox:checked {
-    background-color: #2563eb; /* blue-600 */
-    border-color: #2563eb;
-    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
-    background-size: 100% 100%;
-    background-position: center;
-    background-repeat: no-repeat;
+  background-color: #2563eb;
+  border-color: #2563eb;
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .custom-checkbox:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #eff6ff, 0 0 0 4px #60a5fa; /* ring-blue-50 & blue-400 */
+  outline: none;
+  box-shadow: 0 0 0 2px #eff6ff, 0 0 0 4px #60a5fa;
 }
 
-/* Mobile optimization for checkboxes */
 @media (max-width: 768px) {
-    .custom-checkbox {
-        width: 1.125rem; /* 18px on mobile */
-        height: 1.125rem;
-        min-width: 1.125rem;
-        min-height: 1.125rem;
-    }
+  .custom-checkbox {
+    width: 1.125rem;
+    height: 1.125rem;
+    min-width: 1.125rem;
+    min-height: 1.125rem;
+  }
 }

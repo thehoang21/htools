@@ -8,8 +8,33 @@
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HTools</title>
 
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    keyframes: {
+                        fadeInZoom: {
+                            '0%': { opacity: '0', transform: 'scale(0.95)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' },
+                        }
+                    },
+                    animation: {
+                        'in': 'fadeInZoom 0.1s ease-out forwards',
+                        'fade-in': 'fadeInZoom 0.2s ease-out forwards',
+                    }
+                }
+            }
+        }
+    </script>
 
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,19 +42,35 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Google Material Symbols -->
-    <!-- Google Material Symbols -->
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
     <!-- Docx & FileSaver -->
     <script src="https://unpkg.com/docx@7.1.0/build/index.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <link rel="icon" type="image/png" href="./images/favicon.png">
     <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* Các utility bổ sung cho Material Symbols để căn chỉnh tốt hơn với Tailwind */
+        .material-symbols-outlined {
+            font-size: 20px;
+            vertical-align: middle;
+            user-select: none;
+        }
+
+        .text-\[16px\] {
+            font-size: 18px !important;
+        }
+    </style>
 </head>
 
-<body class="h-screen overflow-hidden flex bg-slate-50">
+<body
+    class="h-screen overflow-hidden flex bg-slate-50 text-slate-900 font-sans antialiased selection:bg-blue-100 selection:text-blue-700">
 
     <!-- Mobile Overlay Backdrop -->
     <div id="mobileOverlay" onclick="toggleMobileSidebar()"
@@ -64,9 +105,9 @@
     </div>
 
     <!-- SIDEBAR -->
-    <!-- Logic: Hidden on mobile/tablet portrait (<1280px), Visible on desktop/tablet landscape (>=1280px) -->
+    <!-- Thêm class 'group' để xử lý logic collapsed bằng Tailwind variants -->
     <aside id="sidebar"
-        class="fixed xl:static inset-y-0 left-0 z-50 bg-white border-r border-slate-200 flex flex-col w-64 sidebar-transition transform -translate-x-full xl:translate-x-0 shadow-xl xl:shadow-none h-full">
+        class="group fixed xl:static inset-y-0 left-0 z-50 bg-white border-r border-slate-200 flex flex-col w-64 transition-[width,transform] duration-300 cubic-bezier(0.4,0,0.2,1) transform -translate-x-full xl:translate-x-0 shadow-xl xl:shadow-none h-full">
         <!-- Collapse Button (Desktop Only) -->
         <button onclick="toggleSidebarCollapse()"
             class="hidden xl:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-slate-200 rounded-full items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-400 shadow-sm z-50 transition-all focus:outline-none hover:scale-110 active:scale-95">
@@ -74,45 +115,78 @@
         </button>
 
         <div
-            class="h-16 flex items-center justify-between px-5 border-b border-slate-100 shrink-0 overflow-hidden whitespace-nowrap bg-white">
-            <div class="flex items-center gap-3">
+            class="h-16 flex items-center justify-between px-5 border-b border-slate-100 shrink-0 overflow-hidden whitespace-nowrap bg-white group-[.sidebar-collapsed]:justify-center group-[.sidebar-collapsed]:px-0">
+            <div class="flex items-center gap-3 transition-all duration-200">
                 <div
                     class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-600/20">
                     <span class="material-symbols-outlined text-[22px]">build</span>
                 </div>
-                <div class="flex flex-col nav-text">
+                <div
+                    class="flex flex-col transition-all duration-200 opacity-100 w-auto group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:w-0 group-[.sidebar-collapsed]:overflow-hidden">
                     <span class="font-bold text-lg text-slate-800 tracking-tight leading-tight">HTools</span>
                     <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Phiên bản 1.7</span>
                 </div>
             </div>
             <!-- Mobile Close Button -->
-            <button onclick="toggleMobileSidebar()" class="xl:hidden p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+            <button onclick="toggleMobileSidebar()"
+                class="xl:hidden p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
 
         <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-2">
+            <!-- Nav Items: Sử dụng [&.active] để style class active do JS thêm vào -->
+            <button onclick="switchTab('time')" id="nav-time"
+                class="nav-item active w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-left relative overflow-hidden text-slate-500 border border-transparent hover:bg-slate-50 hover:text-slate-900 [&.active]:bg-blue-50 [&.active]:text-blue-600 [&.active]:font-semibold [&.active]:border-blue-100 group-[.sidebar-collapsed]:justify-center group-[.sidebar-collapsed]:px-0">
+                <span class="material-symbols-outlined shrink-0">globe</span>
+                <span
+                    class="font-medium text-sm transition-all duration-200 opacity-100 whitespace-nowrap group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:w-0 group-[.sidebar-collapsed]:overflow-hidden">Thời gian</span>
+            </button>
+
             <button onclick="switchTab('calculator')" id="nav-calculator"
-                class="nav-item active w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-left group/item relative overflow-hidden">
+                class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-left relative overflow-hidden text-slate-500 border border-transparent hover:bg-slate-50 hover:text-slate-900 [&.active]:bg-blue-50 [&.active]:text-blue-600 [&.active]:font-semibold [&.active]:border-blue-100 group-[.sidebar-collapsed]:justify-center group-[.sidebar-collapsed]:px-0">
                 <span class="material-symbols-outlined shrink-0">pending_actions</span>
-                <span class="nav-text font-medium text-sm">Tính Công</span>
+                <span
+                    class="font-medium text-sm transition-all duration-200 opacity-100 whitespace-nowrap group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:w-0 group-[.sidebar-collapsed]:overflow-hidden">Tính
+                    Công</span>
             </button>
 
             <button onclick="switchTab('salary')" id="nav-salary"
-                class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-left group/item relative overflow-hidden">
+                class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-left relative overflow-hidden text-slate-500 border border-transparent hover:bg-slate-50 hover:text-slate-900 [&.active]:bg-blue-50 [&.active]:text-blue-600 [&.active]:font-semibold [&.active]:border-blue-100 group-[.sidebar-collapsed]:justify-center group-[.sidebar-collapsed]:px-0">
                 <span class="material-symbols-outlined shrink-0">payments</span>
-                <span class="nav-text font-medium text-sm">Tính Lương Tháng</span>
+                <span
+                    class="font-medium text-sm transition-all duration-200 opacity-100 whitespace-nowrap group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:w-0 group-[.sidebar-collapsed]:overflow-hidden">Tính
+                    Lương Tháng</span>
             </button>
 
             <button onclick="switchTab('tax')" id="nav-tax"
-                class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-left group/item relative overflow-hidden">
+                class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-left relative overflow-hidden text-slate-500 border border-transparent hover:bg-slate-50 hover:text-slate-900 [&.active]:bg-blue-50 [&.active]:text-blue-600 [&.active]:font-semibold [&.active]:border-blue-100 group-[.sidebar-collapsed]:justify-center group-[.sidebar-collapsed]:px-0">
                 <span class="material-symbols-outlined shrink-0">calculate</span>
-                <span class="nav-text font-medium text-sm">Tính Thuế TNCN</span>
+                <span class="font-medium text-sm transition-all duration-200 opacity-100 whitespace-nowrap group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:w-0 group-[.sidebar-collapsed]:overflow-hidden">Tính Thuế TNCN</span>
+            </button>
+
+            <button onclick="switchTab('compound')" id="nav-compound"
+                class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-left relative overflow-hidden text-slate-500 border border-transparent hover:bg-slate-50 hover:text-slate-900 [&.active]:bg-blue-50 [&.active]:text-blue-600 [&.active]:font-semibold [&.active]:border-blue-100 group-[.sidebar-collapsed]:justify-center group-[.sidebar-collapsed]:px-0">
+                <span class="material-symbols-outlined shrink-0">savings</span>
+                <span class="font-medium text-sm transition-all duration-200 opacity-100 whitespace-nowrap group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:w-0 group-[.sidebar-collapsed]:overflow-hidden">Tính Lãi Suất Kép</span>
+            </button>
+
+            <button onclick="switchTab('sorting')" id="nav-sorting"
+                class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-left relative overflow-hidden text-slate-500 border border-transparent hover:bg-slate-50 hover:text-slate-900 [&.active]:bg-blue-50 [&.active]:text-blue-600 [&.active]:font-semibold [&.active]:border-blue-100 group-[.sidebar-collapsed]:justify-center group-[.sidebar-collapsed]:px-0">
+                <span class="material-symbols-outlined shrink-0">bar_chart</span>
+                <span class="font-medium text-sm transition-all duration-200 opacity-100 whitespace-nowrap group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:w-0 group-[.sidebar-collapsed]:overflow-hidden">Biểu Diễn Thuật Toán</span>
+            </button>
+
+            <button onclick="switchTab('typing')" id="nav-typing"
+                class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-left relative overflow-hidden text-slate-500 border border-transparent hover:bg-slate-50 hover:text-slate-900 [&.active]:bg-blue-50 [&.active]:text-blue-600 [&.active]:font-semibold [&.active]:border-blue-100 group-[.sidebar-collapsed]:justify-center group-[.sidebar-collapsed]:px-0">
+                <span class="material-symbols-outlined shrink-0">keyboard</span>
+                <span class="font-medium text-sm transition-all duration-200 opacity-100 whitespace-nowrap group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:w-0 group-[.sidebar-collapsed]:overflow-hidden">Kiểm Tra Tốc Độ Gõ</span>
             </button>
         </nav>
 
-        <div class="p-4 border-t border-slate-100 nav-text bg-slate-50/50">
-            <div class="flex items-center gap-2 text-xs text-slate-400">
+        <div
+            class="p-4 border-t border-slate-100 bg-slate-50/50 transition-all duration-200 group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:w-0 group-[.sidebar-collapsed]:overflow-hidden group-[.sidebar-collapsed]:p-0">
+            <div class="flex items-center gap-2 text-xs text-slate-400 whitespace-nowrap">
                 <span class="material-symbols-outlined text-[14px]">verified_user</span>
                 <span>Dữ liệu lưu trên máy bạn</span>
             </div>
@@ -130,15 +204,64 @@
                     <span class="material-symbols-outlined">menu</span>
                 </button>
                 <h2 id="pageTitle"
-                    class="text-lg font-bold text-slate-800 tracking-tight truncate max-w-[200px] sm:max-w-none">Tính
-                    Công</h2>
+                    class="text-lg font-bold text-slate-800 tracking-tight truncate max-w-[200px] sm:max-w-none xl:text-[1.125rem]">
+                    Thời gian</h2>
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-4 xl:p-8 scroll-smooth pb-safe relative">
+        <main
+            class="flex-1 overflow-y-auto p-4 xl:p-8 scroll-smooth pb-[env(safe-area-inset-bottom,20px)] relative xl:min-h-0">
+
+            <!-- TAB 0: DASHBOARD -->
+            <div id="tab-time" class="tab-content w-full space-y-5 animate-fade-in pb-4">
+                <!-- Clock Section -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col items-center justify-center text-center min-h-[200px] relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <div class="text-sm font-medium text-slate-500 uppercase tracking-widest mb-2" id="timeDate">Loading date...</div>
+                        <div class="text-6xl sm:text-7xl md:text-8xl font-bold text-slate-800 tracking-tighter font-mono" id="timeClock">00:00:00</div>
+                        <div class="mt-2 flex items-center justify-center gap-2 text-blue-600 bg-blue-50 px-3 py-1 rounded-full text-xs font-semibold">
+                            <span class="material-symbols-outlined text-[16px]">public</span>
+                            <span>Giờ địa phương</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Section -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-1 overflow-hidden h-[650px] relative group">
+                    <div id="worldMap" class="w-full h-full rounded-lg z-0"></div>
+                    
+                    <!-- Country Info Overlay (Hidden by default) -->
+                    <div id="countryInfoOverlay" class="absolute bottom-4 left-4 right-4 sm:right-auto sm:w-96 bg-white/90 backdrop-blur-md border border-slate-200 shadow-lg rounded-xl p-5 transform translate-y-[120%] transition-transform duration-300 z-[1000]">
+                        <div class="flex items-start justify-between mb-3">
+                            <h3 class="font-bold text-lg text-slate-800 flex items-start gap-2 leading-tight pr-6">
+                                <span class="material-symbols-outlined text-blue-600 mt-0.5 shrink-0">flag</span>
+                                <span id="overlayCountryName">Vietnam</span>
+                            </h3>
+                            <button onclick="closeCountryOverlay()" class="text-slate-400 hover:text-slate-600 transition-colors shrink-0">
+                                <span class="material-symbols-outlined text-[20px]">close</span>
+                            </button>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center text-sm border-b border-slate-100 pb-2">
+                                <span class="text-slate-500">Ngày hiện tại:</span>
+                                <span class="font-medium text-slate-800" id="overlayDate">--/--/----</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm border-b border-slate-100 pb-2">
+                                <span class="text-slate-500">Giờ hiện tại:</span>
+                                <span class="font-bold text-blue-600 font-mono text-xl" id="overlayTime">--:--</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-slate-500">Múi giờ:</span>
+                                <span class="font-medium text-slate-600 text-xs bg-slate-100 px-2 py-1 rounded" id="overlayTimezone">UTC</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- TAB 1: CALCULATOR -->
-            <div id="tab-calculator" class="tab-content w-full space-y-5 animate-fade-in pb-4">
+            <div id="tab-calculator" class="tab-content hidden w-full space-y-5 animate-fade-in pb-4">
                 <!-- Info Bar & Reset Button Row -->
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
                     <div
@@ -159,46 +282,50 @@
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 xl:gap-8 relative">
 
                     <!-- Left Column: Inputs -->
-                    <div class="xl:col-span-5 space-y-5">
+                    <div class="xl:col-span-6 space-y-5 h-full">
                         <!-- Time Card -->
-                        <div class="shadcn-card p-4 sm:p-5 space-y-4">
-                            <div class="flex items-center gap-2 mb-1 border-b pb-3 border-slate-50">
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-4">
+                            <div class="flex items-center gap-2 mb-1 border-b pb-3 border-slate-300">
                                 <div class="p-1.5 bg-blue-50 rounded text-blue-600">
                                     <span class="material-symbols-outlined text-[20px]">schedule</span>
                                 </div>
                                 <h3 class="font-semibold text-sm text-slate-900 uppercase tracking-wide">Thời gian làm
                                     việc</h3>
                             </div>
-                            <!-- Sub-grid for inputs: 1 col on tiny screens, 2 cols on most phones/tablets -->
+                            <!-- Sub-grid for inputs -->
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="shadcn-label">Giờ bắt đầu</label>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Giờ bắt đầu</label>
                                     <input type="time" id="startTime" value="07:30"
-                                        class="shadcn-input save-target touch-manipulation" oninput="calculate()">
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation"
+                                        oninput="calculate()">
                                 </div>
                                 <div>
-                                    <label class="shadcn-label">Giờ kết thúc</label>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Giờ kết thúc</label>
                                     <input type="time" id="endTime" value="18:00"
-                                        class="shadcn-input save-target touch-manipulation" oninput="calculate()">
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation"
+                                        oninput="calculate()">
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="shadcn-label">Nghỉ trưa từ</label>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Nghỉ trưa từ</label>
                                     <input type="time" id="breakStart" value="11:30"
-                                        class="shadcn-input save-target touch-manipulation" oninput="calculate()">
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation"
+                                        oninput="calculate()">
                                 </div>
                                 <div>
-                                    <label class="shadcn-label">Nghỉ trưa đến</label>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Nghỉ trưa đến</label>
                                     <input type="time" id="breakEnd" value="13:00"
-                                        class="shadcn-input save-target touch-manipulation" oninput="calculate()">
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation"
+                                        oninput="calculate()">
                                 </div>
                             </div>
                         </div>
 
                         <!-- Parameters Card -->
-                        <div class="shadcn-card p-4 sm:p-5 space-y-4">
-                            <div class="flex items-center gap-2 mb-1 border-b pb-3 border-slate-50">
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-4">
+                            <div class="flex items-center gap-2 mb-1 border-b pb-3 border-slate-300">
                                 <div class="p-1.5 bg-blue-50 rounded text-blue-600">
                                     <span class="material-symbols-outlined text-[20px]">tune</span>
                                 </div>
@@ -207,45 +334,49 @@
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="shadcn-label">Tính OT sau</label>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Tính OT sau</label>
                                     <input type="time" id="otThreshold" value="17:00"
-                                        class="shadcn-input save-target touch-manipulation" oninput="calculate()">
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation"
+                                        oninput="calculate()">
                                 </div>
                                 <div>
-                                    <label class="shadcn-label">Hệ số OT</label>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Hệ số OT</label>
                                     <input type="number" id="otCoeff" value="1.5" step="0.1"
-                                        class="shadcn-input save-target touch-manipulation" oninput="calculate()">
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation"
+                                        oninput="calculate()">
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="shadcn-label">Số ngày làm</label>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Số ngày làm</label>
                                     <input type="number" id="workDays" value="27"
-                                        class="shadcn-input save-target touch-manipulation" oninput="calculate()">
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation"
+                                        oninput="calculate()">
                                 </div>
                                 <div>
-                                    <label class="shadcn-label">Giờ chuẩn/ngày</label>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Giờ
+                                        chuẩn/ngày</label>
                                     <input type="number" id="standardHours" value="8" readonly
-                                        class="shadcn-input bg-slate-50 text-slate-400 cursor-not-allowed border-dashed">
+                                        class="h-11 w-full rounded-lg border border-slate-200 px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none bg-slate-50 text-slate-400 cursor-not-allowed border-dashed">
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Right Column: Results -->
-                    <div class="xl:col-span-7 space-y-5 xl:sticky xl:top-0 xl:self-start">
+                    <div class="xl:col-span-6 space-y-5 h-full">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <!-- Daily Result -->
                             <div
-                                class="shadcn-card p-5 flex flex-col justify-between hover:border-blue-300 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+                                class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between hover:border-blue-300 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
                                 <div>
-                                    <div class="flex items-center gap-2 mb-3">
+                                    <div class="flex items-center gap-2 mb-3 border-b pb-4 border-slate-300">
                                         <span
                                             class="material-symbols-outlined text-blue-500 bg-blue-50 p-1.5 rounded-md">today</span>
                                         <h3 class="text-sm font-semibold text-slate-700">Kết quả 1 Ngày</h3>
                                     </div>
                                     <div
-                                        class="text-3xl font-bold tracking-tight text-slate-900 mb-4 flex items-baseline gap-1">
+                                        class="text-2xl font-bold tracking-tight text-slate-900 mb-4 flex items-baseline gap-1">
                                         <span id="dailyCong" class="text-blue-600">-</span>
                                         <span class="text-base font-medium text-slate-400">công</span>
                                     </div>
@@ -269,16 +400,16 @@
 
                             <!-- Monthly Result -->
                             <div
-                                class="shadcn-card p-5 flex flex-col justify-between bg-gradient-to-br from-white to-green-50/50 border-green-100 hover:border-green-300 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+                                class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between bg-gradient-to-br from-white to-green-50/50 border-green-100 hover:border-green-300 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
                                 <div>
-                                    <div class="flex items-center gap-2 mb-3">
+                                    <div class="flex items-center gap-2 mb-3 border-b pb-4 border-slate-300">
                                         <span
                                             class="material-symbols-outlined text-green-600 bg-green-100 p-1.5 rounded-md">calendar_month</span>
                                         <h3 class="text-sm font-semibold text-slate-700">Tổng tháng (<span
                                                 id="displayDays">27</span> ngày)</h3>
                                     </div>
                                     <div
-                                        class="text-3xl font-bold tracking-tight text-slate-900 mb-4 flex items-baseline gap-1">
+                                        class="text-2xl font-bold tracking-tight text-slate-900 mb-4 flex items-baseline gap-1">
                                         <span id="monthlyCong" class="text-green-600">-</span>
                                         <span class="text-base font-medium text-slate-400">công</span>
                                     </div>
@@ -302,7 +433,8 @@
                         </div>
 
                         <!-- Report Card -->
-                        <div class="shadcn-card p-0 overflow-hidden flex flex-col shadow-sm">
+                        <div
+                            class="bg-white rounded-xl border border-slate-200 shadow-sm p-0 overflow-hidden flex flex-col">
                             <div
                                 class="p-3 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between backdrop-blur-sm">
                                 <h3
@@ -328,7 +460,7 @@
                             </div>
                             <div class="relative">
                                 <textarea id="reportText" rows="8"
-                                    class="w-full p-4 bg-white text-slate-600 font-mono text-xs md:text-sm resize-none focus:outline-none leading-relaxed"
+                                    class="w-full p-4 bg-white text-slate-600 font-mono text-xs md:text-sm resize-none focus:outline-none leading-relaxed max-h-[200px] sm:max-h-[300px] overflow-y-auto"
                                     readonly></textarea>
                             </div>
                         </div>
@@ -340,82 +472,75 @@
             <div id="tab-salary" class="tab-content hidden w-full space-y-5 animate-fade-in pb-4">
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 xl:gap-8 relative">
                     <!-- Left Column: Inputs -->
-                    <div class="space-y-5">
-                        <div class="shadcn-card p-5 flex flex-col h-full">
+                    <div class="space-y-5 h-full">
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col h-full">
                             <h3 class="font-bold text-lg text-slate-800 mb-5">Thông tin lương</h3>
 
                             <div class="space-y-4 flex-1">
                                 <div>
                                     <div class="flex justify-between">
-                                        <label class="shadcn-label">Lương thỏa thuận (Gross)</label>
-                                        <!-- <span class="material-symbols-outlined text-slate-400 text-[16px] cursor-help"
-                                            title="Tổng lương thỏa thuận trong hợp đồng lao động, chưa trừ bảo hiểm và thuế">info</span> -->
+                                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Lương thỏa thuận
+                                            (Gross)</label>
                                     </div>
                                     <input type="text" id="salaryGross" value="15,000,000"
-                                        class="shadcn-input save-target touch-manipulation text-right font-mono"
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation text-right font-mono"
                                         oninput="formatCurrencyInput(this)">
                                 </div>
 
                                 <div>
                                     <div class="flex justify-between">
-                                        <label class="shadcn-label">Lương đóng bảo hiểm</label>
-                                        <!-- <span class="material-symbols-outlined text-slate-400 text-[16px] cursor-help"
-                                            title="Mức lương làm cơ sở tính BHXH, BHYT, BHTN. Nếu để trống sẽ lấy bằng lương Gross. Trần: 20 lần lương cơ sở (46,8tr) cho BHXH/BHYT">info</span> -->
+                                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Lương đóng bảo
+                                            hiểm</label>
                                     </div>
                                     <input type="text" id="salaryInsurance" placeholder="Để trống nếu đóng full lương"
-                                        class="shadcn-input save-target touch-manipulation text-right font-mono"
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation text-right font-mono"
                                         oninput="formatCurrencyInput(this)">
                                 </div>
 
                                 <div>
                                     <div class="flex justify-between">
-                                        <label class="shadcn-label">Số ngày công thực tế</label>
-                                        <!-- <span class="material-symbols-outlined text-slate-400 text-[16px] cursor-help"
-                                            title="Số ngày bạn thực sự đi làm trong tháng (không tính ngày nghỉ có lương). Thường là 22-26 ngày">info</span> -->
+                                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Số ngày công thực
+                                            tế</label>
                                     </div>
                                     <input type="number" id="actualWorkDays" value="26"
-                                        class="shadcn-input save-target touch-manipulation">
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation">
                                 </div>
 
                                 <div>
                                     <div class="flex justify-between">
-                                        <label class="shadcn-label">Số ngày nghỉ hưởng lương</label>
-                                        <!-- <span class="material-symbols-outlined text-slate-400 text-[16px] cursor-help"
-                                            title="Các ngày nghỉ nhưng vẫn được hưởng lương: nghỉ phép năm, nghỉ lễ Tết, nghỉ ốm được duyệt... Lương tính theo công thức: (Lương BHXH / 26) x Số ngày nghỉ">info</span> -->
+                                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Số ngày nghỉ
+                                            hưởng lương</label>
                                     </div>
                                     <input type="number" id="paidLeaveDays" value="0"
-                                        class="shadcn-input save-target touch-manipulation">
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation">
                                 </div>
 
                                 <div>
                                     <div class="flex justify-between">
-                                        <label class="shadcn-label">Số người phụ thuộc</label>
-                                        <!-- <span class="material-symbols-outlined text-slate-400 text-[16px] cursor-help"
-                                            title="Số người phụ thuộc đã đăng ký giảm trừ thuế (con dưới 18 tuổi, bố mẹ già, vợ/chồng không có thu nhập...). Giảm trừ 4,4 triệu/người/tháng">info</span> -->
+                                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Số người phụ
+                                            thuộc</label>
                                     </div>
                                     <input type="number" id="dependents" value="0"
-                                        class="shadcn-input save-target touch-manipulation">
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation">
                                 </div>
 
                                 <div>
                                     <div class="flex justify-between">
-                                        <label class="shadcn-label">Phụ cấp & Thưởng khác</label>
-                                        <!-- <span class="material-symbols-outlined text-slate-400 text-[16px] cursor-help"
-                                            title="Các khoản thu nhập thêm: phụ cấp ăn trưa, xăng xe, điện thoại, thưởng hiệu suất, KPI... (các khoản tính vào lương chịu thuế)">info</span> -->
+                                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Phụ cấp & Thưởng
+                                            khác</label>
                                     </div>
                                     <input type="text" id="allowance" value="0"
-                                        class="shadcn-input save-target touch-manipulation text-right font-mono"
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation text-right font-mono"
                                         oninput="formatCurrencyInput(this)">
                                 </div>
 
                                 <div>
                                     <div class="flex justify-between">
-                                        <label class="shadcn-label">Các khoản trừ khác</label>
-                                        <!-- <span class="material-symbols-outlined text-slate-400 text-[16px] cursor-help"
-                                            title="Các khoản bị trừ vào lương: tiền phạt, kinh phí công đoàn (nếu có), tạm ứng, khoản nợ công ty...">info</span> -->
+                                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Các khoản trừ
+                                            khác</label>
                                     </div>
                                     <input type="text" id="otherDeductions" value="0"
-                                        class="shadcn-input save-target touch-manipulation text-right font-mono"
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation text-right font-mono"
                                         oninput="formatCurrencyInput(this)">
                                 </div>
                             </div>
@@ -432,22 +557,23 @@
                     </div>
 
                     <!-- Right Column: Results -->
-                    <div class="space-y-5 xl:sticky xl:top-0 xl:self-start">
-                        <div class="shadcn-card p-5 sm:p-6">
+                    <div class="space-y-5 h-full">
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6 h-full">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="font-bold text-lg text-slate-800">Bảng lương chi tiết</h3>
                                 <button onclick="exportSalaryReport()"
                                     class="group inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 h-8 px-3 shadow-sm active:scale-95">
-                                    <span class="material-symbols-outlined text-[16px] mr-1.5 group-hover:scale-110 transition-transform">file_download</span>
+                                    <span
+                                        class="material-symbols-outlined text-[16px] mr-1.5 group-hover:scale-110 transition-transform">file_download</span>
                                     <span class="hidden sm:inline">Xuất phiếu lương</span>
                                     <span class="sm:hidden">Xuất</span>
                                 </button>
                             </div>
 
                             <!-- Note Box -->
-                            <div class="bg-blue-50 rounded-lg p-3 mb-4 border border-blue-100">
-                                <h4 class="text-blue-700 font-semibold text-sm mb-1">Ghi chú về cách tính lương</h4>
-                                <p class="text-[10px] text-red-500 mb-1 font-medium tracking-wide">Lưu ý: Cách tính
+                            <div class="bg-blue-50 rounded-lg p-3 mb-4 border border-blue-100 text-[12px]">
+                                <h4 class="text-blue-700 font-semibold text-base mb-1">Ghi chú về cách tính lương</h4>
+                                <p class="text-[13px] text-red-500 mb-1 font-medium tracking-wide">Lưu ý: Cách tính
                                     lương này áp dụng cho Công ty Cổ phần Thương mại và Dược phẩm Ngọc Thiện</p>
                                 <ul class="text-[13px] text-blue-600 space-y-0.5 list-disc pl-4">
                                     <li>Dưới 22 công: (Lương thỏa thuận / 22) × Số ngày công thực tế</li>
@@ -513,12 +639,12 @@
                                 <div class="my-3 border-t border-dashed border-slate-200"></div>
 
                                 <div class="flex justify-between items-end">
-                                    <span class="font-bold text-base text-slate-800">Lương thực nhận (NET)</span>
+                                    <span class="font-bold text-lg text-slate-800">Lương thực nhận (NET)</span>
                                     <span class="font-bold text-lg text-green-600" id="outNetSalary">0 ₫</span>
                                 </div>
 
                                 <div
-                                    class="flex justify-between items-center pt-3 border-t border-slate-100 text-slate-500 text-[10px]">
+                                    class="flex justify-between items-center pt-3 border-t border-slate-100 text-slate-500 text-[15px]">
                                     <span>Thuế TNCN (Ước tính)</span>
                                     <span class="font-medium text-slate-700" id="outPIT">0 ₫</span>
                                 </div>
@@ -530,13 +656,13 @@
 
             <!-- TAB 4: TAX CALCULATOR -->
             <div id="tab-tax" class="tab-content hidden w-full space-y-5 animate-fade-in pb-4">
-                <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 xl:gap-8 relative">
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 xl:gap-8 relative">
                     <!-- Left Column: Inputs -->
-                    <div class="space-y-5">
-                        <div class="shadcn-card p-5 flex flex-col h-full">
+                    <div class="space-y-5 h-full">
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col h-full">
                             <div class="flex justify-between items-center mb-5">
                                 <h3 class="font-bold text-lg text-slate-800">Thông tin thu nhập</h3>
-                                <button onclick="exportTaxReport()" 
+                                <button onclick="exportTaxReport()"
                                     class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 text-sm font-medium rounded-lg transition-colors shadow-sm">
                                     <span class="material-symbols-outlined text-[18px]">file_download</span>
                                     <span class="hidden sm:inline">Xuất thông tin thuế TNCN</span>
@@ -546,91 +672,122 @@
                             <div class="space-y-4 flex-1">
                                 <div>
                                     <div class="flex justify-between">
-                                        <label class="shadcn-label">Thu nhập tháng (Gross)</label>
-                                        <!-- <span class="material-symbols-outlined text-slate-400 text-[16px] cursor-help"
-                                            title="Tổng thu nhập chịu thuế TNCN trong tháng, bao gồm lương cơ bản + phụ cấp + thưởng (trước khi trừ bảo hiểm)">info</span> -->
+                                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Thu nhập tháng
+                                            (Gross)</label>
                                     </div>
                                     <input type="text" id="taxGross" value="20,000,000"
-                                        class="shadcn-input save-target touch-manipulation text-right font-mono"
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation text-right font-mono"
                                         oninput="formatCurrencyInput(this); calculateTax()">
                                 </div>
 
                                 <div>
                                     <div class="flex justify-between">
-                                        <label class="shadcn-label">Lương đóng bảo hiểm</label>
-                                        <!-- <span class="material-symbols-outlined text-slate-400 text-[16px] cursor-help"
-                                            title="Mức lương làm cơ sở tính BHXH, BHYT, BHTN. Nếu để trống sẽ lấy bằng lương Gross. Trần: 20 lần lương cơ sở (46,8tr) cho BHXH/BHYT">info</span> -->
+                                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Lương đóng bảo
+                                            hiểm</label>
                                     </div>
                                     <input type="text" id="taxInsuranceSalary" placeholder="Mặc định bằng lương Gross"
-                                        class="shadcn-input save-target touch-manipulation text-right font-mono"
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation text-right font-mono"
                                         oninput="formatCurrencyInput(this); calculateTax()">
                                 </div>
 
                                 <div>
                                     <div class="flex justify-between">
-                                        <label class="shadcn-label">Số người phụ thuộc</label>
-                                        <!-- <span class="material-symbols-outlined text-slate-400 text-[16px] cursor-help"
-                                            title="Số người phụ thuộc được giảm trừ theo Nghị Quyết 954/2020: 4,4 triệu/người/tháng. Bao gồm: con dưới 18 tuổi, cha mẹ già, vợ/chồng không có thu nhập">info</span> -->
+                                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Số người phụ
+                                            thuộc</label>
                                     </div>
                                     <input type="number" id="taxDependents" value="0" min="0"
-                                        class="shadcn-input save-target touch-manipulation" oninput="calculateTax()">
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 save-target touch-manipulation"
+                                        oninput="calculateTax()">
                                 </div>
 
                                 <div>
-                                    <label class="shadcn-label">Vùng (Lương tối thiểu)</label>
-                                    <input type="hidden" id="taxRegion" value="1" class="save-target" onchange="calculateTax()">
-                                    
+                                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Vùng (Lương tối
+                                        thiểu)</label>
+                                    <input type="hidden" id="taxRegion" value="1" class="save-target"
+                                        onchange="calculateTax()">
+
                                     <div class="relative">
-                                        <button type="button" onclick="toggleRegionDropdown(event)" id="regionDropdownBtn"
-                                            class="shadcn-input w-full text-left flex items-center justify-between bg-white cursor-pointer hover:border-blue-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400">
-                                            <span id="regionSelectedText" class="truncate text-sm">Vùng I (4.960.000đ)</span>
-                                            <span class="material-symbols-outlined text-slate-400 text-[20px] transition-transform duration-200" id="regionDropdownArrow">expand_more</span>
+                                        <button type="button" onclick="toggleRegionDropdown(event)"
+                                            id="regionDropdownBtn"
+                                            class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 text-left flex items-center justify-between cursor-pointer hover:border-blue-400">
+                                            <span id="regionSelectedText" class="truncate text-sm">Vùng I
+                                                (4.960.000đ)</span>
+                                            <span
+                                                class="material-symbols-outlined text-slate-400 text-[20px] transition-transform duration-200"
+                                                id="regionDropdownArrow">expand_more</span>
                                         </button>
 
-                                        <div id="regionDropdownMenu" 
+                                        <div id="regionDropdownMenu"
                                             class="hidden absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-100 origin-top-left">
                                             <div class="p-1 space-y-0.5">
-                                                <div onclick="selectRegion(1, 'Vùng I (4.960.000đ)')" 
-                                                    class="region-option flex items-center justify-between px-3 py-2.5 text-sm text-slate-700 rounded-md hover:bg-blue-50 hover:text-blue-700 cursor-pointer transition-colors" data-value="1">
+                                                <div onclick="selectRegion(1, 'Vùng I (4.960.000đ)')"
+                                                    class="region-option flex items-center justify-between px-3 py-2.5 text-sm text-slate-700 rounded-md hover:bg-blue-50 hover:text-blue-700 cursor-pointer transition-colors"
+                                                    data-value="1">
                                                     <span>Vùng I (4.960.000đ)</span>
-                                                    <span class="material-symbols-outlined text-[18px] text-blue-600 opacity-0 check-icon">check</span>
+                                                    <span
+                                                        class="material-symbols-outlined text-[18px] text-blue-600 opacity-0 check-icon">check</span>
                                                 </div>
-                                                <div onclick="selectRegion(2, 'Vùng II (4.410.000đ)')" 
-                                                    class="region-option flex items-center justify-between px-3 py-2.5 text-sm text-slate-700 rounded-md hover:bg-blue-50 hover:text-blue-700 cursor-pointer transition-colors" data-value="2">
+                                                <div onclick="selectRegion(2, 'Vùng II (4.410.000đ)')"
+                                                    class="region-option flex items-center justify-between px-3 py-2.5 text-sm text-slate-700 rounded-md hover:bg-blue-50 hover:text-blue-700 cursor-pointer transition-colors"
+                                                    data-value="2">
                                                     <span>Vùng II (4.410.000đ)</span>
-                                                    <span class="material-symbols-outlined text-[18px] text-blue-600 opacity-0 check-icon">check</span>
+                                                    <span
+                                                        class="material-symbols-outlined text-[18px] text-blue-600 opacity-0 check-icon">check</span>
                                                 </div>
-                                                <div onclick="selectRegion(3, 'Vùng III (3.860.000đ)')" 
-                                                    class="region-option flex items-center justify-between px-3 py-2.5 text-sm text-slate-700 rounded-md hover:bg-blue-50 hover:text-blue-700 cursor-pointer transition-colors" data-value="3">
+                                                <div onclick="selectRegion(3, 'Vùng III (3.860.000đ)')"
+                                                    class="region-option flex items-center justify-between px-3 py-2.5 text-sm text-slate-700 rounded-md hover:bg-blue-50 hover:text-blue-700 cursor-pointer transition-colors"
+                                                    data-value="3">
                                                     <span>Vùng III (3.860.000đ)</span>
-                                                    <span class="material-symbols-outlined text-[18px] text-blue-600 opacity-0 check-icon">check</span>
+                                                    <span
+                                                        class="material-symbols-outlined text-[18px] text-blue-600 opacity-0 check-icon">check</span>
                                                 </div>
-                                                <div onclick="selectRegion(4, 'Vùng IV (3.450.000đ)')" 
-                                                    class="region-option flex items-center justify-between px-3 py-2.5 text-sm text-slate-700 rounded-md hover:bg-blue-50 hover:text-blue-700 cursor-pointer transition-colors" data-value="4">
+                                                <div onclick="selectRegion(4, 'Vùng IV (3.450.000đ)')"
+                                                    class="region-option flex items-center justify-between px-3 py-2.5 text-sm text-slate-700 rounded-md hover:bg-blue-50 hover:text-blue-700 cursor-pointer transition-colors"
+                                                    data-value="4">
                                                     <span>Vùng IV (3.450.000đ)</span>
-                                                    <span class="material-symbols-outlined text-[18px] text-blue-600 opacity-0 check-icon">check</span>
+                                                    <span
+                                                        class="material-symbols-outlined text-[18px] text-blue-600 opacity-0 check-icon">check</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <p class="text-[10px] text-slate-400 mt-1">Dùng để tính trần BHTN (20 lần Lương tối thiểu vùng)</p>
+                                    <p class="text-[10px] text-slate-400 mt-1">Dùng để tính trần BHTN (20 lần Lương tối
+                                        thiểu vùng)</p>
                                 </div>
 
                                 <div class="pt-2">
-                                    <label class="shadcn-label mb-2">Cấu hình bảo hiểm</label>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Cấu hình bảo
+                                        hiểm</label>
                                     <div class="flex flex-wrap gap-3 sm:gap-4 mt-5">
                                         <div class="flex items-center gap-2">
-                                            <input id="checkBHXH" type="checkbox" checked onchange="calculateTax()" class="custom-checkbox">
-                                            <label for="checkBHXH" class="select-none text-sm font-medium text-slate-700 cursor-pointer whitespace-nowrap">BHXH (8%)</label>
+                                            <input id="checkBHXH" type="checkbox" checked onchange="calculateTax()"
+                                                class="custom-checkbox">
+                                            <label for="checkBHXH"
+                                                class="select-none text-sm font-medium text-slate-700 cursor-pointer whitespace-nowrap">BHXH
+                                                (8%)</label>
                                         </div>
                                         <div class="flex items-center gap-2">
-                                            <input id="checkBHYT" type="checkbox" checked onchange="calculateTax()" class="custom-checkbox">
-                                            <label for="checkBHYT" class="select-none text-sm font-medium text-slate-700 cursor-pointer whitespace-nowrap">BHYT (1.5%)</label>
+                                            <input id="checkBHYT" type="checkbox" checked onchange="calculateTax()"
+                                                class="custom-checkbox">
+                                            <label for="checkBHYT"
+                                                class="select-none text-sm font-medium text-slate-700 cursor-pointer whitespace-nowrap">BHYT
+                                                (1.5%)</label>
                                         </div>
                                         <div class="flex items-center gap-2">
-                                            <input id="checkBHTN" type="checkbox" checked onchange="calculateTax()" class="custom-checkbox">
-                                            <label for="checkBHTN" class="select-none text-sm font-medium text-slate-700 cursor-pointer whitespace-nowrap">BHTN (1%)</label>
+                                            <input id="checkBHTN" type="checkbox" checked onchange="calculateTax()"
+                                                class="custom-checkbox">
+                                            <label for="checkBHTN"
+                                                class="select-none text-sm font-medium text-slate-700 cursor-pointer whitespace-nowrap">BHTN
+                                                (1%)</label>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                    <h4 class="text-xs font-bold text-blue-700 mb-2 uppercase tracking-wide">Giải thích thuật ngữ</h4>
+                                    <div class="space-y-2 text-xs text-slate-600">
+                                        <p><span class="font-semibold text-slate-800">Lương Gross:</span> Là tổng thu nhập bao gồm lương cơ bản và các khoản trợ cấp, phụ cấp, hoa hồng... chưa trừ các khoản đóng bảo hiểm và thuế TNCN.</p>
+                                        <p><span class="font-semibold text-slate-800">Lương Net:</span> Là số tiền thực tế bạn nhận được sau khi đã trừ đi các khoản bảo hiểm (BHXH, BHYT, BHTN) và thuế thu nhập cá nhân.</p>
                                     </div>
                                 </div>
                             </div>
@@ -638,16 +795,17 @@
                     </div>
 
                     <!-- Right Column: Results -->
-                    <div class="space-y-5 xl:sticky xl:top-0 xl:self-start">
-                        <div class="shadcn-card p-0 overflow-hidden">
+                    <div class="space-y-5 h-full">
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-0 overflow-hidden h-full">
                             <!-- Main Result Table -->
                             <div class="bg-slate-100/50 p-4 border-b border-slate-200">
                                 <div class="space-y-0 text-sm">
-                                    <div class="flex justify-between items-center py-2 px-2 bg-slate-200/50 rounded font-bold text-slate-800 mb-1">
+                                    <div
+                                        class="flex justify-between items-center py-2 px-2 bg-slate-200/50 rounded font-bold text-slate-800 mb-1">
                                         <span>Lương GROSS</span>
                                         <span id="resTaxGross">0</span>
                                     </div>
-                                    
+
                                     <div class="flex justify-between items-center py-2 px-2 border-b border-slate-100">
                                         <span class="text-slate-600 font-medium">Bảo hiểm xã hội (8%)</span>
                                         <span class="text-slate-800" id="resTaxBHXH">0</span>
@@ -661,7 +819,8 @@
                                         <span class="text-slate-800" id="resTaxBHTN">0</span>
                                     </div>
 
-                                    <div class="flex justify-between items-center py-2 px-2 bg-slate-200/50 rounded font-bold text-slate-800 my-1">
+                                    <div
+                                        class="flex justify-between items-center py-2 px-2 bg-slate-200/50 rounded font-bold text-slate-800 my-1">
                                         <span>Thu nhập trước thuế</span>
                                         <span id="resTaxTNTT">0</span>
                                     </div>
@@ -671,16 +830,19 @@
                                         <span class="text-slate-800" id="resTaxSelfDeduction">11,000,000</span>
                                     </div>
                                     <div class="flex justify-between items-center py-2 px-2 border-b border-slate-100">
-                                        <span class="text-slate-600 font-medium">Giảm trừ gia cảnh người phụ thuộc</span>
+                                        <span class="text-slate-600 font-medium">Giảm trừ gia cảnh người phụ
+                                            thuộc</span>
                                         <span class="text-slate-800" id="resTaxDependentDeduction">0</span>
                                     </div>
 
-                                    <div class="flex justify-between items-center py-2 px-2 bg-slate-200/50 rounded font-bold text-slate-800 my-1">
+                                    <div
+                                        class="flex justify-between items-center py-2 px-2 bg-slate-200/50 rounded font-bold text-slate-800 my-1">
                                         <span>Thu nhập chịu thuế</span>
                                         <span id="resTaxTNCT">0</span>
                                     </div>
 
-                                    <div class="flex justify-between items-center py-2 px-2 bg-white rounded border border-slate-200 font-bold text-slate-800">
+                                    <div
+                                        class="flex justify-between items-center py-2 px-2 bg-white rounded border border-slate-200 font-bold text-slate-800">
                                         <span>Thuế thu nhập cá nhân(*)</span>
                                         <span id="resTaxValue">0</span>
                                     </div>
@@ -689,7 +851,8 @@
 
                             <!-- Detailed Breakdown Table -->
                             <div class="p-4 bg-white">
-                                <h4 class="text-green-600 font-bold text-sm mb-3">(*) Chi tiết thuế thu nhập cá nhân (VNĐ)</h4>
+                                <h4 class="text-green-600 font-bold text-sm mb-3">(*) Chi tiết thuế thu nhập cá nhân
+                                    (VNĐ)</h4>
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-sm text-left">
                                         <thead class="bg-slate-100 text-slate-700 font-semibold">
@@ -707,10 +870,495 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Third Column: Announcements -->
+                    <div class="space-y-5 h-full">
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 h-full custom-scrollbar">
+                            <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                                <span class="material-symbols-outlined text-red-500 bg-red-50 p-1.5 rounded-md">campaign</span>
+                                <h3 class="font-bold text-lg text-slate-800">Thông báo mới nhất</h3>
+                            </div>
+                            
+                            <div class="space-y-6 text-sm text-slate-600">
+                                <!-- Item 1 -->
+                                <div>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">MỚI</span>
+                                        <h3 class="font-bold text-slate-800">1. Cập nhật mức lương cơ sở 2025</h3>
+                                    </div>
+                                    <p class="mb-2 text-justify text-sm leading-relaxed">Căn cứ theo <span class="text-green-600 font-semibold">Nghị định 73/2024/NĐ-CP</span>, kể từ ngày 1/7/2024, mức lương cơ sở áp dụng đối với cán bộ, công chức, viên chức và lực lượng vũ trang là <span class="font-bold text-slate-900 bg-yellow-100 px-1">2,340,000 đồng/tháng</span>.</p>
+                                    <p class="mb-1 text-sm font-medium text-slate-700">Mức lương cơ sở này dùng để:</p>
+                                    <ul class="list-disc pl-4 space-y-1 text-[13px] text-slate-500">
+                                        <li>Tính mức lương trong các bảng lương, mức phụ cấp và thực hiện các chế độ khác theo quy định của pháp luật đối với các đối tượng quy định tại Điều 2 Nghị định này;</li>
+                                        <li>Tính mức hoạt động phí, sinh hoạt phí theo quy định của pháp luật;</li>
+                                        <li>Tính các khoản trích và chế độ được hưởng theo quy định của pháp luật.</li>
+                                    </ul>
+                                </div>
+
+                                <div class="border-t border-slate-100 my-2"></div>
+
+                                <!-- Item 2 -->
+                                <div>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">MỚI</span>
+                                        <h3 class="font-bold text-slate-800">2. Lương tối thiểu vùng 2025</h3>
+                                    </div>
+                                    <p class="mb-2 text-justify text-sm leading-relaxed">Từ 01/07/2025, theo <span class="text-green-600 font-semibold">Nghị định 128/2025/NĐ-CP</span>, mức lương tối thiểu vùng giữ nguyên, nhưng thay đổi phạm vi áp dụng theo <span class="font-semibold">địa bàn cấp xã</span>.</p>
+                                    
+                                    <div class="bg-green-50 border border-green-100 p-2.5 rounded-lg mb-3">
+                                        <p class="text-green-800 text-[13px] font-medium italic leading-tight">** Danh mục địa bàn cấp xã áp dụng quy định tại Phụ lục I – trang 18 của Nghị định 128/2025/NĐ-CP</p>
+                                    </div>
+
+                                    <p class="mb-2 text-sm font-medium text-slate-700">Mức lương tối thiểu vùng (NĐ 74/2024/NĐ-CP):</p>
+                                    <ul class="space-y-1 mb-3 text-sm">
+                                        <li class="flex justify-between"><span class="text-slate-500">Vùng I:</span> <span class="font-bold text-slate-800">4.960.000 đ</span></li>
+                                        <li class="flex justify-between"><span class="text-slate-500">Vùng II:</span> <span class="font-bold text-slate-800">4.410.000 đ</span></li>
+                                        <li class="flex justify-between"><span class="text-slate-500">Vùng III:</span> <span class="font-bold text-slate-800">3.860.000 đ</span></li>
+                                        <li class="flex justify-between"><span class="text-slate-500">Vùng IV:</span> <span class="font-bold text-slate-800">3.450.000 đ</span></li>
+                                    </ul>
+
+                                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                                        <p class="font-bold text-slate-800 text-[11px] mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[15px] text-amber-500">warning</span> Lưu ý quan trọng:</p>
+                                        <p class="text-[13px] text-justify text-slate-500 leading-relaxed">Doanh nghiệp cần rà soát lại địa chỉ nơi làm việc theo danh sách mới. Nếu mức lương tối thiểu mới thấp hơn trước, vẫn tiếp tục áp dụng mức cũ.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- TAB 5: COMPOUND INTEREST -->
+            <div id="tab-compound" class="tab-content hidden w-full space-y-5 animate-fade-in pb-4">
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 xl:gap-8 relative">
+                    <!-- Left Column: Inputs -->
+                    <div class="space-y-5">
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col h-full">
+                            <h3 class="font-bold text-lg text-slate-800 mb-5">Thông tin gửi tiết kiệm</h3>
+                            
+                            <div class="space-y-4 flex-1">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Số tiền gốc ban đầu</label>
+                                    <input type="text" id="compoundPrincipal" value="100,000,000"
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 text-right font-mono"
+                                        oninput="formatCurrencyInput(this); calculateCompoundInterest()">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Lãi suất hàng năm (%)</label>
+                                    <input type="number" id="compoundRate" value="7.5" step="0.1"
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 text-right font-mono"
+                                        oninput="calculateCompoundInterest()">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Thời gian gửi (Năm)</label>
+                                    <input type="number" id="compoundYears" value="10"
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 text-right font-mono"
+                                        oninput="calculateCompoundInterest()">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Tần suất ghép lãi</label>
+                                    <input type="hidden" id="compoundFrequency" value="12" onchange="calculateCompoundInterest()">
+                                    
+                                    <div class="relative">
+                                        <button type="button" onclick="toggleFrequencyDropdown(event)" id="frequencyDropdownBtn"
+                                            class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-slate-50 text-left flex items-center justify-between cursor-pointer hover:border-blue-400">
+                                            <span id="frequencySelectedText" class="truncate text-sm">Hàng tháng (12 lần/năm)</span>
+                                            <span class="material-symbols-outlined text-slate-400 text-[20px] transition-transform duration-200" id="frequencyDropdownArrow">expand_more</span>
+                                        </button>
+
+                                        <div id="frequencyDropdownMenu" 
+                                            class="hidden absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-100 origin-top-left">
+                                            <div class="p-1 space-y-0.5">
+                                                <div onclick="selectFrequency(12, 'Hàng tháng (12 lần/năm)')" 
+                                                    class="frequency-option flex items-center justify-between px-3 py-2.5 text-sm text-slate-700 rounded-md hover:bg-blue-50 hover:text-blue-700 cursor-pointer transition-colors" data-value="12">
+                                                    <span>Hàng tháng (12 lần/năm)</span>
+                                                    <span class="material-symbols-outlined text-[18px] text-blue-600 opacity-0 check-icon">check</span>
+                                                </div>
+                                                <div onclick="selectFrequency(4, 'Hàng quý (4 lần/năm)')" 
+                                                    class="frequency-option flex items-center justify-between px-3 py-2.5 text-sm text-slate-700 rounded-md hover:bg-blue-50 hover:text-blue-700 cursor-pointer transition-colors" data-value="4">
+                                                    <span>Hàng quý (4 lần/năm)</span>
+                                                    <span class="material-symbols-outlined text-[18px] text-blue-600 opacity-0 check-icon">check</span>
+                                                </div>
+                                                <div onclick="selectFrequency(1, 'Hàng năm (1 lần/năm)')" 
+                                                    class="frequency-option flex items-center justify-between px-3 py-2.5 text-sm text-slate-700 rounded-md hover:bg-blue-50 hover:text-blue-700 cursor-pointer transition-colors" data-value="1">
+                                                    <span>Hàng năm (1 lần/năm)</span>
+                                                    <span class="material-symbols-outlined text-[18px] text-blue-600 opacity-0 check-icon">check</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Số tiền gửi thêm hàng tháng</label>
+                                    <input type="text" id="compoundContribution" value="0"
+                                        class="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base md:text-sm leading-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 text-right font-mono"
+                                        oninput="formatCurrencyInput(this); calculateCompoundInterest()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Middle Column: Results -->
+                    <div class="space-y-5 h-full">
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6 h-full">
+                            <h3 class="font-bold text-lg text-slate-800 mb-4">Kết quả dự tính</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="bg-blue-50 rounded-xl p-5 text-center border border-blue-100">
+                                    <p class="text-sm text-blue-600 font-medium mb-1">Tổng số tiền nhận được</p>
+                                    <p class="text-3xl font-bold text-blue-700 tracking-tight" id="resCompoundTotal">0 ₫</p>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                                        <p class="text-xs text-slate-500 mb-1">Tổng tiền gốc đã nộp</p>
+                                        <p class="text-lg font-bold text-slate-800" id="resCompoundPrincipal">0 ₫</p>
+                                    </div>
+                                    <div class="bg-green-50 rounded-lg p-4 border border-green-100">
+                                        <p class="text-xs text-green-600 mb-1">Tổng tiền lãi</p>
+                                        <p class="text-lg font-bold text-green-700" id="resCompoundInterest">0 ₫</p>
+                                    </div>
+                                </div>
+
+                                <div class="pt-4 border-t border-slate-100">
+                                    <p class="text-xs text-slate-400 italic text-center">
+                                        * Tính toán mang tính chất tham khảo, chưa bao gồm lạm phát và biến động lãi suất.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Information -->
+                    <div class="space-y-5 h-full">
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 h-full custom-scrollbar">
+                            <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                                <span class="material-symbols-outlined text-blue-500 bg-blue-50 p-1.5 rounded-md">info</span>
+                                <h3 class="font-bold text-lg text-slate-800">Thông tin</h3>
+                            </div>
+                            
+                            <div class="space-y-4 text-sm text-slate-600">
+                                <div>
+                                    <h4 class="font-bold text-slate-800 mb-2">Công cụ tính lãi suất kép</h4>
+                                    <p class="text-justify text-xs leading-relaxed mb-2">Lãi suất kép (Compound Interest) được Einstein nhận định là "kỳ quan thứ 8 của thế giới". Những ai hiểu được nó từ đó sẽ kiếm được tiền, ai không hiểu sẽ phải trả chi phí cho điều đó.</p>
+                                    <p class="text-justify text-xs leading-relaxed">Công cụ này giúp bạn tính toán và dự báo sự tăng trưởng "khối tài sản" (tiền gửi tiết kiệm, đầu tư) trong tương lai.</p>
+                                </div>
+
+                                <div>
+                                    <h4 class="font-bold text-slate-800 mb-2">Lãi suất kép là gì?</h4>
+                                    <p class="text-justify text-xs leading-relaxed">Lãi suất kép (lãi kép) hay còn gọi là lãi cộng dồn, nghĩa là khi đến kỳ nhận lãi, bạn lấy lãi đó nhập vào gốc để tiếp tục đầu tư cho chu kỳ tiếp theo. Cứ lặp đi lặp lại như vậy xuyên suốt thời gian đầu tư.</p>
+                                </div>
+
+                                <div>
+                                    <h4 class="font-bold text-slate-800 mb-2">Công thức tính lãi suất kép</h4>
+                                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-3 flex justify-center">
+                                        <div class="text-xl font-serif italic font-bold text-slate-800">
+                                            F<sub class="text-xs">n</sub> = P × (1 + <span class="inline-flex flex-col items-center align-middle mx-1"><span class="border-b border-slate-800 leading-none pb-0.5">i</span><span class="leading-none pt-0.5">m</span></span>)<sup class="text-xs">n × m</sup>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs font-medium text-slate-700 mb-1">Trong đó:</p>
+                                    <ul class="list-disc pl-4 space-y-1 text-[11px] text-slate-500">
+                                        <li><span class="font-bold text-slate-700">Fn</span>: Giá trị tương lai (số tiền nhận được).</li>
+                                        <li><span class="font-bold text-slate-700">P</span>: Số tiền gốc ban đầu.</li>
+                                        <li><span class="font-bold text-slate-700">i</span>: Lãi suất hàng năm (dạng thập phân, vd 10% = 0.1).</li>
+                                        <li><span class="font-bold text-slate-700">n</span>: Số năm gửi.</li>
+                                        <li><span class="font-bold text-slate-700">m</span>: Số lần ghép lãi trong 1 năm.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: SORTING VISUALIZER -->
+            <div id="tab-sorting" class="tab-content hidden w-full space-y-5 animate-fade-in pb-4">
+                <!-- Controls -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-5">
+                    <div class="flex flex-col xl:flex-row gap-4 items-end justify-between">
+                        <div class="flex flex-wrap gap-4 items-end justify-center xl:justify-start w-full xl:w-auto">
+                            
+                            <!-- Custom Algorithm Dropdown -->
+                            <div class="relative w-full sm:w-48 z-20">
+                                <label class="block text-sm font-medium text-slate-700 mb-1.5">Thuật toán</label>
+                                <button id="algoDropdownBtn" onclick="toggleAlgoDropdown(event)" class="w-full h-10 bg-white border border-slate-200 rounded-lg px-3 flex items-center justify-between text-sm text-slate-700 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                                    <span id="algoSelectedText" class="font-medium">Bubble Sort</span>
+                                    <span id="algoDropdownArrow" class="material-symbols-outlined text-slate-400 transition-transform duration-200 text-[20px]">expand_more</span>
+                                </button>
+                                
+                                <!-- Dropdown Menu -->
+                                <div id="algoDropdownMenu" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-50 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100 max-h-64 overflow-y-auto">
+                                    <div onclick="selectAlgo('bubble', 'Bubble Sort')" class="algo-option px-3 py-2.5 hover:bg-blue-50 cursor-pointer flex items-center justify-between group transition-colors" data-value="bubble">
+                                        <span class="text-sm text-slate-700 group-hover:text-blue-700 font-medium">Bubble Sort</span>
+                                        <span class="material-symbols-outlined text-blue-600 text-[18px] opacity-100 check-icon">check</span>
+                                    </div>
+                                    <div onclick="selectAlgo('quick', 'Quick Sort')" class="algo-option px-3 py-2.5 hover:bg-blue-50 cursor-pointer flex items-center justify-between group transition-colors" data-value="quick">
+                                        <span class="text-sm text-slate-700 group-hover:text-blue-700 font-medium">Quick Sort</span>
+                                        <span class="material-symbols-outlined text-blue-600 text-[18px] opacity-0 check-icon">check</span>
+                                    </div>
+                                    <div onclick="selectAlgo('selection', 'Selection Sort')" class="algo-option px-3 py-2.5 hover:bg-blue-50 cursor-pointer flex items-center justify-between group transition-colors" data-value="selection">
+                                        <span class="text-sm text-slate-700 group-hover:text-blue-700 font-medium">Selection Sort</span>
+                                        <span class="material-symbols-outlined text-blue-600 text-[18px] opacity-0 check-icon">check</span>
+                                    </div>
+                                    <div onclick="selectAlgo('insertion', 'Insertion Sort')" class="algo-option px-3 py-2.5 hover:bg-blue-50 cursor-pointer flex items-center justify-between group transition-colors" data-value="insertion">
+                                        <span class="text-sm text-slate-700 group-hover:text-blue-700 font-medium">Insertion Sort</span>
+                                        <span class="material-symbols-outlined text-blue-600 text-[18px] opacity-0 check-icon">check</span>
+                                    </div>
+                                    <div onclick="selectAlgo('merge', 'Merge Sort')" class="algo-option px-3 py-2.5 hover:bg-blue-50 cursor-pointer flex items-center justify-between group transition-colors" data-value="merge">
+                                        <span class="text-sm text-slate-700 group-hover:text-blue-700 font-medium">Merge Sort</span>
+                                        <span class="material-symbols-outlined text-blue-600 text-[18px] opacity-0 check-icon">check</span>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="sortAlgorithm" value="bubble">
+                            </div>
+                            
+                            <!-- Sliders -->
+                            <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                                <div class="flex flex-col gap-1.5 w-full sm:w-auto">
+                                    <div class="flex justify-between items-center">
+                                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kích thước</label>
+                                        <span id="sizeValue" class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">50</span>
+                                    </div>
+                                    <input type="range" id="arraySize" min="10" max="100" value="50" 
+                                        class="w-full sm:w-32 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-500 transition-all"
+                                        oninput="document.getElementById('sizeValue').innerText = this.value; generateNewArray()">
+                                </div>
+
+                                <div class="flex flex-col gap-1.5 w-full sm:w-auto">
+                                    <div class="flex justify-between items-center">
+                                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tốc độ</label>
+                                        <span id="speedValue" class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">50</span>
+                                    </div>
+                                    <input type="range" id="sortSpeed" min="1" max="100" value="50" 
+                                        class="w-full sm:w-32 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-500 transition-all"
+                                        oninput="document.getElementById('speedValue').innerText = this.value">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3 w-full xl:w-auto">
+                            <button onclick="resetSorting()" id="resetArrayBtn" class="flex-1 xl:flex-none px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-semibold rounded-lg transition-colors active:scale-95 flex items-center justify-center gap-2 h-10 shadow-sm">
+                                <span class="material-symbols-outlined text-[20px]">restart_alt</span>
+                                Reset
+                            </button>
+                            <button onclick="startSorting()" id="startSortBtn" class="flex-1 xl:flex-none px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-2 h-10 min-w-[120px]">
+                                <span class="material-symbols-outlined text-[20px]">play_arrow</span>
+                                Bắt đầu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualization Area -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-8 h-[500px] flex items-end justify-center gap-[1px] sm:gap-[2px] overflow-hidden relative" id="sortingContainer">
+                    <!-- Bars will be generated here -->
+                </div>
+                
+                <!-- Legend -->
+                <div class="flex flex-wrap justify-center gap-6 text-sm text-slate-600">
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-blue-500 rounded"></div>
+                        <span>Chưa sắp xếp</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-yellow-400 rounded"></div>
+                        <span>Đang so sánh</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-red-500 rounded"></div>
+                        <span>Đang hoán đổi</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-green-500 rounded"></div>
+                        <span>Đã sắp xếp</span>
+                    </div>
+                </div>
+
+                <!-- Algorithm Explanations -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-5 sm:p-6 border-b border-slate-100">
+                        <h3 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-blue-600">table_chart</span>
+                            So sánh thuật toán
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-slate-600">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-100">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 font-bold whitespace-nowrap">Thuật toán</th>
+                                    <th scope="col" class="px-6 py-3 font-bold whitespace-nowrap">Thời gian (TB)</th>
+                                    <th scope="col" class="px-6 py-3 font-bold whitespace-nowrap">Tốt nhất</th>
+                                    <th scope="col" class="px-6 py-3 font-bold whitespace-nowrap">Tệ nhất</th>
+                                    <th scope="col" class="px-6 py-3 font-bold whitespace-nowrap">Bộ nhớ</th>
+                                    <th scope="col" class="px-6 py-3 font-bold whitespace-nowrap">Ổn định</th>
+                                    <th scope="col" class="px-6 py-3 font-bold min-w-[300px]">Ý tưởng chính</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr class="bg-white hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">Bubble Sort</td>
+                                    <td class="px-6 py-4 font-mono text-red-600">O(n²)</td>
+                                    <td class="px-6 py-4 font-mono text-green-600">O(n)</td>
+                                    <td class="px-6 py-4 font-mono text-red-600">O(n²)</td>
+                                    <td class="px-6 py-4 font-mono text-green-600">O(1)</td>
+                                    <td class="px-6 py-4 text-green-600 font-medium">Có</td>
+                                    <td class="px-6 py-4">Hoán đổi các phần tử liền kề nếu chúng sai thứ tự. Lặp lại cho đến khi mảng được sắp xếp.</td>
+                                </tr>
+                                <tr class="bg-white hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">Selection Sort</td>
+                                    <td class="px-6 py-4 font-mono text-red-600">O(n²)</td>
+                                    <td class="px-6 py-4 font-mono text-red-600">O(n²)</td>
+                                    <td class="px-6 py-4 font-mono text-red-600">O(n²)</td>
+                                    <td class="px-6 py-4 font-mono text-green-600">O(1)</td>
+                                    <td class="px-6 py-4 text-red-500 font-medium">Không</td>
+                                    <td class="px-6 py-4">Tìm phần tử nhỏ nhất trong phần chưa sắp xếp và đưa nó về đầu.</td>
+                                </tr>
+                                <tr class="bg-white hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">Insertion Sort</td>
+                                    <td class="px-6 py-4 font-mono text-red-600">O(n²)</td>
+                                    <td class="px-6 py-4 font-mono text-green-600">O(n)</td>
+                                    <td class="px-6 py-4 font-mono text-red-600">O(n²)</td>
+                                    <td class="px-6 py-4 font-mono text-green-600">O(1)</td>
+                                    <td class="px-6 py-4 text-green-600 font-medium">Có</td>
+                                    <td class="px-6 py-4">Lấy từng phần tử và chèn nó vào đúng vị trí trong phần đã sắp xếp trước đó.</td>
+                                </tr>
+                                <tr class="bg-white hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">Quick Sort</td>
+                                    <td class="px-6 py-4 font-mono text-blue-600">O(n log n)</td>
+                                    <td class="px-6 py-4 font-mono text-blue-600">O(n log n)</td>
+                                    <td class="px-6 py-4 font-mono text-red-600">O(n²)</td>
+                                    <td class="px-6 py-4 font-mono text-yellow-600">O(log n)</td>
+                                    <td class="px-6 py-4 text-red-500 font-medium">Không</td>
+                                    <td class="px-6 py-4">Chọn một điểm chốt (pivot), phân chia mảng thành hai phần (nhỏ hơn và lớn hơn chốt), rồi đệ quy.</td>
+                                </tr>
+                                <tr class="bg-white hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">Merge Sort</td>
+                                    <td class="px-6 py-4 font-mono text-blue-600">O(n log n)</td>
+                                    <td class="px-6 py-4 font-mono text-blue-600">O(n log n)</td>
+                                    <td class="px-6 py-4 font-mono text-blue-600">O(n log n)</td>
+                                    <td class="px-6 py-4 font-mono text-red-600">O(n)</td>
+                                    <td class="px-6 py-4 text-green-600 font-medium">Có</td>
+                                    <td class="px-6 py-4">Chia đôi mảng liên tục cho đến khi còn 1 phần tử, sau đó trộn (merge) lại theo thứ tự.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- TAB 6: TYPING SPEED TEST -->
+            <div id="tab-typing" class="tab-content hidden w-full space-y-5 animate-fade-in pb-4">
+                <!-- Stats & Controls -->
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-5">
+                    <!-- Stats Cards -->
+                    <div class="lg:col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col items-center justify-center shadow-sm">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">WPM</span>
+                            <span id="wpmDisplay" class="text-3xl font-bold text-blue-600">0</span>
+                        </div>
+                        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col items-center justify-center shadow-sm">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Độ chính xác</span>
+                            <span id="accuracyDisplay" class="text-3xl font-bold text-green-600">100%</span>
+                        </div>
+                        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col items-center justify-center shadow-sm">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Thời gian</span>
+                            <span id="timeDisplay" class="text-3xl font-bold text-slate-700">60s</span>
+                        </div>
+                        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col items-center justify-center shadow-sm">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Ký tự</span>
+                            <span id="charCountDisplay" class="text-3xl font-bold text-slate-700">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Controls -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-center gap-3 shadow-sm z-20">
+                        
+                        <!-- Language Dropdown -->
+                        <div class="relative w-full">
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Ngôn ngữ</label>
+                            <button id="langDropdownBtn" onclick="toggleTypingDropdown('lang')" class="w-full h-10 bg-white border border-slate-200 rounded-lg px-3 flex items-center justify-between text-sm text-slate-700 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                                <span id="langSelectedText" class="font-medium">Tiếng Việt</span>
+                                <span id="langDropdownArrow" class="material-symbols-outlined text-slate-400 transition-transform duration-200 text-[20px]">expand_more</span>
+                            </button>
+                            
+                            <div id="langDropdownMenu" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-50 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                                <div onclick="selectTypingOption('lang', 'vi', 'Tiếng Việt')" class="typing-option-lang px-3 py-2.5 hover:bg-blue-50 cursor-pointer flex items-center justify-between group transition-colors" data-value="vi">
+                                    <span class="text-sm text-slate-700 group-hover:text-blue-700 font-medium">Tiếng Việt</span>
+                                    <span class="material-symbols-outlined text-blue-600 text-[18px] opacity-100 check-icon">check</span>
+                                </div>
+                                <div onclick="selectTypingOption('lang', 'en', 'English')" class="typing-option-lang px-3 py-2.5 hover:bg-blue-50 cursor-pointer flex items-center justify-between group transition-colors" data-value="en">
+                                    <span class="text-sm text-slate-700 group-hover:text-blue-700 font-medium">English</span>
+                                    <span class="material-symbols-outlined text-blue-600 text-[18px] opacity-0 check-icon">check</span>
+                                </div>
+                            </div>
+                            <input type="hidden" id="typingLang" value="vi">
+                        </div>
+
+                        <!-- Time Dropdown -->
+                        <div class="relative w-full">
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Thời gian</label>
+                            <button id="timeDropdownBtn" onclick="toggleTypingDropdown('time')" class="w-full h-10 bg-white border border-slate-200 rounded-lg px-3 flex items-center justify-between text-sm text-slate-700 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                                <span id="timeSelectedText" class="font-medium">60 giây</span>
+                                <span id="timeDropdownArrow" class="material-symbols-outlined text-slate-400 transition-transform duration-200 text-[20px]">expand_more</span>
+                            </button>
+                            
+                            <div id="timeDropdownMenu" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-50 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                                <div onclick="selectTypingOption('time', '15', '15 giây')" class="typing-option-time px-3 py-2.5 hover:bg-blue-50 cursor-pointer flex items-center justify-between group transition-colors" data-value="15">
+                                    <span class="text-sm text-slate-700 group-hover:text-blue-700 font-medium">15 giây</span>
+                                    <span class="material-symbols-outlined text-blue-600 text-[18px] opacity-0 check-icon">check</span>
+                                </div>
+                                <div onclick="selectTypingOption('time', '30', '30 giây')" class="typing-option-time px-3 py-2.5 hover:bg-blue-50 cursor-pointer flex items-center justify-between group transition-colors" data-value="30">
+                                    <span class="text-sm text-slate-700 group-hover:text-blue-700 font-medium">30 giây</span>
+                                    <span class="material-symbols-outlined text-blue-600 text-[18px] opacity-0 check-icon">check</span>
+                                </div>
+                                <div onclick="selectTypingOption('time', '60', '60 giây')" class="typing-option-time px-3 py-2.5 hover:bg-blue-50 cursor-pointer flex items-center justify-between group transition-colors" data-value="60">
+                                    <span class="text-sm text-slate-700 group-hover:text-blue-700 font-medium">60 giây</span>
+                                    <span class="material-symbols-outlined text-blue-600 text-[18px] opacity-100 check-icon">check</span>
+                                </div>
+                            </div>
+                            <input type="hidden" id="timeLimitSelect" value="60">
+                        </div>
+
+                        <button onclick="resetTypingTest()" class="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-2 mt-auto">
+                            <span class="material-symbols-outlined text-[20px]">refresh</span>
+                            Làm mới
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Typing Area -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8 relative" onclick="document.getElementById('typingInput').focus()">
+                    <div id="typingTextDisplay" class="text-xl sm:text-2xl font-mono leading-relaxed text-slate-400 select-none min-h-[120px] break-words">
+                        <!-- Text will be injected here -->
+                        Nhấn vào đây để bắt đầu...
+                    </div>
+                    <input type="text" id="typingInput" class="absolute opacity-0 top-0 left-0 h-full w-full cursor-default" autocomplete="off" spellcheck="false">
+                    
+                    <!-- Focus Overlay -->
+                    <div id="focusOverlay" class="absolute inset-0 bg-white/80 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-xl cursor-pointer transition-opacity duration-200">
+                        <div class="flex items-center gap-2 text-slate-500 font-medium animate-pulse">
+                            <span class="material-symbols-outlined">touch_app</span>
+                            Nhấn vào đây hoặc gõ phím bất kỳ để bắt đầu
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-blue-600">monitoring</span>
+                        Biểu đồ tiến bộ
+                    </h3>
+                    <div class="h-[300px] w-full">
+                        <canvas id="typingChart"></canvas>
+                    </div>
                 </div>
             </div>
         </main>
-        
+
         <footer class="py-2 text-center text-xs text-slate-400 border-t border-slate-100/50">
             <div class="text-xs text-slate-500 mt-2">
                 Designed and developed by Nguyen The Hoang
