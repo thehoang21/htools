@@ -172,25 +172,27 @@
                         <span class="material-symbols-outlined shrink-0">account_balance_wallet</span>
                         <span class="font-medium text-sm whitespace-nowrap group-[.sidebar-collapsed]:hidden">Tài chính</span>
                     </div>
-                    <span id="arrow-submenu-finance" class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-200 group-[.sidebar-collapsed]:hidden">expand_more</span>
+                    <span id="arrow-submenu-finance" class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-300 group-[.sidebar-collapsed]:hidden">expand_more</span>
                 </button>
-                <div id="submenu-finance" class="hidden pl-4 space-y-1 overflow-hidden transition-all duration-300 group-[.sidebar-collapsed]:hidden">
-                    <button onclick="switchTab('calculator')" id="nav-calculator" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                        <span class="material-symbols-outlined text-[18px] shrink-0">pending_actions</span>
-                        <span>Tính Công</span>
-                    </button>
-                    <button onclick="switchTab('salary')" id="nav-salary" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                        <span class="material-symbols-outlined text-[18px] shrink-0">payments</span>
-                        <span>Tính Lương Tháng</span>
-                    </button>
-                    <button onclick="switchTab('tax')" id="nav-tax" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                        <span class="material-symbols-outlined text-[18px] shrink-0">calculate</span>
-                        <span>Tính Thuế TNCN</span>
-                    </button>
-                    <button onclick="switchTab('compound')" id="nav-compound" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                        <span class="material-symbols-outlined text-[18px] shrink-0">savings</span>
-                        <span>Lãi Suất Kép</span>
-                    </button>
+                <div id="submenu-finance" class="sidebar-submenu hidden group-[.sidebar-collapsed]:hidden">
+                    <div class="pl-4 space-y-1">
+                        <button onclick="switchTab('calculator')" id="nav-calculator" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
+                            <span class="material-symbols-outlined text-[18px] shrink-0">pending_actions</span>
+                            <span>Tính Công</span>
+                        </button>
+                        <button onclick="switchTab('salary')" id="nav-salary" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
+                            <span class="material-symbols-outlined text-[18px] shrink-0">payments</span>
+                            <span>Tính Lương Tháng</span>
+                        </button>
+                        <button onclick="switchTab('tax')" id="nav-tax" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
+                            <span class="material-symbols-outlined text-[18px] shrink-0">calculate</span>
+                            <span>Tính Thuế TNCN</span>
+                        </button>
+                        <button onclick="switchTab('compound')" id="nav-compound" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
+                            <span class="material-symbols-outlined text-[18px] shrink-0">savings</span>
+                            <span>Lãi Suất Kép</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -202,21 +204,23 @@
                         <span class="material-symbols-outlined shrink-0">explore</span>
                         <span class="font-medium text-sm whitespace-nowrap group-[.sidebar-collapsed]:hidden">Khám phá</span>
                     </div>
-                    <span id="arrow-submenu-discovery" class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-200 group-[.sidebar-collapsed]:hidden">expand_more</span>
+                    <span id="arrow-submenu-discovery" class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-300 group-[.sidebar-collapsed]:hidden">expand_more</span>
                 </button>
-                <div id="submenu-discovery" class="hidden pl-4 space-y-1 overflow-hidden transition-all duration-300 group-[.sidebar-collapsed]:hidden">
-                    <button onclick="switchTab('countries')" id="nav-countries" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                        <span class="material-symbols-outlined text-[18px] shrink-0">flag</span>
-                        <span>Thông Tin Quốc Gia</span>
-                    </button>
-                    <button onclick="switchTab('solar')" id="nav-solar" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                        <span class="material-symbols-outlined text-[18px] shrink-0">public</span>
-                        <span>Hệ Mặt Trời</span>
-                    </button>
-                    <button onclick="switchTab('physics')" id="nav-physics" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                        <span class="material-symbols-outlined text-[18px] shrink-0">science</span>
-                        <span>Mô Phỏng Vật Lý</span>
-                    </button>
+                <div id="submenu-discovery" class="sidebar-submenu hidden group-[.sidebar-collapsed]:hidden">
+                    <div class="pl-4 space-y-1">
+                        <button onclick="switchTab('countries')" id="nav-countries" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
+                            <span class="material-symbols-outlined text-[18px] shrink-0">flag</span>
+                            <span>Thông Tin Quốc Gia</span>
+                        </button>
+                        <button onclick="switchTab('solar')" id="nav-solar" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
+                            <span class="material-symbols-outlined text-[18px] shrink-0">public</span>
+                            <span>Hệ Mặt Trời</span>
+                        </button>
+                        <button onclick="switchTab('physics')" id="nav-physics" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
+                            <span class="material-symbols-outlined text-[18px] shrink-0">science</span>
+                            <span>Mô Phỏng Vật Lý</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -228,21 +232,27 @@
                         <span class="material-symbols-outlined shrink-0">extension</span>
                         <span class="font-medium text-sm whitespace-nowrap group-[.sidebar-collapsed]:hidden">Tiện ích</span>
                     </div>
-                    <span id="arrow-submenu-utilities" class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-200 group-[.sidebar-collapsed]:hidden">expand_more</span>
+                    <span id="arrow-submenu-utilities" class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-300 group-[.sidebar-collapsed]:hidden">expand_more</span>
                 </button>
-                <div id="submenu-utilities" class="hidden pl-4 space-y-1 overflow-hidden transition-all duration-300 group-[.sidebar-collapsed]:hidden">
-                    <button onclick="switchTab('sorting')" id="nav-sorting" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                        <span class="material-symbols-outlined text-[18px] shrink-0">bar_chart</span>
-                        <span>Biểu Diễn Thuật Toán</span>
-                    </button>
-                    <button onclick="switchTab('typing')" id="nav-typing" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                        <span class="material-symbols-outlined text-[18px] shrink-0">keyboard</span>
-                        <span>Kiểm Tra Tốc Độ Gõ</span>
-                    </button>
-                    <button onclick="switchTab('bmi')" id="nav-bmi" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                        <span class="material-symbols-outlined text-[18px] shrink-0">monitor_weight</span>
-                        <span>Công cụ tính BMI/BMR</span>
-                    </button>
+                <div id="submenu-utilities" class="sidebar-submenu hidden group-[.sidebar-collapsed]:hidden">
+                    <div class="pl-4 space-y-1">
+                        <button onclick="switchTab('sorting')" id="nav-sorting" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
+                            <span class="material-symbols-outlined text-[18px] shrink-0">bar_chart</span>
+                            <span>Biểu Diễn Thuật Toán</span>
+                        </button>
+                        <button onclick="switchTab('typing')" id="nav-typing" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
+                            <span class="material-symbols-outlined text-[18px] shrink-0">keyboard</span>
+                            <span>Kiểm Tra Tốc Độ Gõ</span>
+                        </button>
+                        <button onclick="switchTab('bmi')" id="nav-bmi" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
+                            <span class="material-symbols-outlined text-[18px] shrink-0">monitor_weight</span>
+                            <span>Công cụ tính BMI/BMR</span>
+                        </button>
+                        <button onclick="switchTab('password')" id="nav-password" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
+                            <span class="material-symbols-outlined text-[18px] shrink-0">lock</span>
+                            <span>Tạo Mật Khẩu</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -254,25 +264,23 @@
                         <span class="material-symbols-outlined shrink-0">code</span>
                         <span class="font-medium text-sm whitespace-nowrap group-[.sidebar-collapsed]:hidden">Lập Trình</span>
                     </div>
-                    <span id="arrow-submenu-programming" class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-200 group-[.sidebar-collapsed]:hidden">expand_more</span>
+                    <span id="arrow-submenu-programming" class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-300 group-[.sidebar-collapsed]:hidden">expand_more</span>
                 </button>
-                <div id="submenu-programming" class="hidden pl-4 space-y-1 overflow-hidden transition-all duration-300 group-[.sidebar-collapsed]:hidden">
-                    <button onclick="switchTab('json')" id="nav-json" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                        <span class="material-symbols-outlined text-[18px] shrink-0">data_object</span>
-                        <span>JSON Formatter</span>
-                    </button>
-                    <button onclick="switchTab('css')" id="nav-css" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                        <span class="material-symbols-outlined text-[18px] shrink-0">css</span>
-                        <span>Trình tạo CSS</span>
-                    </button>
-                    <button onclick="switchTab('regex')" id="nav-regex" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                        <span class="material-symbols-outlined text-[18px] shrink-0">regular_expression</span>
-                        <span>Regex Tester</span>
-                    </button>
-                    <button onclick="switchTab('markdown')" id="nav-markdown" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                        <span class="material-symbols-outlined text-[18px] shrink-0">markdown</span>
-                        <span>Markdown Previewer</span>
-                    </button>
+                <div id="submenu-programming" class="sidebar-submenu hidden group-[.sidebar-collapsed]:hidden">
+                    <div class="pl-4 space-y-1">
+                        <button onclick="switchTab('json')" id="nav-json" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
+                            <span class="material-symbols-outlined text-[18px] shrink-0">data_object</span>
+                            <span>JSON Formatter</span>
+                        </button>
+                        <button onclick="switchTab('css')" id="nav-css" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
+                            <span class="material-symbols-outlined text-[18px] shrink-0">css</span>
+                            <span>Trình tạo CSS</span>
+                        </button>
+                        <button onclick="switchTab('regex')" id="nav-regex" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
+                            <span class="material-symbols-outlined text-[18px] shrink-0">regular_expression</span>
+                            <span>Regex Tester</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -1263,7 +1271,7 @@
                                         <span id="sizeValue" class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">50</span>
                                     </div>
                                     <input type="range" id="arraySize" min="10" max="100" value="50" 
-                                        class="w-full sm:w-32 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-500 transition-all"
+                                        class="custom-range w-full sm:w-48 xl:w-64"
                                         oninput="document.getElementById('sizeValue').innerText = this.value; generateNewArray()">
                                 </div>
 
@@ -1273,7 +1281,7 @@
                                         <span id="speedValue" class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">50</span>
                                     </div>
                                     <input type="range" id="sortSpeed" min="1" max="100" value="50" 
-                                        class="w-full sm:w-32 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-500 transition-all"
+                                        class="custom-range w-full sm:w-48 xl:w-64"
                                         oninput="document.getElementById('speedValue').innerText = this.value">
                                 </div>
                             </div>
@@ -2009,7 +2017,7 @@
                                 </div>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-2.5 mb-2 overflow-hidden">
-                                <div id="bmiProgress" class="bg-slate-300 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                <div id="bmiProgress" class="h-2.5 rounded-full transition-all duration-500 bg-slate-300" style="width: 0%"></div>
                             </div>
                             <div class="flex justify-between text-xs text-slate-400">
                                 <span>Thiếu cân</span>
@@ -2043,6 +2051,158 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- TAB: PASSWORD GENERATOR -->
+            <div id="tab-password" class="tab-content hidden w-full space-y-5 animate-fade-in pb-4">
+                <!-- Main Content: 2 Column Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- LEFT COLUMN: Settings -->
+                    <div class="space-y-6">
+                        <!-- Length Settings -->
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-blue-600">straighten</span>
+                                Độ dài mật khẩu
+                            </h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-slate-600">Độ dài:</span>
+                                    <span id="passwordLengthValue" class="text-lg font-bold text-blue-600">16</span>
+                                </div>
+                                <input type="range" id="passwordLength" min="6" max="64" value="16" 
+                                    class="custom-range w-full"
+                                    oninput="updatePasswordLength(); generatePassword()">
+                                <div class="flex justify-between text-xs text-slate-500">
+                                    <span>6</span>
+                                    <span>64</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Character Options -->
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-purple-600">tune</span>
+                                Tùy chọn ký tự
+                            </h3>
+                            <div class="space-y-3">
+                                <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                                    <input type="checkbox" id="includeUppercase" checked class="custom-checkbox" onchange="generatePassword()">
+                                    <span class="text-sm text-slate-700">Chữ hoa (A-Z)</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                                    <input type="checkbox" id="includeLowercase" checked class="custom-checkbox" onchange="generatePassword()">
+                                    <span class="text-sm text-slate-700">Chữ thường (a-z)</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                                    <input type="checkbox" id="includeNumbers" checked class="custom-checkbox" onchange="generatePassword()">
+                                    <span class="text-sm text-slate-700">Số (0-9)</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                                    <input type="checkbox" id="includeSymbols" checked class="custom-checkbox" onchange="generatePassword()">
+                                    <span class="text-sm text-slate-700">Ký tự đặc biệt (!@#$%^&*)</span>
+                                </label>
+                                
+                                <!-- Divider -->
+                                <div class="border-t border-slate-200 my-4"></div>
+                                
+                                <!-- Advanced Options (Merged) -->
+                                <label class="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-slate-50 transition-colors border border-slate-100">
+                                    <input type="checkbox" id="excludeSimilar" class="custom-checkbox" onchange="generatePassword()">
+                                    <div>
+                                        <div class="text-sm font-medium text-slate-700">Loại ký tự giống nhau</div>
+                                        <div class="text-xs text-slate-500">Loại bỏ i, l, 1, L, o, 0, O</div>
+                                    </div>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-slate-50 transition-colors border border-slate-100">
+                                    <input type="checkbox" id="excludeAmbiguous" class="custom-checkbox" onchange="generatePassword()">
+                                    <div>
+                                        <div class="text-sm font-medium text-slate-700">Loại ký tự gây nhầm lẫn</div>
+                                        <div class="text-xs text-slate-500">Loại bỏ {}, [], (), /, \, ', ", `, ~, ,, ., ;, :</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: Password Display -->
+                    <div class="space-y-6">
+                        <!-- Password Display -->
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-green-600">key</span>
+                                Mật khẩu đã tạo
+                            </h3>
+                            <div class="relative">
+                                <input type="text" id="generatedPassword" readonly
+                                    class="w-full p-4 pr-12 bg-slate-50 border-2 border-slate-200 rounded-xl font-mono text-lg text-slate-800 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                                    placeholder="Mật khẩu sẽ hiển thị ở đây...">
+                                <button onclick="copyPassword()" 
+                                    class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors flex items-center justify-center group">
+                                    <span class="material-symbols-outlined text-[20px]">content_copy</span>
+                                </button>
+                            </div>
+                            
+                            <!-- Password Strength Indicator -->
+                            <div class="mt-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-medium text-slate-600">Độ mạnh mật khẩu:</span>
+                                    <span id="strengthText" class="text-sm font-bold text-slate-400">---</span>
+                                </div>
+                                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div id="strengthBar" class="h-full bg-slate-300 transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Generate Buttons -->
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                            <div class="flex flex-col gap-3">
+                                <button onclick="generateMultiplePasswords()" 
+                                    class="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold text-base transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
+                                    <span class="material-symbols-outlined">list</span>
+                                    Tạo nhiều mật khẩu
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tips Card -->
+                        <div class="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-6">
+                            <h4 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-blue-600">lightbulb</span>
+                                Mẹo tạo mật khẩu mạnh
+                            </h4>
+                            <ul class="space-y-2 text-sm text-slate-600">
+                                <li class="flex items-start gap-2">
+                                    <span class="material-symbols-outlined text-[18px] text-blue-600 mt-0.5">check_circle</span>
+                                    <span>Sử dụng ít nhất 12-16 ký tự</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="material-symbols-outlined text-[18px] text-blue-600 mt-0.5">check_circle</span>
+                                    <span>Kết hợp nhiều loại ký tự</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="material-symbols-outlined text-[18px] text-blue-600 mt-0.5">check_circle</span>
+                                    <span>Không dùng lại cho nhiều tài khoản</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="material-symbols-outlined text-[18px] text-blue-600 mt-0.5">check_circle</span>
+                                    <span>Dùng trình quản lý mật khẩu</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Multiple Passwords Display (Full Width) -->
+                <div id="multiplePasswordsContainer" class="hidden bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-blue-600">list</span>
+                        Danh sách mật khẩu
+                    </h3>
+                    <div id="passwordsList" class="space-y-2 max-h-96 overflow-y-auto custom-scrollbar"></div>
                 </div>
             </div>
 
@@ -2126,35 +2286,35 @@
                                     <label class="text-slate-600 font-medium">Shift Right (X)</label>
                                     <span id="val-shadow-x" class="text-slate-400 font-mono">0px</span>
                                 </div>
-                                <input type="range" id="shadow-x" min="-50" max="50" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="updateCSS()">
+                                <input type="range" id="shadow-x" min="-50" max="50" value="0" class="custom-range w-full" oninput="updateCSS()">
                             </div>
                             <div class="space-y-2">
                                 <div class="flex justify-between text-sm">
                                     <label class="text-slate-600 font-medium">Shift Down (Y)</label>
                                     <span id="val-shadow-y" class="text-slate-400 font-mono">10px</span>
                                 </div>
-                                <input type="range" id="shadow-y" min="-50" max="50" value="10" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="updateCSS()">
+                                <input type="range" id="shadow-y" min="-50" max="50" value="10" class="custom-range w-full" oninput="updateCSS()">
                             </div>
                             <div class="space-y-2">
                                 <div class="flex justify-between text-sm">
                                     <label class="text-slate-600 font-medium">Blur</label>
                                     <span id="val-shadow-blur" class="text-slate-400 font-mono">15px</span>
                                 </div>
-                                <input type="range" id="shadow-blur" min="0" max="100" value="15" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="updateCSS()">
+                                <input type="range" id="shadow-blur" min="0" max="100" value="15" class="custom-range w-full" oninput="updateCSS()">
                             </div>
                             <div class="space-y-2">
                                 <div class="flex justify-between text-sm">
                                     <label class="text-slate-600 font-medium">Spread</label>
                                     <span id="val-shadow-spread" class="text-slate-400 font-mono">-3px</span>
                                 </div>
-                                <input type="range" id="shadow-spread" min="-50" max="50" value="-3" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="updateCSS()">
+                                <input type="range" id="shadow-spread" min="-50" max="50" value="-3" class="custom-range w-full" oninput="updateCSS()">
                             </div>
                             <div class="space-y-2">
                                 <div class="flex justify-between text-sm">
                                     <label class="text-slate-600 font-medium">Opacity</label>
                                     <span id="val-shadow-opacity" class="text-slate-400 font-mono">0.1</span>
                                 </div>
-                                <input type="range" id="shadow-opacity" min="0" max="1" step="0.01" value="0.1" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="updateCSS()">
+                                <input type="range" id="shadow-opacity" min="0" max="1" step="0.01" value="0.1" class="custom-range w-full" oninput="updateCSS()">
                             </div>
                             <div class="flex items-center justify-between pt-2">
                                 <label class="text-slate-600 font-medium text-sm">Color</label>
@@ -2197,7 +2357,7 @@
                                     <label class="text-slate-600 font-medium">Angle</label>
                                     <span id="val-gradient-angle" class="text-slate-400 font-mono">135deg</span>
                                 </div>
-                                <input type="range" id="gradient-angle" min="0" max="360" value="135" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="updateCSS()">
+                                <input type="range" id="gradient-angle" min="0" max="360" value="135" class="custom-range w-full" oninput="updateCSS()">
                             </div>
                             <div class="space-y-3 pt-2">
                                 <label class="text-slate-600 font-medium text-sm">Colors</label>
@@ -2219,7 +2379,7 @@
                                     <label class="text-slate-600 font-medium">All Corners</label>
                                     <span id="val-radius-all" class="text-slate-400 font-mono">12px</span>
                                 </div>
-                                <input type="range" id="radius-all" min="0" max="100" value="12" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="updateCSS()">
+                                <input type="range" id="radius-all" min="0" max="100" value="12" class="custom-range w-full" oninput="updateCSS()">
                             </div>
                             
                             <div class="border-t border-slate-100 my-4"></div>
@@ -2238,28 +2398,28 @@
                                         <label class="text-slate-600 font-medium">Top Left</label>
                                         <span id="val-radius-tl" class="text-slate-400 font-mono">0px</span>
                                     </div>
-                                    <input type="range" id="radius-tl" min="0" max="100" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="updateCSS()">
+                                    <input type="range" id="radius-tl" min="0" max="100" value="0" class="custom-range w-full" oninput="updateCSS()">
                                 </div>
                                 <div class="space-y-2">
                                     <div class="flex justify-between text-sm">
                                         <label class="text-slate-600 font-medium">Top Right</label>
                                         <span id="val-radius-tr" class="text-slate-400 font-mono">0px</span>
                                     </div>
-                                    <input type="range" id="radius-tr" min="0" max="100" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="updateCSS()">
+                                    <input type="range" id="radius-tr" min="0" max="100" value="0" class="custom-range w-full" oninput="updateCSS()">
                                 </div>
                                 <div class="space-y-2">
                                     <div class="flex justify-between text-sm">
                                         <label class="text-slate-600 font-medium">Bottom Right</label>
                                         <span id="val-radius-br" class="text-slate-400 font-mono">0px</span>
                                     </div>
-                                    <input type="range" id="radius-br" min="0" max="100" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="updateCSS()">
+                                    <input type="range" id="radius-br" min="0" max="100" value="0" class="custom-range w-full" oninput="updateCSS()">
                                 </div>
                                 <div class="space-y-2">
                                     <div class="flex justify-between text-sm">
                                         <label class="text-slate-600 font-medium">Bottom Left</label>
                                         <span id="val-radius-bl" class="text-slate-400 font-mono">0px</span>
                                     </div>
-                                    <input type="range" id="radius-bl" min="0" max="100" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="updateCSS()">
+                                    <input type="range" id="radius-bl" min="0" max="100" value="0" class="custom-range w-full" oninput="updateCSS()">
                                 </div>
                             </div>
                         </div>
@@ -2283,7 +2443,7 @@
                                 <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">CSS Code</span>
                                 <button onclick="copyCssCode()" class="text-slate-400 hover:text-white transition-colors flex items-center gap-1 text-xs font-medium">
                                     <span class="material-symbols-outlined text-[16px]">content_copy</span>
-                                    Copy
+                                    Sao chép
                                 </button>
                             </div>
                             <textarea id="css-output" readonly class="w-full h-28 p-4 bg-transparent text-blue-300 font-mono text-sm outline-none resize-none"></textarea>
@@ -2293,26 +2453,210 @@
             </div>
 
             <!-- TAB: REGEX TESTER -->
-            <div id="tab-regex" class="tab-content hidden w-full h-full flex flex-col items-center justify-center text-center px-4 animate-fade-in">
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-md">
-                    <div class="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="material-symbols-outlined text-3xl text-purple-600">regular_expression</span>
+            <div id="tab-regex" class="tab-content hidden w-full space-y-5 animate-fade-in pb-4 h-full flex flex-col">
+                <!-- How to Use Card -->
+                <div class="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6 shadow-sm">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg">
+                            <span class="material-symbols-outlined text-white text-[28px]">help</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                Cách sử dụng Regex Tester
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
+                                <div class="flex items-start gap-2">
+                                    <span class="material-symbols-outlined text-purple-600 text-[20px] shrink-0 mt-0.5">looks_one</span>
+                                    <div>
+                                        <strong class="text-slate-800">Nhập Pattern:</strong> Nhập biểu thức chính quy (regex) vào ô <span class="font-mono bg-white px-1.5 py-0.5 rounded border border-slate-200">/pattern/</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="material-symbols-outlined text-purple-600 text-[20px] shrink-0 mt-0.5">looks_two</span>
+                                    <div>
+                                        <strong class="text-slate-800">Chọn Flags:</strong> Tích các cờ (g: toàn bộ, i: không phân biệt hoa/thường, m: nhiều dòng)
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="material-symbols-outlined text-purple-600 text-[20px] shrink-0 mt-0.5">looks_3</span>
+                                    <div>
+                                        <strong class="text-slate-800">Nhập Text:</strong> Nhập văn bản cần kiểm tra vào ô <em>Test String</em>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="material-symbols-outlined text-purple-600 text-[20px] shrink-0 mt-0.5">looks_4</span>
+                                    <div>
+                                        <strong class="text-slate-800">Xem Kết quả:</strong> Các kết quả khớp sẽ được tô sáng màu xanh và hiển thị chi tiết
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex flex-wrap items-center gap-3">
+                                <span class="text-xs font-semibold text-purple-700 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[16px]">star</span>
+                                    Mẹo:
+                                </span>
+                                <span class="text-xs bg-white text-slate-600 px-3 py-1.5 rounded-full border border-slate-200">Sử dụng <strong>Quick Patterns</strong> để chọn mẫu có sẵn</span>
+                                <span class="text-xs bg-white text-slate-600 px-3 py-1.5 rounded-full border border-slate-200">Tham khảo <strong>Quick Reference</strong> để học cú pháp</span>
+                            </div>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">Regex Tester</h3>
-                    <p class="text-slate-500">Chức năng đang được phát triển.</p>
+                </div>
+
+                <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 h-full min-h-[500px]">
+                    <!-- Left Column: Input & Settings -->
+                    <div class="flex flex-col gap-6">
+                        <!-- Regex Pattern -->
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-purple-600">code_blocks</span>
+                                Regular Expression
+                            </h3>
+                            <div class="space-y-4">
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-lg">/</span>
+                                    <input type="text" id="regexPattern" 
+                                        class="w-full pl-8 pr-8 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none font-mono text-base transition-all" 
+                                        placeholder="Enter regex pattern" 
+                                        value="\w+@\w+\.\w+" 
+                                        oninput="testRegex()">
+                                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-lg">/</span>
+                                </div>
+                                
+                                <!-- Flags -->
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Flags</label>
+                                    <div class="flex flex-wrap gap-2">
+                                        <label class="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors">
+                                            <input id="flag-g" type="checkbox" onchange="testRegex()" class="custom-checkbox">
+                                            <span class="text-sm font-mono font-medium text-slate-700">g</span>
+                                            <span class="text-xs text-slate-500">Global</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors">
+                                            <input id="flag-i" type="checkbox" onchange="testRegex()" class="custom-checkbox">
+                                            <span class="text-sm font-mono font-medium text-slate-700">i</span>
+                                            <span class="text-xs text-slate-500">Ignore Case</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors">
+                                            <input id="flag-m" type="checkbox" onchange="testRegex()" class="custom-checkbox">
+                                            <span class="text-sm font-mono font-medium text-slate-700">m</span>
+                                            <span class="text-xs text-slate-500">Multiline</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors">
+                                            <input id="flag-s" type="checkbox" onchange="testRegex()" class="custom-checkbox">
+                                            <span class="text-sm font-mono font-medium text-slate-700">s</span>
+                                            <span class="text-xs text-slate-500">Dotall</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Patterns -->
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Quick Patterns</label>
+                                    <div class="relative">
+                                        <button onclick="toggleRegexPatternsDropdown()" id="regex-patterns-btn" 
+                                            class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all flex items-center justify-between text-left shadow-sm hover:bg-slate-50">
+                                            <span id="regex-patterns-label" class="text-slate-700 text-sm">Select a pattern...</span>
+                                            <span id="regex-patterns-arrow" class="material-symbols-outlined text-slate-400 text-[20px] transition-transform duration-200">expand_more</span>
+                                        </button>
+                                        
+                                        <div id="regex-patterns-menu" class="hidden absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-xl z-50 overflow-hidden max-h-60 overflow-y-auto custom-scrollbar">
+                                            <div onclick="selectRegexPattern('\\w+@\\w+\\.\\w+', 'Email')" class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
+                                                <div class="font-medium">Email</div>
+                                                <div class="text-xs text-slate-400 font-mono">\w+@\w+\.\w+</div>
+                                            </div>
+                                            <div onclick="selectRegexPattern('^https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)$', 'URL')" class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
+                                                <div class="font-medium">URL</div>
+                                                <div class="text-xs text-slate-400 font-mono">^https?://...</div>
+                                            </div>
+                                            <div onclick="selectRegexPattern('^\\d{3}-?\\d{3}-?\\d{4}$', 'Phone (US)')" class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
+                                                <div class="font-medium">Phone (US)</div>
+                                                <div class="text-xs text-slate-400 font-mono">^\d{3}-?\d{3}-?\d{4}$</div>
+                                            </div>
+                                            <div onclick="selectRegexPattern('^\\d{4}-\\d{2}-\\d{2}$', 'Date (YYYY-MM-DD)')" class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
+                                                <div class="font-medium">Date (YYYY-MM-DD)</div>
+                                                <div class="text-xs text-slate-400 font-mono">^\d{4}-\d{2}-\d{2}$</div>
+                                            </div>
+                                            <div onclick="selectRegexPattern('^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$', 'Hex Color')" class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
+                                                <div class="font-medium">Hex Color</div>
+                                                <div class="text-xs text-slate-400 font-mono">^#?([a-fA-F0-9]{6}...)</div>
+                                            </div>
+                                            <div onclick="selectRegexPattern('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$', 'Strong Password')" class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
+                                                <div class="font-medium">Strong Password</div>
+                                                <div class="text-xs text-slate-400 font-mono">^(?=.*[a-z])(?=.*[A-Z])...</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Test String -->
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex-1 flex flex-col">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-blue-600">text_fields</span>
+                                Test String
+                            </h3>
+                            <textarea id="regexTestString" 
+                                class="flex-1 w-full p-4 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none font-mono text-sm resize-none transition-all" 
+                                placeholder="Enter text to test against the regex..."
+                                oninput="testRegex()">john@example.com
+user123@test.org
+invalid-email@
+contact@domain.co.uk</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Results -->
+                    <div class="flex flex-col gap-6">
+                        <!-- Match Results -->
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex-1 flex flex-col">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-green-600">check_circle</span>
+                                    Matches
+                                </h3>
+                                <span id="regexMatchCount" class="px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full">0</span>
+                            </div>
+                            
+                            <div id="regexHighlighted" class="flex-1 w-full p-4 bg-slate-50 border border-slate-200 rounded-lg font-mono text-sm overflow-auto custom-scrollbar whitespace-pre-wrap break-words">
+                                <span class="text-slate-400">Matches will be highlighted here...</span>
+                            </div>
+                        </div>
+
+                        <!-- Match Details -->
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-orange-600">info</span>
+                                Match Details
+                            </h3>
+                            <div id="regexDetails" class="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar">
+                                <div class="text-sm text-slate-500">No matches yet. Enter a pattern and test string.</div>
+                            </div>
+                        </div>
+
+                        <!-- Regex Info -->
+                        <div class="bg-purple-50 border border-purple-100 rounded-xl p-4">
+                            <h4 class="text-sm font-bold text-purple-800 mb-2 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">lightbulb</span>
+                                Quick Reference
+                            </h4>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div class="font-mono text-purple-700"><span class="font-bold">\d</span> - Digit</div>
+                                <div class="font-mono text-purple-700"><span class="font-bold">\w</span> - Word char</div>
+                                <div class="font-mono text-purple-700"><span class="font-bold">\s</span> - Whitespace</div>
+                                <div class="font-mono text-purple-700"><span class="font-bold">.</span> - Any char</div>
+                                <div class="font-mono text-purple-700"><span class="font-bold">+</span> - One or more</div>
+                                <div class="font-mono text-purple-700"><span class="font-bold">*</span> - Zero or more</div>
+                                <div class="font-mono text-purple-700"><span class="font-bold">?</span> - Optional</div>
+                                <div class="font-mono text-purple-700"><span class="font-bold">^</span> - Start</div>
+                                <div class="font-mono text-purple-700"><span class="font-bold">$</span> - End</div>
+                                <div class="font-mono text-purple-700"><span class="font-bold">[ ]</span> - Character set</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- TAB: MARKDOWN PREVIEWER -->
-            <div id="tab-markdown" class="tab-content hidden w-full h-full flex flex-col items-center justify-center text-center px-4 animate-fade-in">
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-md">
-                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="material-symbols-outlined text-3xl text-slate-600">markdown</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">Markdown Previewer</h3>
-                    <p class="text-slate-500">Chức năng đang được phát triển.</p>
-                </div>
-            </div>
         </main>
 
         <footer class="py-2 text-center text-xs text-slate-400 border-t border-slate-100/50">

@@ -108,12 +108,24 @@ function toggleSubmenu(id) {
     const submenu = document.getElementById(id);
     const arrow = document.getElementById('arrow-' + id);
     
-    if (submenu && submenu.classList.contains('hidden')) {
-        submenu.classList.remove('hidden');
-        if (arrow) arrow.style.transform = 'rotate(180deg)';
-    } else if (submenu) {
-        submenu.classList.add('hidden');
-        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    if (submenu) {
+        const isHidden = submenu.classList.contains('hidden');
+        
+        if (isHidden) {
+            submenu.classList.remove('hidden');
+            // Sử dụng grid animation cho smooth transition
+            requestAnimationFrame(() => {
+                submenu.classList.add('open');
+                if (arrow) arrow.style.transform = 'rotate(180deg)';
+            });
+        } else {
+            submenu.classList.remove('open');
+            if (arrow) arrow.style.transform = 'rotate(0deg)';
+            // Đợi animation hoàn thành rồi mới hide
+            setTimeout(() => {
+                submenu.classList.add('hidden');
+            }, 300);
+        }
     }
 }
 
@@ -158,12 +170,17 @@ function switchTab(tabName) {
         'json': 'JSON Formatter',
         'css': 'Trình Tạo CSS',
         'regex': 'Regex Tester',
-        'markdown': 'Markdown Previewer'
+        'markdown': 'Xem trước Markdown',
+        'password': 'Tạo Mật Khẩu'
     };
     document.getElementById('pageTitle').innerText = titles[tabName];
 
     if (tabName === 'bmi') {
         calculateBMI();
+    }
+
+    if (tabName === 'password') {
+        generatePassword();
     }
 
     if (tabName === 'time') {
@@ -4231,23 +4248,28 @@ function calculateBMI() {
     
     let status = '';
     let colorClass = '';
+    let progressBarColor = '';
     let progress = 0;
 
     if (bmi < 18.5) {
         status = 'Thiếu cân';
         colorClass = 'text-blue-600 bg-blue-50';
+        progressBarColor = 'bg-blue-500';
         progress = 15;
     } else if (bmi < 24.9) {
         status = 'Bình thường';
         colorClass = 'text-green-600 bg-green-50';
+        progressBarColor = 'bg-green-500';
         progress = 50;
     } else if (bmi < 29.9) {
         status = 'Thừa cân';
         colorClass = 'text-orange-600 bg-orange-50';
+        progressBarColor = 'bg-orange-500';
         progress = 75;
     } else {
         status = 'Béo phì';
         colorClass = 'text-red-600 bg-red-50';
+        progressBarColor = 'bg-red-500';
         progress = 100;
     }
 
@@ -4255,7 +4277,9 @@ function calculateBMI() {
     statusEl.innerText = status;
     statusEl.className = `text-sm font-medium px-3 py-1 rounded-full inline-block ${colorClass}`;
     
-    document.getElementById('bmiProgress').style.width = `${progress}%`;
+    const progressBar = document.getElementById('bmiProgress');
+    progressBar.style.width = `${progress}%`;
+    progressBar.className = `h-2.5 rounded-full transition-all duration-500 ${progressBarColor}`;
     
     // Update Circle Color
     const circle = document.getElementById('bmiCircle');
@@ -4347,7 +4371,25 @@ function copyJSON() {
 document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
     switchTab('home');
+    
+    // Initialize custom range sliders
+    document.querySelectorAll('.custom-range').forEach(updateRangeProgress);
 });
+
+// Global listener for range slider progress
+document.addEventListener('input', (e) => {
+    if (e.target.classList.contains('custom-range')) {
+        updateRangeProgress(e.target);
+    }
+});
+
+function updateRangeProgress(rangeInput) {
+    const min = parseFloat(rangeInput.min) || 0;
+    const max = parseFloat(rangeInput.max) || 100;
+    const value = parseFloat(rangeInput.value) || 0;
+    const percent = ((value - min) / (max - min)) * 100;
+    rangeInput.style.backgroundSize = `${percent}% 100%`;
+}
 
 
 
@@ -4547,3 +4589,387 @@ function selectGradientType(value, label) {
     // Trigger CSS update
     updateCSS();
 }
+
+// --- REGEX TESTER LOGIC ---
+function toggleRegexPatternsDropdown() {
+    const menu = document.getElementById('regex-patterns-menu');
+    const arrow = document.getElementById('regex-patterns-arrow');
+    
+    if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+        
+        const closeDropdown = (e) => {
+            if (!e.target.closest('#regex-patterns-btn') && !e.target.closest('#regex-patterns-menu')) {
+                menu.classList.add('hidden');
+                arrow.style.transform = 'rotate(0deg)';
+                document.removeEventListener('click', closeDropdown);
+            }
+        };
+        setTimeout(() => {
+            document.addEventListener('click', closeDropdown);
+        }, 0);
+    } else {
+        menu.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+function selectRegexPattern(pattern, name) {
+    document.getElementById('regexPattern').value = pattern;
+    document.getElementById('regex-patterns-label').innerText = name;
+    document.getElementById('regex-patterns-menu').classList.add('hidden');
+    document.getElementById('regex-patterns-arrow').style.transform = 'rotate(0deg)';
+    testRegex();
+}
+
+function testRegex() {
+    const pattern = document.getElementById('regexPattern').value;
+    const testString = document.getElementById('regexTestString').value;
+    const highlighted = document.getElementById('regexHighlighted');
+    const details = document.getElementById('regexDetails');
+    const matchCount = document.getElementById('regexMatchCount');
+    
+    if (!pattern || !testString) {
+        highlighted.innerHTML = '<span class="text-slate-400">Enter a pattern and test string...</span>';
+        details.innerHTML = '<div class="text-sm text-slate-500">No matches yet.</div>';
+        matchCount.innerText = '0';
+        return;
+    }
+    
+    try {
+        // Build flags
+        let flags = '';
+        if (document.getElementById('flag-g').checked) flags += 'g';
+        if (document.getElementById('flag-i').checked) flags += 'i';
+        if (document.getElementById('flag-m').checked) flags += 'm';
+        if (document.getElementById('flag-s').checked) flags += 's';
+        
+        const regex = new RegExp(pattern, flags);
+        const matches = [...testString.matchAll(new RegExp(pattern, flags + (flags.includes('g') ? '' : 'g')))];
+        
+        // Update count
+        matchCount.innerText = matches.length;
+        matchCount.className = matches.length > 0 
+            ? 'px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full'
+            : 'px-3 py-1 bg-slate-100 text-slate-500 text-xs font-bold rounded-full';
+        
+        if (matches.length === 0) {
+            highlighted.innerHTML = `<span class="text-slate-600">${escapeHtml(testString)}</span>`;
+            details.innerHTML = '<div class="text-sm text-slate-500">No matches found.</div>';
+            return;
+        }
+        
+        // Highlight matches
+        let highlightedText = '';
+        let lastIndex = 0;
+        
+        matches.forEach((match, i) => {
+            const startIndex = match.index;
+            const endIndex = startIndex + match[0].length;
+            
+            // Add text before match
+            highlightedText += escapeHtml(testString.substring(lastIndex, startIndex));
+            
+            // Add highlighted match
+            highlightedText += `<span class="bg-green-200 text-green-900 font-semibold px-0.5 rounded">${escapeHtml(match[0])}</span>`;
+            
+            lastIndex = endIndex;
+        });
+        
+        // Add remaining text
+        highlightedText += escapeHtml(testString.substring(lastIndex));
+        highlighted.innerHTML = highlightedText;
+        
+        // Show match details
+        let detailsHTML = '';
+        matches.forEach((match, i) => {
+            detailsHTML += `
+                <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-bold text-slate-500">Match ${i + 1}</span>
+                        <span class="text-xs text-slate-400">Index: ${match.index}</span>
+                    </div>
+                    <div class="font-mono text-sm text-slate-800 bg-white px-2 py-1 rounded border border-slate-200">${escapeHtml(match[0])}</div>
+                    ${match.length > 1 ? `
+                        <div class="mt-2 space-y-1">
+                            ${match.slice(1).map((group, gi) => `
+                                <div class="text-xs">
+                                    <span class="text-slate-500">Group ${gi + 1}:</span>
+                                    <span class="font-mono text-slate-700">${escapeHtml(group || '')}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        });
+        
+        details.innerHTML = detailsHTML;
+        
+    } catch (error) {
+        highlighted.innerHTML = `<span class="text-red-600">❌ Invalid regex: ${escapeHtml(error.message)}</span>`;
+        details.innerHTML = `<div class="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">${escapeHtml(error.message)}</div>`;
+        matchCount.innerText = '0';
+        matchCount.className = 'px-3 py-1 bg-red-50 text-red-700 text-xs font-bold rounded-full';
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Initialize Regex Tester
+if (document.getElementById('regexPattern')) {
+    testRegex();
+}
+
+// ============================
+// PASSWORD GENERATOR
+// ============================
+
+const passwordCharSets = {
+    uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    lowercase: 'abcdefghijklmnopqrstuvwxyz',
+    numbers: '0123456789',
+    symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?'
+};
+
+const similarChars = 'il1Lo0O';
+const ambiguousChars = '{}[]()/\\\'"`~,;:.<>';
+
+function generatePassword() {
+    const length = parseInt(document.getElementById('passwordLength').value);
+    const includeUppercase = document.getElementById('includeUppercase').checked;
+    const includeLowercase = document.getElementById('includeLowercase').checked;
+    const includeNumbers = document.getElementById('includeNumbers').checked;
+    const includeSymbols = document.getElementById('includeSymbols').checked;
+    const excludeSimilar = document.getElementById('excludeSimilar').checked;
+    const excludeAmbiguous = document.getElementById('excludeAmbiguous').checked;
+
+    // Build character set
+    let charSet = '';
+    if (includeUppercase) charSet += passwordCharSets.uppercase;
+    if (includeLowercase) charSet += passwordCharSets.lowercase;
+    if (includeNumbers) charSet += passwordCharSets.numbers;
+    if (includeSymbols) charSet += passwordCharSets.symbols;
+
+    // Validate at least one option selected
+    if (charSet.length === 0) {
+        alert('Vui lòng chọn ít nhất một loại ký tự!');
+        return;
+    }
+
+    // Remove similar characters
+    if (excludeSimilar) {
+        charSet = charSet.split('').filter(char => !similarChars.includes(char)).join('');
+    }
+
+    // Remove ambiguous characters
+    if (excludeAmbiguous) {
+        charSet = charSet.split('').filter(char => !ambiguousChars.includes(char)).join('');
+    }
+
+    if (charSet.length === 0) {
+        alert('Không còn ký tự nào khả dụng với các tùy chọn hiện tại!');
+        return;
+    }
+
+    // Generate password
+    let password = '';
+    const array = new Uint32Array(length);
+    crypto.getRandomValues(array);
+    
+    for (let i = 0; i < length; i++) {
+        password += charSet[array[i] % charSet.length];
+    }
+
+    // Display password
+    const passwordInput = document.getElementById('generatedPassword');
+    passwordInput.value = password;
+
+    // Calculate and display strength
+    updatePasswordStrength(password);
+}
+
+function updatePasswordStrength(password) {
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthText = document.getElementById('strengthText');
+
+    if (!password) {
+        strengthBar.style.width = '0%';
+        strengthBar.className = 'h-full bg-slate-300 transition-all duration-500';
+        strengthText.textContent = '---';
+        strengthText.className = 'text-sm font-bold text-slate-400';
+        return;
+    }
+
+    let strength = 0;
+    let strengthLabel = '';
+    let strengthClass = '';
+    let barClass = '';
+
+    // Length score
+    if (password.length >= 8) strength += 20;
+    if (password.length >= 12) strength += 15;
+    if (password.length >= 16) strength += 15;
+
+    // Character variety score
+    if (/[a-z]/.test(password)) strength += 15;
+    if (/[A-Z]/.test(password)) strength += 15;
+    if (/[0-9]/.test(password)) strength += 10;
+    if (/[^a-zA-Z0-9]/.test(password)) strength += 10;
+
+    // Determine strength level
+    if (strength < 30) {
+        strengthLabel = 'Rất yếu';
+        strengthClass = 'text-red-600';
+        barClass = 'h-full bg-red-500 transition-all duration-500';
+    } else if (strength < 50) {
+        strengthLabel = 'Yếu';
+        strengthClass = 'text-orange-600';
+        barClass = 'h-full bg-orange-500 transition-all duration-500';
+    } else if (strength < 70) {
+        strengthLabel = 'Trung bình';
+        strengthClass = 'text-yellow-600';
+        barClass = 'h-full bg-yellow-500 transition-all duration-500';
+    } else if (strength < 90) {
+        strengthLabel = 'Mạnh';
+        strengthClass = 'text-blue-600';
+        barClass = 'h-full bg-blue-500 transition-all duration-500';
+    } else {
+        strengthLabel = 'Rất mạnh';
+        strengthClass = 'text-green-600';
+        barClass = 'h-full bg-green-500 transition-all duration-500';
+    }
+
+    strengthBar.style.width = strength + '%';
+    strengthBar.className = barClass;
+    strengthText.textContent = strengthLabel;
+    strengthText.className = 'text-sm font-bold ' + strengthClass;
+}
+
+function updatePasswordLength() {
+    const length = document.getElementById('passwordLength').value;
+    document.getElementById('passwordLengthValue').textContent = length;
+}
+
+function copyPassword() {
+    const passwordInput = document.getElementById('generatedPassword');
+    
+    if (!passwordInput.value) {
+        alert('Chưa có mật khẩu để sao chép!');
+        return;
+    }
+
+    navigator.clipboard.writeText(passwordInput.value).then(() => {
+        const btn = event.target.closest('button');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-outlined text-[20px]">check</span>';
+        btn.classList.remove('bg-green-100', 'hover:bg-green-200', 'text-green-700');
+        btn.classList.add('bg-green-600', 'text-white');
+        
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('bg-green-600', 'text-white');
+            btn.classList.add('bg-green-100', 'hover:bg-green-200', 'text-green-700');
+        }, 2000);
+    }).catch(err => {
+        alert('Lỗi khi sao chép: ' + err);
+    });
+}
+
+function generateMultiplePasswords() {
+    const container = document.getElementById('multiplePasswordsContainer');
+    const list = document.getElementById('passwordsList');
+    
+    // Generate 10 passwords
+    const passwords = [];
+    const length = parseInt(document.getElementById('passwordLength').value);
+    const includeUppercase = document.getElementById('includeUppercase').checked;
+    const includeLowercase = document.getElementById('includeLowercase').checked;
+    const includeNumbers = document.getElementById('includeNumbers').checked;
+    const includeSymbols = document.getElementById('includeSymbols').checked;
+    const excludeSimilar = document.getElementById('excludeSimilar').checked;
+    const excludeAmbiguous = document.getElementById('excludeAmbiguous').checked;
+
+    // Build character set
+    let charSet = '';
+    if (includeUppercase) charSet += passwordCharSets.uppercase;
+    if (includeLowercase) charSet += passwordCharSets.lowercase;
+    if (includeNumbers) charSet += passwordCharSets.numbers;
+    if (includeSymbols) charSet += passwordCharSets.symbols;
+
+    if (charSet.length === 0) {
+        alert('Vui lòng chọn ít nhất một loại ký tự!');
+        return;
+    }
+
+    if (excludeSimilar) {
+        charSet = charSet.split('').filter(char => !similarChars.includes(char)).join('');
+    }
+
+    if (excludeAmbiguous) {
+        charSet = charSet.split('').filter(char => !ambiguousChars.includes(char)).join('');
+    }
+
+    if (charSet.length === 0) {
+        alert('Không còn ký tự nào khả dụng với các tùy chọn hiện tại!');
+        return;
+    }
+
+    // Generate 10 passwords
+    for (let i = 0; i < 10; i++) {
+        let password = '';
+        const array = new Uint32Array(length);
+        crypto.getRandomValues(array);
+        
+        for (let j = 0; j < length; j++) {
+            password += charSet[array[j] % charSet.length];
+        }
+        passwords.push(password);
+    }
+
+    // Display passwords
+    list.innerHTML = '';
+    passwords.forEach((pwd, index) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors';
+        div.innerHTML = `
+            <span class="text-xs font-medium text-slate-500 w-6">${index + 1}.</span>
+            <input type="text" readonly value="${pwd}" class="flex-1 bg-transparent font-mono text-sm text-slate-800 outline-none">
+            <button onclick="copyPasswordFromList(this)" class="px-3 py-1.5 bg-white hover:bg-green-50 border border-slate-200 hover:border-green-300 text-slate-600 hover:text-green-600 rounded-lg text-xs transition-all flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                Sao chép
+            </button>
+        `;
+        list.appendChild(div);
+    });
+
+    container.classList.remove('hidden');
+}
+
+function copyPasswordFromList(btn) {
+    const input = btn.parentElement.querySelector('input');
+    navigator.clipboard.writeText(input.value).then(() => {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">check</span>Copied!';
+        btn.classList.add('bg-green-100', 'text-green-600', 'border-green-300');
+        
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('bg-green-100', 'text-green-600', 'border-green-300');
+        }, 2000);
+    }).catch(err => {
+        alert('Lỗi khi sao chép: ' + err);
+    });
+}
+
+// Auto-generate password on page load
+if (document.getElementById('generatedPassword')) {
+    generatePassword();
+}
+
+

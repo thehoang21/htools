@@ -69,17 +69,89 @@ body {
   border-color: #e2e8f0;
 }
 
-/* --- ACCORDION ANIMATIONS --- */
-.accordion-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-  opacity: 0;
+/* --- CUSTOM RANGE SLIDER --- */
+.custom-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px; /* Thinner track for cleaner look */
+  background-color: #e2e8f0; /* Track color */
+  background-image: linear-gradient(#2563eb, #2563eb); /* Progress color */
+  background-size: 0% 100%; /* Initial progress */
+  background-repeat: no-repeat;
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
-.accordion-content.open {
-  max-height: 500px;
-  opacity: 1;
+/* Slider Thumb (Handle) - Webkit */
+.custom-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px; /* Balanced size */
+  height: 22px;
+  border-radius: 50%;
+  background: #2563eb; /* Blue fill */
+  border: 2px solid #ffffff; /* White border */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Soft shadow */
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transform: scale(1);
+}
+
+.custom-range::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.custom-range::-webkit-slider-thumb:active {
+  transform: scale(0.95);
+  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.2);
+}
+
+/* Slider Thumb (Handle) - Firefox */
+.custom-range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #2563eb;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transform: scale(1);
+  border: 2px solid #ffffff;
+}
+
+.custom-range::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.custom-range::-moz-range-thumb:active {
+  transform: scale(0.95);
+  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.2);
+}
+
+/* Focus State */
+.custom-range:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+/* --- SIDEBAR SUBMENU ANIMATION --- */
+.sidebar-submenu {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-submenu.open {
+  grid-template-rows: 1fr;
+}
+
+.sidebar-submenu > div {
+  overflow: hidden;
 }
 
 /* --- SCROLL TO TOP BUTTON --- */
