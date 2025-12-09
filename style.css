@@ -69,6 +69,25 @@ body {
   border-color: #e2e8f0;
 }
 
+/* --- ACCORDION ANIMATIONS --- */
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  opacity: 0;
+}
+
+.accordion-content.open {
+  max-height: 500px;
+  opacity: 1;
+}
+
+/* --- SCROLL TO TOP BUTTON --- */
+#scrollToTopBtn.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .shadcn-label {
   font-size: 0.875rem;
   font-weight: 500;

@@ -22,7 +22,57 @@ function closeResetModal() {
 
 function confirmReset() {
     localStorage.removeItem(STORAGE_KEY);
-    location.reload();
+    
+    // Reset inputs to default values
+    document.getElementById('startTime').value = "07:30";
+    document.getElementById('endTime').value = "18:00";
+    document.getElementById('breakStart').value = "11:30";
+    document.getElementById('breakEnd').value = "13:00";
+    document.getElementById('otThreshold').value = "17:00";
+    document.getElementById('otCoeff').value = "1.5";
+    document.getElementById('workDays').value = "27";
+
+    // Recalculate and update UI
+    calculate();
+
+    // Close modal
+    closeResetModal();
+}
+
+// --- SCROLL TO TOP BUTTON ---
+const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+
+window.addEventListener('scroll', () => {
+    if (window.pageYOffset > 300) {
+        scrollToTopBtn.classList.add('show');
+    } else {
+        scrollToTopBtn.classList.remove('show');
+    }
+});
+
+function scrollToTop() {
+    // Smooth scroll với easing tốt hơn
+    const duration = 600; // 600ms
+    const start = window.pageYOffset;
+    const startTime = performance.now();
+    
+    function easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+    }
+    
+    function scroll(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeProgress = easeInOutCubic(progress);
+        
+        window.scrollTo(0, start * (1 - easeProgress));
+        
+        if (progress < 1) {
+            requestAnimationFrame(scroll);
+        }
+    }
+    
+    requestAnimationFrame(scroll);
 }
 
 // --- SIDEBAR & TABS LOGIC ---
@@ -54,9 +104,37 @@ function toggleSidebarCollapse() {
     }
 }
 
+function toggleSubmenu(id) {
+    const submenu = document.getElementById(id);
+    const arrow = document.getElementById('arrow-' + id);
+    
+    if (submenu && submenu.classList.contains('hidden')) {
+        submenu.classList.remove('hidden');
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+    } else if (submenu) {
+        submenu.classList.add('hidden');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
 function switchTab(tabName) {
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.getElementById('nav-' + tabName).classList.add('active');
+    const navItem = document.getElementById('nav-' + tabName);
+    if (navItem) {
+        navItem.classList.add('active');
+        
+        // Auto expand parent submenu
+        const parentSubmenu = navItem.closest('[id^="submenu-"]');
+        if (parentSubmenu) {
+            const submenu = parentSubmenu;
+            const arrow = document.getElementById('arrow-' + submenu.id);
+            
+            if (submenu.classList.contains('hidden')) {
+                submenu.classList.remove('hidden');
+                if (arrow) arrow.style.transform = 'rotate(180deg)';
+            }
+        }
+    }
 
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
     const activeContent = document.getElementById('tab-' + tabName);
@@ -65,15 +143,28 @@ function switchTab(tabName) {
     activeContent.classList.add('animate-fade-in');
 
     const titles = {
+        'home': 'Trang chủ',
         'time': 'Thời gian',
         'calculator': 'Tính Công',
         'salary': 'Tính Lương Tháng',
         'tax': 'Tính Thuế TNCN',
         'compound': 'Tính Lãi Suất Kép',
         'sorting': 'Biểu Diễn Thuật Toán',
-        'typing': 'Kiểm Tra Tốc Độ Gõ'
+        'typing': 'Kiểm Tra Tốc Độ Gõ',
+        'countries': 'Thông Tin Quốc Gia',
+        'physics': 'Mô Phỏng Vật Lý',
+        'solar': 'Khám Phá Hệ Mặt Trời',
+        'bmi': 'Công cụ tính BMI/BMR',
+        'json': 'JSON Formatter',
+        'css': 'Trình Tạo CSS',
+        'regex': 'Regex Tester',
+        'markdown': 'Markdown Previewer'
     };
     document.getElementById('pageTitle').innerText = titles[tabName];
+
+    if (tabName === 'bmi') {
+        calculateBMI();
+    }
 
     if (tabName === 'time') {
         initTime();
@@ -81,6 +172,12 @@ function switchTab(tabName) {
         initSorting();
     } else if (tabName === 'typing') {
         initTypingTest();
+    } else if (tabName === 'countries') {
+        initCountries();
+    } else if (tabName === 'physics') {
+        initPhysics();
+    } else if (tabName === 'solar') {
+        initSolarSystem();
     }
 
     if (window.innerWidth < 1024) {
@@ -324,7 +421,7 @@ function copyReport() {
     btn.classList.add('bg-green-600', 'hover:bg-green-700', 'text-white', 'border-transparent');
     setTimeout(() => {
         btn.innerHTML = originalContent;
-        btn.classList.remove('bg-green-600', 'hover:bg-green-700', 'text-white', 'border-transparent');
+        btn.classList.remove('bg-green-600', 'hover:bg-green-700', 'border-transparent');
     }, 2000);
 }
 
@@ -724,99 +821,6 @@ function calculateTax() {
     }
 }
 
-loadSettings();
-calculate();
-calculateSalary();
-calculateTax();
-
-// Initialize time tab on first load (it's the default tab)
-setTimeout(() => {
-    if (document.getElementById('tab-time') && !document.getElementById('tab-time').classList.contains('hidden')) {
-        initTime();
-    }
-}, 100);
-
-// --- CUSTOM DROPDOWN LOGIC ---
-function toggleRegionDropdown(event) {
-    if (event) {
-        event.stopPropagation();
-    }
-    const menu = document.getElementById('regionDropdownMenu');
-    const arrow = document.getElementById('regionDropdownArrow');
-    const isHidden = menu.classList.contains('hidden');
-    
-    if (isHidden) {
-        menu.classList.remove('hidden');
-        arrow.style.transform = 'rotate(180deg)';
-    } else {
-        menu.classList.add('hidden');
-        arrow.style.transform = 'rotate(0deg)';
-    }
-}
-
-function selectRegion(value, text) {
-    const input = document.getElementById('taxRegion');
-    const textSpan = document.getElementById('regionSelectedText');
-    const menu = document.getElementById('regionDropdownMenu');
-    const arrow = document.getElementById('regionDropdownArrow');
-    
-    // Update value and text
-    input.value = value;
-    textSpan.innerText = text;
-    
-    // Update visual selection state
-    document.querySelectorAll('.region-option').forEach(option => {
-        const checkIcon = option.querySelector('.check-icon');
-        if (option.dataset.value == value) {
-            option.classList.add('bg-blue-50', 'text-blue-700');
-            checkIcon.classList.remove('opacity-0');
-        } else {
-            option.classList.remove('bg-blue-50', 'text-blue-700');
-            checkIcon.classList.add('opacity-0');
-        }
-    });
-
-    // Close dropdown
-    menu.classList.add('hidden');
-    arrow.style.transform = 'rotate(0deg)';
-    
-    // Trigger calculation
-    calculateTax();
-    saveSettings(); 
-}
-
-// Initialize dropdown state on load
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        const input = document.getElementById('taxRegion');
-        if (input) {
-            const regionMap = {
-                '1': 'Vùng I (4.960.000đ)',
-                '2': 'Vùng II (4.410.000đ)',
-                '3': 'Vùng III (3.860.000đ)',
-                '4': 'Vùng IV (3.450.000đ)'
-            };
-            const val = input.value || '1';
-            const textSpan = document.getElementById('regionSelectedText');
-            if (textSpan && regionMap[val]) {
-                textSpan.innerText = regionMap[val];
-                
-                document.querySelectorAll('.region-option').forEach(option => {
-                    const checkIcon = option.querySelector('.check-icon');
-                    if (option.dataset.value == val) {
-                        option.classList.add('bg-blue-50', 'text-blue-700');
-                        checkIcon.classList.remove('opacity-0');
-                    } else {
-                        option.classList.remove('bg-blue-50', 'text-blue-700');
-                        checkIcon.classList.add('opacity-0');
-                    }
-                });
-            }
-        }
-    }, 100);
-});
-
-// --- EXPORT TAX REPORT ---
 function exportTaxReport() {
     const { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, Header, Table, TableRow, TableCell, WidthType, BorderStyle } = docx;
 
@@ -876,8 +880,6 @@ function exportTaxReport() {
     const net = gross - totalInsurance - tax;
     const fmtVND = (n) => Math.round(n).toLocaleString('en-US') + ' VND';
 
-    const regionMap = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV' };
-
     const doc = new Document({
         sections: [{
             properties: {
@@ -914,7 +916,6 @@ function exportTaxReport() {
                     alignment: AlignmentType.CENTER,
                     spacing: { after: 500 },
                 }),
-
                 new Paragraph({
                     text: "A. THÔNG TIN ĐẦU VÀO",
                     heading: HeadingLevel.HEADING_2,
@@ -1077,6 +1078,54 @@ function exportTaxReport() {
 }
 
 // --- COMPOUND INTEREST LOGIC ---
+function toggleRegionDropdown(event) {
+    event.stopPropagation();
+    const menu = document.getElementById('regionDropdownMenu');
+    const arrow = document.getElementById('regionDropdownArrow');
+    
+    // Close other dropdowns if open
+    const freqMenu = document.getElementById('frequencyDropdownMenu');
+    if (freqMenu && !freqMenu.classList.contains('hidden')) {
+        freqMenu.classList.add('hidden');
+        const freqArrow = document.getElementById('frequencyDropdownArrow');
+        if (freqArrow) freqArrow.style.transform = 'rotate(0deg)';
+    }
+
+    if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+    } else {
+        menu.classList.add('hidden');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+function selectRegion(value, text) {
+    document.getElementById('taxRegion').value = value;
+    document.getElementById('regionSelectedText').innerText = text;
+    
+    // Update UI selection state
+    document.querySelectorAll('.region-option').forEach(option => {
+        const checkIcon = option.querySelector('.check-icon');
+        if (option.dataset.value == value) {
+            option.classList.add('bg-blue-50', 'text-blue-700');
+            checkIcon.classList.remove('opacity-0');
+        } else {
+            option.classList.remove('bg-blue-50', 'text-blue-700');
+            checkIcon.classList.add('opacity-0');
+        }
+    });
+
+    // Close dropdown
+    const menu = document.getElementById('regionDropdownMenu');
+    const arrow = document.getElementById('regionDropdownArrow');
+    menu.classList.add('hidden');
+    if (arrow) arrow.style.transform = 'rotate(0deg)';
+    
+    // Trigger calculation
+    calculateTax();
+}
+
 function toggleFrequencyDropdown(event) {
     event.stopPropagation();
     const menu = document.getElementById('frequencyDropdownMenu');
@@ -1403,7 +1452,7 @@ async function showCountryInfo(countryId, fallbackName, latlng) {
 
         // Update UI
         dateEl.innerText = targetTime.toLocaleDateString('vi-VN');
-        timeEl.innerText = targetTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        timeEl.innerText = targetTime.toLocaleTimeString('vi-VN', { hour12: false });
         timezoneEl.innerText = timezoneStr;
         
     } catch (error) {
@@ -2149,4 +2198,2352 @@ function updateChart(time, wpm) {
     typingChart.update();
 }
 
+// --- COUNTRIES INFO LOGIC ---
+let allCountries = [];
+let filteredCountries = [];
+let currentView = 'list';
+let selectedContinent = '';
+let currentPage = 1;
+let itemsPerPage = 5; // Mặc định 5 dòng
 
+async function initCountries() {
+    if (allCountries.length === 0) {
+        await loadCountries();
+    } else {
+        updateStats();
+        renderCountries(allCountries);
+    }
+}
+
+async function loadCountries() {
+    const loading = document.getElementById('countriesLoading');
+    const grid = document.getElementById('countriesGrid');
+    
+    loading.style.display = 'block';
+    grid.innerHTML = '';
+    
+    try {
+        const response = await fetch('https://restcountries.com/v3.1/all?fields=name,capital,population,area,region,subregion,flags,languages,currencies');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        allCountries = await response.json();
+        
+        // Sort alphabetically by common name
+        allCountries.sort((a, b) => {
+            const nameA = a.name.common.toLowerCase();
+            const nameB = b.name.common.toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+        
+        filteredCountries = allCountries;
+        updateStats();
+        renderCountries(allCountries);
+    } catch (error) {
+        console.error('Error loading countries:', error);
+        grid.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <div class="text-red-500 mb-2">
+                    <span class="material-symbols-outlined text-[48px]">error</span>
+                </div>
+                <p class="text-red-600 font-semibold mb-2">Không thể tải dữ liệu</p>
+                <p class="text-slate-500 text-sm mb-4">Vui lòng kiểm tra kết nối mạng và thử lại</p>
+                <button onclick="loadCountries()" 
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <span class="material-symbols-outlined text-[18px] mr-1 align-middle">refresh</span>
+                    Thử lại
+                </button>
+            </div>
+        `;
+    } finally {
+        loading.style.display = 'none';
+    }
+}
+
+function updateStats() {
+    document.getElementById('totalCountries').textContent = allCountries.length;
+    document.getElementById('africaCount').textContent = allCountries.filter(c => c.region === 'Africa').length;
+    document.getElementById('americasCount').textContent = allCountries.filter(c => c.region === 'Americas').length;
+    document.getElementById('asiaCount').textContent = allCountries.filter(c => c.region === 'Asia').length;
+    document.getElementById('europeCount').textContent = allCountries.filter(c => c.region === 'Europe').length;
+    document.getElementById('oceaniaCount').textContent = allCountries.filter(c => c.region === 'Oceania').length;
+}
+
+function setCountryView(view) {
+    currentView = view;
+    const grid = document.getElementById('countriesGrid');
+    const list = document.getElementById('countriesList');
+    const cardsBtn = document.getElementById('viewCardsBtn');
+    const listBtn = document.getElementById('viewListBtn');
+    
+    if (view === 'cards') {
+        grid.classList.remove('hidden');
+        grid.classList.add('grid');
+        list.classList.add('hidden');
+        cardsBtn.classList.add('bg-slate-50');
+        cardsBtn.querySelector('span').classList.add('text-blue-600');
+        cardsBtn.querySelector('span').classList.remove('text-slate-600');
+        listBtn.classList.remove('bg-slate-50');
+        listBtn.querySelector('span').classList.remove('text-blue-600');
+        listBtn.querySelector('span').classList.add('text-slate-600');
+    } else {
+        list.classList.remove('hidden');
+        grid.classList.add('hidden');
+        grid.classList.remove('grid');
+        listBtn.classList.add('bg-slate-50');
+        listBtn.querySelector('span').classList.add('text-blue-600');
+        listBtn.querySelector('span').classList.remove('text-slate-600');
+        cardsBtn.classList.remove('bg-slate-50');
+        cardsBtn.querySelector('span').classList.remove('text-blue-600');
+        cardsBtn.querySelector('span').classList.add('text-slate-600');
+    }
+    
+    renderCountries(filteredCountries);
+}
+
+function toggleContinentDropdown() {
+    const menu = document.getElementById('continentDropdownMenu');
+    const arrow = document.getElementById('continentDropdownArrow');
+    
+    if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+    } else {
+        menu.classList.add('hidden');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+function selectContinent(value, text) {
+    selectedContinent = value;
+    document.getElementById('continentFilterText').textContent = text;
+    
+    // Close dropdown and reset arrow
+    const menu = document.getElementById('continentDropdownMenu');
+    const arrow = document.getElementById('continentDropdownArrow');
+    menu.classList.add('hidden');
+    if (arrow) arrow.style.transform = 'rotate(0deg)';
+    
+    filterCountries();
+}
+
+function renderCountries(countries) {
+    const grid = document.getElementById('countriesGrid');
+    const list = document.getElementById('countriesList');
+    
+    if (countries.length === 0) {
+        const emptyMsg = '<div class="col-span-full text-center py-12 text-slate-500">Không tìm thấy quốc gia nào.</div>';
+        grid.innerHTML = emptyMsg;
+        list.innerHTML = emptyMsg;
+        document.getElementById('paginationControls').style.display = 'none';
+        return;
+    }
+    
+    document.getElementById('paginationControls').style.display = 'flex';
+    const totalPages = Math.ceil(countries.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedCountries = countries.slice(startIndex, endIndex);
+    
+    if (currentView === 'cards') {
+        renderCardsView(paginatedCountries);
+    } else {
+        renderListView(paginatedCountries);
+    }
+    
+    updatePagination(countries.length, totalPages);
+}
+
+function renderCardsView(countries) {
+    const grid = document.getElementById('countriesGrid');
+    grid.innerHTML = countries.map(country => {
+        const name = country.name.common;
+        const officialName = country.name.official;
+        const capital = country.capital ? country.capital[0] : 'Không có';
+        const population = country.population ? country.population.toLocaleString('vi-VN') : 'N/A';
+        const area = country.area ? country.area.toLocaleString('vi-VN') : 'N/A';
+        const region = country.region || 'N/A';
+        const flag = country.flags.svg || country.flags.png;
+        const nameVi = translateCountryName(name);
+        
+        return `
+            <div class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 hover:border-blue-300">
+                <div class="p-3">
+                    <!-- Flag and Title -->
+                    <div class="flex items-start gap-2 mb-2 pb-2 border-b border-slate-100">
+                        <img src="${flag}" alt="${name}" class="w-14 h-10 object-cover rounded border border-slate-200 shrink-0">
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-sm font-bold text-slate-800 truncate">${name}</h3>
+                            <p class="text-[10px] text-slate-500 truncate">${nameVi}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Official Names -->
+                    <div class="mb-2 pb-2 border-b border-slate-100 space-y-1">
+                        <div class="text-[10px]">
+                            <span class="text-slate-400">Tiếng Việt:</span>
+                            <p class="text-slate-700 font-medium leading-tight mt-0.5">${translateOfficialName(name)}</p>
+                        </div>
+                        <div class="text-[10px]">
+                            <span class="text-slate-400">Tiếng Anh:</span>
+                            <p class="text-slate-700 font-medium leading-tight mt-0.5">${officialName}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Country Info -->
+                    <div class="space-y-1 text-xs">
+                        <div class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-blue-600 text-[14px]">location_city</span>
+                            <span class="text-slate-500 truncate">${capital}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-green-600 text-[14px]">groups</span>
+                            <span class="text-slate-500 truncate">${population}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-orange-600 text-[14px]">straighten</span>
+                            <span class="text-slate-500 truncate">${area} km²</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-purple-600 text-[14px]">public</span>
+                            <span class="text-slate-500 truncate">${region}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderListView(countries) {
+    const list = document.getElementById('countriesList');
+    
+    list.innerHTML = countries.map((country, index) => {
+        const name = country.name.common;
+        const officialName = country.name.official;
+        const capital = country.capital ? country.capital[0] : 'Không có';
+        const population = country.population ? country.population.toLocaleString('vi-VN') : 'N/A';
+        const area = country.area ? country.area.toLocaleString('vi-VN') : 'N/A';
+        const region = country.region || 'N/A';
+        const subregion = country.subregion || '';
+        const flag = country.flags.svg || country.flags.png;
+        const languages = country.languages ? Object.values(country.languages).join(', ') : 'N/A';
+        const currencies = country.currencies ? Object.values(country.currencies).map(c => c.name).join(', ') : 'N/A';
+        const nameVi = translateCountryName(name);
+        const nativeName = country.name.nativeName ? Object.values(country.name.nativeName)[0]?.official || officialName : officialName;
+        
+        return `
+            <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+                <button onclick="toggleCountryAccordion(${index})" class="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <img src="${flag}" alt="${name}" class="w-12 h-8 object-cover rounded border border-slate-200">
+                        <div class="text-left">
+                            <h3 class="font-semibold text-slate-800">${name}</h3>
+                            <p class="text-xs text-slate-500">${capital} • ${region}</p>
+                        </div>
+                    </div>
+                    <span class="material-symbols-outlined text-slate-400 transition-transform duration-300 accordion-icon-${index}">expand_more</span>
+                </button>
+                <div id="accordion-${index}" class="accordion-content border-t border-slate-100">
+                    <div class="p-4 bg-slate-50/50">
+                        <!-- Full Names Section -->
+                        <div class="mb-4 pb-4 border-b border-slate-200">
+                            <h4 class="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Tên đầy đủ</h4>
+                            <div class="space-y-1.5 text-sm">
+                                <div>
+                                    <span class="text-slate-500 text-xs">Tiếng Việt:</span>
+                                    <span class="font-medium text-slate-800 ml-1">${nameVi} - ${translateOfficialName(name)}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 text-xs">English:</span>
+                                    <span class="font-medium text-slate-800 ml-1">${name} - ${officialName}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 text-xs">Native:</span>
+                                    <span class="font-medium text-slate-800 ml-1">${nativeName}</span>
+                                </div>
+                            </div>
+                        </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                        <div class="flex items-start gap-2">
+                            <span class="material-symbols-outlined text-blue-600 text-[18px] shrink-0">location_city</span>
+                            <div class="flex-1">
+                                <span class="text-slate-500 block text-xs">Thủ đô</span>
+                                <span class="font-medium text-slate-800">${capital}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="material-symbols-outlined text-green-600 text-[18px] shrink-0">groups</span>
+                            <div class="flex-1">
+                                <span class="text-slate-500 block text-xs">Dân số</span>
+                                <span class="font-medium text-slate-800">${population}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="material-symbols-outlined text-orange-600 text-[18px] shrink-0">straighten</span>
+                            <div class="flex-1">
+                                <span class="text-slate-500 block text-xs">Diện tích</span>
+                                <span class="font-medium text-slate-800">${area} km²</span>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="material-symbols-outlined text-purple-600 text-[18px] shrink-0">public</span>
+                            <div class="flex-1">
+                                <span class="text-slate-500 block text-xs">Châu lục</span>
+                                <span class="font-medium text-slate-800">${region}</span>
+                                ${subregion ? `<span class="text-slate-400 text-xs">(${subregion})</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="material-symbols-outlined text-red-600 text-[18px] shrink-0">translate</span>
+                            <div class="flex-1">
+                                <span class="text-slate-500 block text-xs">Ngôn ngữ</span>
+                                <span class="font-medium text-slate-800">${languages}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="material-symbols-outlined text-yellow-600 text-[18px] shrink-0">payments</span>
+                            <div class="flex-1">
+                                <span class="text-slate-500 block text-xs">Tiền tệ</span>
+                                <span class="font-medium text-slate-800">${currencies}</span>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function toggleCountryAccordion(index) {
+    const accordion = document.getElementById(`accordion-${index}`);
+    const icon = document.querySelector(`.accordion-icon-${index}`);
+    
+    if (accordion.classList.contains('open')) {
+        accordion.classList.remove('open');
+        icon.style.transform = 'rotate(0deg)';
+    } else {
+        accordion.classList.add('open');
+        icon.style.transform = 'rotate(180deg)';
+    }
+}
+
+function translateCountryName(englishName) {
+    const translations = {
+        'Vietnam': 'Việt Nam', 'United States': 'Hoa Kỳ', 'United Kingdom': 'Vương Quốc Anh',
+        'China': 'Trung Quốc', 'Japan': 'Nhật Bản', 'South Korea': 'Hàn Quốc',
+        'North Korea': 'Triều Tiên', 'France': 'Pháp', 'Germany': 'Đức', 'Italy': 'Ý',
+        'Spain': 'Tây Ban Nha', 'Russia': 'Nga', 'India': 'Ấn Độ', 'Thailand': 'Thái Lan',
+        'Singapore': 'Singapore', 'Malaysia': 'Malaysia', 'Indonesia': 'Indonesia',
+        'Philippines': 'Philippines', 'Australia': 'Úc', 'New Zealand': 'New Zealand',
+        'Canada': 'Canada', 'Mexico': 'Mexico', 'Brazil': 'Brazil', 'Argentina': 'Argentina',
+        'South Africa': 'Nam Phi', 'Egypt': 'Ai Cập', 'Turkey': 'Thổ Nhĩ Kỳ',
+        'Saudi Arabia': 'Ả Rập Saudi', 'United Arab Emirates': 'Các Tiểu Vương Quốc Ả Rập Thống Nhất',
+        'Netherlands': 'Hà Lan', 'Belgium': 'Bỉ', 'Switzerland': 'Thụy Sĩ',
+        'Sweden': 'Thụy Điển', 'Norway': 'Na Uy', 'Denmark': 'Đan Mạch',
+        'Finland': 'Phần Lan', 'Poland': 'Ba Lan', 'Greece': 'Hy Lạp',
+        'Portugal': 'Bồ Đào Nha', 'Algeria': 'Algeria', 'Afghanistan': 'Afghanistan',
+        'Åland Islands': 'Đảo Åland', 'Albania': 'Albania', 'American Samoa': 'Samoa thuộc Mỹ',
+        'Andorra': 'Andorra', 'Angola': 'Angola', 'Anguilla': 'Anguilla',
+        'Taiwan': 'Đài Loan', 'Austria': 'Áo', 'Iceland': 'Iceland', 'Ireland': 'Ireland',
+        'Israel': 'Israel', 'Palestine': 'Palestine', 'Iraq': 'Iraq', 'Iran': 'Iran',
+        'Jordan': 'Jordan', 'Kuwait': 'Kuwait', 'Lebanon': 'Lê-ba-nông', 'Libya': 'Libya',
+        'Morocco': 'Ma-rốc', 'Tunisia': 'Tunisia', 'Sudan': 'Sudan', 'Somalia': 'Somalia',
+        'Ethiopia': 'Ethiopia', 'Kenya': 'Kenya', 'Tanzania': 'Tanzania', 'Uganda': 'Uganda',
+        'Nigeria': 'Nigeria', 'Ghana': 'Ghana', 'Cameroon': 'Cameroon', 'Zimbabwe': 'Zimbabwe',
+        'Mozambique': 'Mozambique', 'Madagascar': 'Madagascar', 'Botswana': 'Botswana',
+        'Namibia': 'Namibia', 'Zambia': 'Zambia', 'Pakistan': 'Pakistan', 'Bangladesh': 'Bangladesh',
+        'Sri Lanka': 'Sri Lanka', 'Myanmar': 'Myanmar', 'Laos': 'Lào', 'Cambodia': 'Campuchia',
+        'Brunei': 'Brunei', 'Mongolia': 'Mông Cổ', 'Kazakhstan': 'Kazakhstan',
+        'Uzbekistan': 'Uzbekistan', 'Kyrgyzstan': 'Kyrgyzstan', 'Tajikistan': 'Tajikistan',
+        'Turkmenistan': 'Turkmenistan', 'Azerbaijan': 'Azerbaijan', 'Armenia': 'Armenia',
+        'Georgia': 'Gruzia', 'Ukraine': 'Ukraine', 'Belarus': 'Belarus', 'Moldova': 'Moldova',
+        'Romania': 'România', 'Bulgaria': 'Bulgaria', 'Serbia': 'Serbia', 'Croatia': 'Croatia',
+        'Bosnia and Herzegovina': 'Bosnia và Herzegovina', 'Montenegro': 'Montenegro',
+        'North Macedonia': 'Bắc Macedonia', 'Kosovo': 'Kosovo', 'Slovenia': 'Slovenia',
+        'Slovakia': 'Slovakia', 'Czech Republic': 'Cộng hòa Séc', 'Hungary': 'Hungary',
+        'Lithuania': 'Lithuania', 'Latvia': 'Latvia', 'Estonia': 'Estonia',
+        'Chile': 'Chile', 'Peru': 'Peru', 'Colombia': 'Colombia', 'Venezuela': 'Venezuela',
+        'Ecuador': 'Ecuador', 'Bolivia': 'Bolivia', 'Paraguay': 'Paraguay', 'Uruguay': 'Uruguay',
+        'Costa Rica': 'Costa Rica', 'Panama': 'Panama', 'Nicaragua': 'Nicaragua',
+        'Honduras': 'Honduras', 'El Salvador': 'El Salvador', 'Guatemala': 'Guatemala',
+        'Belize': 'Belize', 'Jamaica': 'Jamaica', 'Cuba': 'Cuba', 'Haiti': 'Haiti',
+        'Dominican Republic': 'Cộng hòa Dominica', 'Puerto Rico': 'Puerto Rico',
+        'Trinidad and Tobago': 'Trinidad và Tobago', 'Fiji': 'Fiji', 'Papua New Guinea': 'Papua New Guinea',
+        'New Caledonia': 'New Caledonia', 'Vanuatu': 'Vanuatu', 'Solomon Islands': 'Quần đảo Solomon',
+        'Samoa': 'Samoa', 'Tonga': 'Tonga', 'Palau': 'Palau', 'Micronesia': 'Micronesia',
+        'Marshall Islands': 'Quần đảo Marshall', 'Kiribati': 'Kiribati', 'Tuvalu': 'Tuvalu',
+        'Nauru': 'Nauru', 'Qatar': 'Qatar', 'Bahrain': 'Bahrain', 'Oman': 'Oman', 'Yemen': 'Yemen'
+    };
+    return translations[englishName] || englishName;
+}
+
+function translateOfficialName(englishName) {
+    const translations = {
+        'Vietnam': 'Cộng hòa Xã hội Chủ nghĩa Việt Nam',
+        'United States': 'Hợp chủng quốc Hoa Kỳ',
+        'United Kingdom': 'Vương quốc Liên hiệp Anh và Bắc Ireland',
+        'China': 'Cộng hòa Nhân dân Trung Hoa',
+        'Taiwan': 'Trung Hoa Dân Quốc (Đài Loan)',
+        'Japan': 'Nhật Bản Quốc',
+        'South Korea': 'Đại Hàn Dân Quốc',
+        'North Korea': 'Cộng hòa Dân chủ Nhân dân Triều Tiên',
+        'France': 'Cộng hòa Pháp',
+        'Germany': 'Cộng hòa Liên bang Đức',
+        'Italy': 'Cộng hòa Ý',
+        'Spain': 'Vương quốc Tây Ban Nha',
+        'Russia': 'Liên bang Nga',
+        'India': 'Cộng hòa Ấn Độ',
+        'Thailand': 'Vương quốc Thái Lan',
+        'Singapore': 'Cộng hòa Singapore',
+        'Malaysia': 'Malaysia',
+        'Indonesia': 'Cộng hòa Indonesia',
+        'Philippines': 'Cộng hòa Philippines',
+        'Australia': 'Liên bang Úc',
+        'New Zealand': 'New Zealand',
+        'Canada': 'Canada',
+        'Mexico': 'Hợp chủng quốc Mexico',
+        'Brazil': 'Cộng hòa Liên bang Brazil',
+        'Argentina': 'Cộng hòa Argentina',
+        'South Africa': 'Cộng hòa Nam Phi',
+        'Egypt': 'Cộng hòa Ả Rập Ai Cập',
+        'Turkey': 'Cộng hòa Thổ Nhĩ Kỳ',
+        'Saudi Arabia': 'Vương quốc Ả Rập Saudi',
+        'United Arab Emirates': 'Các Tiểu Vương quốc Ả Rập Thống Nhất',
+        'Netherlands': 'Vương quốc Hà Lan',
+        'Belgium': 'Vương quốc Bỉ',
+        'Switzerland': 'Liên bang Thụy Sĩ',
+        'Sweden': 'Vương quốc Thụy Điển',
+        'Norway': 'Vương quốc Na Uy',
+        'Denmark': 'Vương quốc Đan Mạch',
+        'Finland': 'Cộng hòa Phần Lan',
+        'Poland': 'Cộng hòa Ba Lan',
+        'Greece': 'Cộng hòa Hy Lạp',
+        'Portugal': 'Cộng hòa Bồ Đào Nha',
+        'Austria': 'Cộng hòa Áo',
+        'Iceland': 'Cộng hòa Iceland',
+        'Ireland': 'Cộng hòa Ireland',
+        'Algeria': 'Cộng hòa Dân chủ Nhân dân Algeria',
+        'Afghanistan': 'Nước Cộng hòa Hồi giáo Afghanistan',
+        'Åland Islands': 'Đảo Åland',
+        'Albania': 'Cộng hòa Albania',
+        'American Samoa': 'Lãnh thổ Samoa thuộc Mỹ',
+        'Andorra': 'Công quốc Andorra',
+        'Angola': 'Cộng hòa Angola',
+        'Anguilla': 'Anguilla',
+        'Israel': 'Quốc gia Israel',
+        'Palestine': 'Quốc gia Palestine',
+        'Iraq': 'Cộng hòa Iraq',
+        'Iran': 'Cộng hòa Hồi giáo Iran',
+        'Jordan': 'Vương quốc Há-sê-mi Jordan',
+        'Kuwait': 'Quốc gia Kuwait',
+        'Lebanon': 'Cộng hòa Lê-ba-nông',
+        'Libya': 'Quốc gia Libya',
+        'Morocco': 'Vương quốc Ma-rốc',
+        'Tunisia': 'Cộng hòa Tunisia',
+        'Pakistan': 'Cộng hòa Hồi giáo Pakistan',
+        'Bangladesh': 'Cộng hòa Nhân dân Bangladesh',
+        'Sri Lanka': 'Cộng hòa Dân chủ Xã hội chủ nghĩa Sri Lanka',
+        'Myanmar': 'Cộng hòa Liên bang Myanmar',
+        'Laos': 'Cộng hòa Dân chủ Nhân dân Lào',
+        'Cambodia': 'Vương quốc Campuchia',
+        'Brunei': 'Quốc gia Brunei Darussalam',
+        'Mongolia': 'Mông Cổ',
+        'Romania': 'România',
+        'Czech Republic': 'Cộng hòa Séc',
+        'Chile': 'Cộng hòa Chile',
+        'Peru': 'Cộng hòa Peru',
+        'Colombia': 'Cộng hòa Colombia',
+        'Venezuela': 'Cộng hòa Bô-li-va Venezuela',
+        'Ecuador': 'Cộng hòa Ecuador',
+        'Cuba': 'Cộng hòa Cuba',
+        'Dominican Republic': 'Cộng hòa Dominica'
+    };
+    
+    // If translation exists, return it
+    if (translations[englishName]) {
+        return translations[englishName];
+    }
+    
+    // Auto-translate using pattern matching
+    return autoTranslateOfficialName(englishName);
+}
+
+function autoTranslateOfficialName(officialName) {
+    // Common patterns for auto-translation
+    let translated = officialName;
+    
+    // Republic patterns
+    if (officialName.includes('Republic of')) {
+        const country = officialName.replace('Republic of', '').trim();
+        const countryVi = translateCountryName(country) || country;
+        translated = `Cộng hòa ${countryVi}`;
+    }
+    else if (officialName.includes('Islamic Republic of')) {
+        const country = officialName.replace('Islamic Republic of', '').trim();
+        const countryVi = translateCountryName(country) || country;
+        translated = `Cộng hòa Hồi giáo ${countryVi}`;
+    }
+    else if (officialName.includes('Democratic Republic of')) {
+        const country = officialName.replace('Democratic Republic of', '').trim();
+        const countryVi = translateCountryName(country) || country;
+        translated = `Cộng hòa Dân chủ ${countryVi}`;
+    }
+    else if (officialName.includes('Federal Republic of')) {
+        const country = officialName.replace('Federal Republic of', '').trim();
+        const countryVi = translateCountryName(country) || country;
+        translated = `Cộng hòa Liên bang ${countryVi}`;
+    }
+    else if (officialName.includes('People\'s Republic of')) {
+        const country = officialName.replace('People\'s Republic of', '').trim();
+        const countryVi = translateCountryName(country) || country;
+        translated = `Cộng hòa Nhân dân ${countryVi}`;
+    }
+    // Kingdom patterns
+    else if (officialName.includes('Kingdom of')) {
+        const country = officialName.replace('Kingdom of', '').trim();
+        const countryVi = translateCountryName(country) || country;
+        translated = `Vương quốc ${countryVi}`;
+    }
+    // Federation patterns
+    else if (officialName.includes('Federation of')) {
+        const country = officialName.replace('Federation of', '').trim();
+        const countryVi = translateCountryName(country) || country;
+        translated = `Liên bang ${countryVi}`;
+    }
+    // State patterns
+    else if (officialName.includes('State of')) {
+        const country = officialName.replace('State of', '').trim();
+        const countryVi = translateCountryName(country) || country;
+        translated = `Quốc gia ${countryVi}`;
+    }
+    // Commonwealth patterns
+    else if (officialName.includes('Commonwealth of')) {
+        const country = officialName.replace('Commonwealth of', '').trim();
+        const countryVi = translateCountryName(country) || country;
+        translated = `Khối thịnh vượng chung ${countryVi}`;
+    }
+    // Principality patterns
+    else if (officialName.includes('Principality of')) {
+        const country = officialName.replace('Principality of', '').trim();
+        const countryVi = translateCountryName(country) || country;
+        translated = `Công quốc ${countryVi}`;
+    }
+    // Sultanate patterns
+    else if (officialName.includes('Sultanate of')) {
+        const country = officialName.replace('Sultanate of', '').trim();
+        const countryVi = translateCountryName(country) || country;
+        translated = `Quốc vương ${countryVi}`;
+    }
+    // Territory patterns
+    else if (officialName.includes('Territory of the French Southern and Antarctic Lands')) {
+        translated = 'Lãnh thổ phía Nam và Nam Cực thuộc Pháp';
+    }
+    else if (officialName.includes('Territory of')) {
+        const remaining = officialName.replace('Territory of', '').trim();
+        translated = `Lãnh thổ ${remaining}`;
+    }
+    // Special cases
+    else if (officialName.includes('Gabonese Republic')) {
+        translated = 'Cộng hòa Gabon';
+    }
+    else if (officialName.includes('Syrian Arab Republic')) {
+        translated = 'Cộng hòa Ả Rập Syria';
+    }
+    else if (officialName.includes('Lao People\'s Democratic Republic')) {
+        translated = 'Cộng hòa Dân chủ Nhân dân Lào';
+    }
+    else if (officialName.includes('Democratic People\'s Republic of Korea')) {
+        translated = 'Cộng hòa Dân chủ Nhân dân Triều Tiên';
+    }
+    else if (officialName.includes('Bolivarian Republic of Venezuela')) {
+        translated = 'Cộng hòa Bô-li-va Venezuela';
+    }
+    else if (officialName.includes('Republic of the Union of Myanmar')) {
+        translated = 'Cộng hòa Liên bang Myanmar';
+    }
+    
+    return translated;
+}
+
+let filterTimeout;
+function filterCountries() {
+    clearTimeout(filterTimeout);
+    filterTimeout = setTimeout(() => {
+        performFilterCountries();
+    }, 300);
+}
+
+function performFilterCountries() {
+    const searchTerm = document.getElementById('countrySearch').value.toLowerCase();
+    
+    filteredCountries = allCountries.filter(country => {
+        // Tìm kiếm theo tên tiếng Anh
+        const commonName = country.name.common.toLowerCase();
+        const officialName = country.name.official ? country.name.official.toLowerCase() : '';
+        
+        // Tìm kiếm theo tên tiếng Việt
+        const vietnameseName = translateCountryName(country.name.common).toLowerCase();
+        const vietnameseOfficialName = translateOfficialName(country.name.common).toLowerCase();
+        
+        // Tìm kiếm theo thủ đô
+        const capitalMatch = country.capital && country.capital[0] ? country.capital[0].toLowerCase().includes(searchTerm) : false;
+        
+        const matchesSearch = commonName.includes(searchTerm) ||
+                            officialName.includes(searchTerm) ||
+                            vietnameseName.includes(searchTerm) ||
+                            vietnameseOfficialName.includes(searchTerm) ||
+                            capitalMatch;
+        
+        const matchesContinent = !selectedContinent || country.region === selectedContinent;
+        
+        return matchesSearch && matchesContinent;
+    });
+    
+    currentPage = 1;
+    renderCountries(filteredCountries);
+}
+
+function updatePagination(totalItems, totalPages) {
+    const pageInfo = document.getElementById('pageInfo');
+    const totalCountriesInfo = document.getElementById('totalCountriesInfo');
+    const prevBtn = document.getElementById('prevPageBtn');
+    const nextBtn = document.getElementById('nextPageBtn');
+    const pageNumbers = document.getElementById('pageNumbers');
+    
+    const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+    
+    pageInfo.textContent = `${startItem}-${endItem}`;
+    totalCountriesInfo.textContent = totalItems;
+    
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+    
+    // Render page numbers - responsive for mobile
+    let pageNumbersHTML = '';
+    const isMobile = window.innerWidth < 640; // sm breakpoint
+    
+    // Button size classes - smaller on mobile
+    const btnSizeClasses = isMobile ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm';
+    const ellipsisSizeClasses = isMobile ? 'w-4 h-8' : 'w-8 h-10';
+    
+    if (totalPages <= (isMobile ? 4 : 7)) {
+        // Nếu ít trang, hiển thị tất cả
+        for (let i = 1; i <= totalPages; i++) {
+            const isActive = i === currentPage;
+            pageNumbersHTML += `<button onclick="goToPage(${i})" class="${btnSizeClasses} rounded-lg border transition-colors touch-manipulation ${isActive ? 'bg-blue-600 text-white border-blue-600' : 'border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100'}">${i}</button>`;
+        }
+    } else {
+        // Mobile: hiển thị 1, 2 ... (n-1), n
+        // Desktop: hiển thị 1, 2, 3 ... (n-2), (n-1), n
+        const showStart = isMobile ? 2 : 3; // Số nút đầu
+        const showEnd = isMobile ? 2 : 3;   // Số nút cuối
+        
+        // Hiển thị các trang đầu
+        for (let i = 1; i <= showStart; i++) {
+            const isActive = i === currentPage;
+            pageNumbersHTML += `<button onclick="goToPage(${i})" class="${btnSizeClasses} rounded-lg border transition-colors touch-manipulation ${isActive ? 'bg-blue-600 text-white border-blue-600' : 'border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100'}">${i}</button>`;
+        }
+        
+        // Ellipsis giữa
+        if (currentPage > showStart + 1 && currentPage < totalPages - showEnd) {
+            pageNumbersHTML += `<span class="${ellipsisSizeClasses} flex items-center justify-center text-slate-400">...</span>`;
+            // Hiển thị trang hiện tại nếu ở giữa
+            pageNumbersHTML += `<button onclick="goToPage(${currentPage})" class="${btnSizeClasses} rounded-lg border transition-colors touch-manipulation bg-blue-600 text-white border-blue-600">${currentPage}</button>`;
+            pageNumbersHTML += `<span class="${ellipsisSizeClasses} flex items-center justify-center text-slate-400">...</span>`;
+        } else {
+            pageNumbersHTML += `<span class="${ellipsisSizeClasses} flex items-center justify-center text-slate-400">...</span>`;
+        }
+        
+        // Hiển thị các trang cuối
+        for (let i = totalPages - showEnd + 1; i <= totalPages; i++) {
+            const isActive = i === currentPage;
+            pageNumbersHTML += `<button onclick="goToPage(${i})" class="${btnSizeClasses} rounded-lg border transition-colors touch-manipulation ${isActive ? 'bg-blue-600 text-white border-blue-600' : 'border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100'}">${i}</button>`;
+        }
+    }
+    
+    pageNumbers.innerHTML = pageNumbersHTML;
+}
+
+function changePage(direction) {
+    if (direction === 'prev' && currentPage > 1) {
+        currentPage--;
+    } else if (direction === 'next') {
+        const totalPages = Math.ceil(filteredCountries.length / itemsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+        }
+    }
+    renderCountries(filteredCountries);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goToPage(page) {
+    currentPage = page;
+    renderCountries(filteredCountries);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Items per page custom dropdown
+function toggleItemsPerPageDropdown(event) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById('itemsPerPageMenu');
+    const arrow = document.getElementById('itemsPerPageArrow');
+    const isHidden = menu.classList.contains('hidden');
+    
+    if (isHidden) {
+        menu.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+    } else {
+        menu.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+function selectItemsPerPage(value) {
+    const input = document.getElementById('itemsPerPageValue');
+    const textSpan = document.getElementById('itemsPerPageText');
+    const menu = document.getElementById('itemsPerPageMenu');
+    const arrow = document.getElementById('itemsPerPageArrow');
+    
+    // Update value and text
+    input.value = value;
+    textSpan.innerText = value;
+    itemsPerPage = value;
+    
+    // Update visual selection state
+    document.querySelectorAll('.items-per-page-option').forEach(option => {
+        const checkIcon = option.querySelector('.check-icon');
+        if (parseInt(option.dataset.value) === value) {
+            checkIcon.classList.remove('hidden');
+        } else {
+            checkIcon.classList.add('hidden');
+        }
+    });
+    
+    // Close dropdown
+    menu.classList.add('hidden');
+    arrow.style.transform = 'rotate(0deg)';
+    
+    // Reset về trang 1 và render lại
+    currentPage = 1;
+    renderCountries(filteredCountries);
+}
+
+// Close items per page dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const menu = document.getElementById('itemsPerPageMenu');
+    const btn = document.getElementById('itemsPerPageBtn');
+    if (menu && btn && !menu.classList.contains('hidden') && !btn.contains(event.target) && !menu.contains(event.target)) {
+        menu.classList.add('hidden');
+        const arrow = document.getElementById('itemsPerPageArrow');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+});
+
+// --- PHYSICS SIMULATION LOGIC ---
+let physicsCanvas, physicsCtx;
+let physicsObjects = [];
+let physicsAnimationId = null;
+let isPhysicsRunning = false;
+let physicsMode = 'bouncing'; // 'bouncing', 'gravity', 'solar'
+let physicsSpeed = 1;
+let collisionCount = 0;
+let lastFrameTime = 0;
+let fps = 0;
+
+// Solar system data
+const solarSystemData = [
+    { name: 'Mặt Trời', color: '#FDB813', radius: 30, orbitRadius: 0, speed: 0, angle: 0 },
+    { name: 'Sao Thủy', color: '#B5B5B5', radius: 4, orbitRadius: 50, speed: 0.04, angle: 0 },
+    { name: 'Sao Kim', color: '#E6C87A', radius: 6, orbitRadius: 75, speed: 0.03, angle: Math.PI / 3 },
+    { name: 'Trái Đất', color: '#6B93D6', radius: 7, orbitRadius: 105, speed: 0.02, angle: Math.PI },
+    { name: 'Sao Hỏa', color: '#C1440E', radius: 5, orbitRadius: 140, speed: 0.016, angle: Math.PI * 1.5 },
+    { name: 'Sao Mộc', color: '#D8CA9D', radius: 14, orbitRadius: 190, speed: 0.008, angle: Math.PI / 4 },
+    { name: 'Sao Thổ', color: '#F4D59E', radius: 12, orbitRadius: 240, speed: 0.006, angle: Math.PI * 0.8 },
+    { name: 'Sao Thiên Vương', color: '#D1E7E7', radius: 9, orbitRadius: 285, speed: 0.004, angle: Math.PI * 1.2 },
+    { name: 'Sao Hải Vương', color: '#5B5DDF', radius: 8, orbitRadius: 325, speed: 0.003, angle: Math.PI * 0.6 }
+];
+
+function initPhysics() {
+    physicsCanvas = document.getElementById('physicsCanvas');
+    if (!physicsCanvas) return;
+    
+    physicsCtx = physicsCanvas.getContext('2d');
+    resizePhysicsCanvas();
+    
+    // Use ResizeObserver for better responsiveness (e.g. sidebar toggle)
+    const resizeObserver = new ResizeObserver(() => {
+        resizePhysicsCanvas();
+    });
+    resizeObserver.observe(physicsCanvas.parentElement);
+    
+    // Initialize based on current mode
+    setPhysicsMode(physicsMode);
+}
+
+function resizePhysicsCanvas() {
+    if (!physicsCanvas) return;
+    const container = physicsCanvas.parentElement;
+    physicsCanvas.width = container.clientWidth;
+    physicsCanvas.height = 500;
+    
+    // Redraw if not running
+    if (!isPhysicsRunning) {
+        drawPhysics();
+    }
+}
+
+function setPhysicsMode(mode) {
+    physicsMode = mode;
+    
+    // Update button states
+    document.querySelectorAll('.physics-mode-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white', 'shadow-md');
+        btn.classList.add('bg-white', 'text-slate-600', 'border', 'border-slate-200', 'hover:bg-slate-50');
+    });
+    
+    const activeBtn = document.getElementById(mode === 'bouncing' ? 'btnBouncingBalls' : 
+                                              mode === 'gravity' ? 'btnGravity' : 'btnSolarSystem');
+    if (activeBtn) {
+        activeBtn.classList.remove('bg-white', 'text-slate-600', 'border', 'border-slate-200', 'hover:bg-slate-50');
+        activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-md');
+    }
+    
+    // Show/hide ball count control
+    const ballCountControl = document.getElementById('ballCountControl');
+    const solarLegend = document.getElementById('solarLegend');
+    
+    if (ballCountControl) {
+        ballCountControl.style.display = (mode === 'bouncing' || mode === 'gravity') ? 'flex' : 'none';
+    }
+    if (solarLegend) {
+        solarLegend.classList.toggle('hidden', mode !== 'solar');
+        if (mode === 'solar') {
+            populateSolarLegend();
+        }
+    }
+    
+    // Reset simulation
+    resetPhysicsSimulation();
+}
+
+function populateSolarLegend() {
+    const container = document.getElementById('solarLegendContent');
+    if (!container) return;
+    
+    container.innerHTML = solarSystemData.map(planet => `
+        <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded-full" style="background-color: ${planet.color}"></div>
+            <span class="text-slate-600">${planet.name}</span>
+        </div>
+    `).join('');
+}
+
+function createBouncingBalls(count) {
+    const balls = [];
+    for (let i = 0; i < count; i++) {
+        const radius = Math.random() * 15 + 10;
+        balls.push({
+            x: Math.random() * (physicsCanvas.width - radius * 2) + radius,
+            y: Math.random() * (physicsCanvas.height - radius * 2) + radius,
+            vx: (Math.random() - 0.5) * 8,
+            vy: (Math.random() - 0.5) * 8,
+            radius: radius,
+            color: `hsl(${Math.random() * 360}, 70%, 60%)`,
+            mass: radius
+        });
+    }
+    return balls;
+}
+
+function createGravityObjects(count) {
+    const objects = [];
+    for (let i = 0; i < count; i++) {
+        const radius = Math.random() * 12 + 8;
+        objects.push({
+            x: Math.random() * (physicsCanvas.width - radius * 2) + radius,
+            y: Math.random() * 100 + radius, // Start near top
+            vx: (Math.random() - 0.5) * 4,
+            vy: 0,
+            radius: radius,
+            color: `hsl(${Math.random() * 60 + 180}, 70%, 60%)`, // Blue-green colors
+            mass: radius,
+            grounded: false
+        });
+    }
+    return objects;
+}
+
+function createSolarSystem() {
+    return solarSystemData.map(planet => ({
+        ...planet,
+        angle: planet.angle
+    }));
+}
+
+function togglePhysicsSimulation() {
+    if (isPhysicsRunning) {
+        stopPhysicsSimulation();
+    } else {
+        startPhysicsSimulation();
+    }
+}
+
+function startPhysicsSimulation() {
+    if (isPhysicsRunning) return;
+    
+    isPhysicsRunning = true;
+    collisionCount = 0;
+    lastFrameTime = performance.now();
+    
+    const playBtn = document.getElementById('physicsPlayBtn');
+    const playIcon = document.getElementById('physicsPlayIcon');
+    const playText = document.getElementById('physicsPlayText');
+    
+    if (playBtn) {
+        playBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+        playBtn.classList.add('bg-amber-500', 'hover:bg-amber-600');
+    }
+    if (playIcon) playIcon.textContent = 'pause';
+    if (playText) playText.textContent = 'Tạm dừng';
+    
+    physicsLoop();
+}
+
+function stopPhysicsSimulation() {
+    isPhysicsRunning = false;
+    
+    if (physicsAnimationId) {
+        cancelAnimationFrame(physicsAnimationId);
+        physicsAnimationId = null;
+    }
+    
+    const playBtn = document.getElementById('physicsPlayBtn');
+    const playIcon = document.getElementById('physicsPlayIcon');
+    const playText = document.getElementById('physicsPlayText');
+    
+    if (playBtn) {
+        playBtn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
+        playBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+    }
+    if (playIcon) playIcon.textContent = 'play_arrow';
+    if (playText) playText.textContent = 'Tiếp tục';
+}
+
+function resetPhysicsSimulation() {
+    stopPhysicsSimulation();
+    collisionCount = 0;
+    
+    const count = parseInt(document.getElementById('ballCount')?.value) || 10;
+    
+    if (physicsMode === 'bouncing') {
+        physicsObjects = createBouncingBalls(count);
+    } else if (physicsMode === 'gravity') {
+        physicsObjects = createGravityObjects(count);
+    } else if (physicsMode === 'solar') {
+        physicsObjects = createSolarSystem();
+    }
+    
+    // Reset button text
+    const playText = document.getElementById('physicsPlayText');
+    if (playText) playText.textContent = 'Bắt đầu';
+    
+    drawPhysics();
+    updatePhysicsInfo();
+}
+
+function addBalls() {
+    if (physicsMode === 'solar') return;
+    
+    const count = parseInt(document.getElementById('ballCount')?.value) || 5;
+    
+    if (physicsMode === 'bouncing') {
+        physicsObjects = physicsObjects.concat(createBouncingBalls(count));
+    } else if (physicsMode === 'gravity') {
+        physicsObjects = physicsObjects.concat(createGravityObjects(count));
+    }
+    
+    updatePhysicsInfo();
+    if (!isPhysicsRunning) drawPhysics();
+}
+
+function togglePhysicsSpeedDropdown(event) {
+    event.stopPropagation();
+    const menu = document.getElementById('physicsSpeedMenu');
+    const arrow = document.getElementById('physicsSpeedArrow');
+    
+    if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+    } else {
+        menu.classList.add('hidden');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+function setPhysicsSpeed(speed) {
+    physicsSpeed = speed;
+    const label = document.getElementById('physicsSpeedLabel');
+    if (label) label.textContent = `${speed.toFixed(1)}x`;
+    
+    // Update active state in dropdown
+    const options = document.querySelectorAll('.physics-speed-option');
+    options.forEach(opt => {
+        const val = parseFloat(opt.getAttribute('data-value'));
+        const checkIcon = opt.querySelector('.material-symbols-outlined');
+        
+        if (val === speed) {
+            opt.classList.remove('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+            opt.classList.add('text-blue-600', 'bg-blue-50', 'font-medium');
+            checkIcon.classList.remove('opacity-0', 'group-hover:opacity-100');
+        } else {
+            opt.classList.add('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+            opt.classList.remove('text-blue-600', 'bg-blue-50', 'font-medium');
+            checkIcon.classList.add('opacity-0', 'group-hover:opacity-100');
+        }
+    });
+
+    const menu = document.getElementById('physicsSpeedMenu');
+    const arrow = document.getElementById('physicsSpeedArrow');
+    if (menu) menu.classList.add('hidden');
+    if (arrow) arrow.style.transform = 'rotate(0deg)';
+}
+
+function physicsLoop() {
+    if (!isPhysicsRunning) return;
+    
+    const currentTime = performance.now();
+    const deltaTime = (currentTime - lastFrameTime) / 1000;
+    fps = Math.round(1 / deltaTime);
+    lastFrameTime = currentTime;
+    
+    updatePhysics(deltaTime * physicsSpeed);
+    drawPhysics();
+    updatePhysicsInfo();
+    
+    physicsAnimationId = requestAnimationFrame(physicsLoop);
+}
+
+function updatePhysics(dt) {
+    if (physicsMode === 'bouncing') {
+        updateBouncingBalls(dt);
+    } else if (physicsMode === 'gravity') {
+        updateGravityObjects(dt);
+    } else if (physicsMode === 'solar') {
+        updateSolarSystem(dt);
+    }
+}
+
+function updateBouncingBalls(dt) {
+    const gravity = 0; // No gravity for bouncing mode
+    const damping = 0.999;
+    const bounce = 0.95;
+    
+    for (let i = 0; i < physicsObjects.length; i++) {
+        const ball = physicsObjects[i];
+        
+        // Apply velocity
+        ball.x += ball.vx * dt * 60;
+        ball.y += ball.vy * dt * 60;
+        ball.vy += gravity * dt * 60;
+        
+        // Wall collisions
+        if (ball.x - ball.radius < 0) {
+            ball.x = ball.radius;
+            ball.vx = -ball.vx * bounce;
+            collisionCount++;
+        }
+        if (ball.x + ball.radius > physicsCanvas.width) {
+            ball.x = physicsCanvas.width - ball.radius;
+            ball.vx = -ball.vx * bounce;
+            collisionCount++;
+        }
+        if (ball.y - ball.radius < 0) {
+            ball.y = ball.radius;
+            ball.vy = -ball.vy * bounce;
+            collisionCount++;
+        }
+        if (ball.y + ball.radius > physicsCanvas.height) {
+            ball.y = physicsCanvas.height - ball.radius;
+            ball.vy = -ball.vy * bounce;
+            collisionCount++;
+        }
+        
+        // Ball-to-ball collisions
+        for (let j = i + 1; j < physicsObjects.length; j++) {
+            const other = physicsObjects[j];
+            const dx = other.x - ball.x;
+            const dy = other.y - ball.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const minDist = ball.radius + other.radius;
+            
+            if (dist < minDist) {
+                // Collision detected
+                collisionCount++;
+                
+                // Normalize collision vector
+                const nx = dx / dist;
+                const ny = dy / dist;
+                
+                // Relative velocity
+                const dvx = ball.vx - other.vx;
+                const dvy = ball.vy - other.vy;
+                const dvn = dvx * nx + dvy * ny;
+                
+                // Don't process if moving apart
+                if (dvn > 0) continue;
+                
+                // Impulse
+                const restitution = 0.9;
+                const impulse = (-(1 + restitution) * dvn) / (1/ball.mass + 1/other.mass);
+                
+                ball.vx -= impulse * nx / ball.mass;
+                ball.vy -= impulse * ny / ball.mass;
+                other.vx += impulse * nx / other.mass;
+                other.vy += impulse * ny / other.mass;
+                
+                // Separate balls
+                const overlap = minDist - dist;
+                const separationX = overlap * nx * 0.5;
+                const separationY = overlap * ny * 0.5;
+                ball.x -= separationX;
+                ball.y -= separationY;
+                other.x += separationX;
+                other.y += separationY;
+            }
+        }
+        
+        // Apply damping
+        ball.vx *= damping;
+        ball.vy *= damping;
+    }
+}
+
+function updateGravityObjects(dt) {
+    const gravity = 980; // pixels per second squared
+    const bounce = 0.7;
+    const friction = 0.99;
+    
+    for (let obj of physicsObjects) {
+        if (!obj.grounded) {
+            obj.vy += gravity * dt;
+        }
+        
+        obj.x += obj.vx * dt;
+        obj.y += obj.vy * dt;
+        
+        // Floor collision
+        if (obj.y + obj.radius > physicsCanvas.height) {
+            obj.y = physicsCanvas.height - obj.radius;
+            if (Math.abs(obj.vy) > 20) {
+                obj.vy = -obj.vy * bounce;
+                collisionCount++;
+            } else {
+                obj.vy = 0;
+                obj.grounded = true;
+            }
+        }
+        
+        // Wall collisions
+        if (obj.x - obj.radius < 0) {
+            obj.x = obj.radius;
+            obj.vx = -obj.vx * bounce;
+            collisionCount++;
+        }
+        if (obj.x + obj.radius > physicsCanvas.width) {
+            obj.x = physicsCanvas.width - obj.radius;
+            obj.vx = -obj.vx * bounce;
+            collisionCount++;
+        }
+        
+        // Apply friction when grounded
+        if (obj.grounded) {
+            obj.vx *= friction;
+        }
+        
+        // Check if still grounded
+        if (obj.y + obj.radius < physicsCanvas.height - 1) {
+            obj.grounded = false;
+        }
+    }
+}
+
+function updateSolarSystem(dt) {
+    for (let planet of physicsObjects) {
+        if (planet.orbitRadius > 0) {
+            planet.angle += planet.speed * dt * 60;
+        }
+    }
+}
+
+function drawPhysics() {
+    if (!physicsCtx || !physicsCanvas) return;
+    
+    // Clear canvas
+    physicsCtx.fillStyle = '#0f172a';
+    physicsCtx.fillRect(0, 0, physicsCanvas.width, physicsCanvas.height);
+    
+    if (physicsMode === 'bouncing' || physicsMode === 'gravity') {
+        drawBalls();
+    } else if (physicsMode === 'solar') {
+        drawSolarSystem();
+    }
+}
+
+function drawBalls() {
+    for (let obj of physicsObjects) {
+        // Shadow
+        physicsCtx.beginPath();
+        physicsCtx.arc(obj.x + 2, obj.y + 2, obj.radius, 0, Math.PI * 2);
+        physicsCtx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        physicsCtx.fill();
+        
+        // Ball
+        const gradient = physicsCtx.createRadialGradient(
+            obj.x - obj.radius * 0.3, obj.y - obj.radius * 0.3, 0,
+            obj.x, obj.y, obj.radius
+        );
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+        gradient.addColorStop(0.5, obj.color);
+        gradient.addColorStop(1, obj.color);
+        
+        physicsCtx.beginPath();
+        physicsCtx.arc(obj.x, obj.y, obj.radius, 0, Math.PI * 2);
+        physicsCtx.fillStyle = gradient;
+        physicsCtx.fill();
+    }
+}
+
+function drawSolarSystem() {
+    const centerX = physicsCanvas.width / 2;
+    const centerY = physicsCanvas.height / 2;
+    
+    // Draw orbit paths
+    for (let planet of physicsObjects) {
+        if (planet.orbitRadius > 0) {
+            physicsCtx.beginPath();
+            physicsCtx.arc(centerX, centerY, planet.orbitRadius, 0, Math.PI * 2);
+            physicsCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            physicsCtx.lineWidth = 1;
+            physicsCtx.stroke();
+        }
+    }
+    
+    // Draw planets
+    for (let planet of physicsObjects) {
+        let x, y;
+        
+        if (planet.orbitRadius === 0) {
+            // Sun at center
+            x = centerX;
+            y = centerY;
+        } else {
+            x = centerX + Math.cos(planet.angle) * planet.orbitRadius;
+            y = centerY + Math.sin(planet.angle) * planet.orbitRadius;
+        }
+        
+        // Glow effect for Sun
+        if (planet.name === 'Mặt Trời') {
+            const glow = physicsCtx.createRadialGradient(x, y, 0, x, y, planet.radius * 2);
+            glow.addColorStop(0, 'rgba(253, 184, 19, 0.8)');
+            glow.addColorStop(0.5, 'rgba(253, 184, 19, 0.3)');
+            glow.addColorStop(1, 'rgba(253, 184, 19, 0)');
+            physicsCtx.beginPath();
+            physicsCtx.arc(x, y, planet.radius * 2, 0, Math.PI * 2);
+            physicsCtx.fillStyle = glow;
+            physicsCtx.fill();
+        }
+        
+        // Planet body
+        const gradient = physicsCtx.createRadialGradient(
+            x - planet.radius * 0.3, y - planet.radius * 0.3, 0,
+            x, y, planet.radius
+        );
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+        gradient.addColorStop(0.5, planet.color);
+        gradient.addColorStop(1, planet.color);
+        
+        physicsCtx.beginPath();
+        physicsCtx.arc(x, y, planet.radius, 0, Math.PI * 2);
+        physicsCtx.fillStyle = gradient;
+        physicsCtx.fill();
+        
+        // Saturn's rings
+        if (planet.name === 'Sao Thổ') {
+            physicsCtx.beginPath();
+            physicsCtx.ellipse(x, y, planet.radius * 1.8, planet.radius * 0.4, 0, 0, Math.PI * 2);
+            physicsCtx.strokeStyle = '#C9B896';
+            physicsCtx.lineWidth = 3;
+            physicsCtx.stroke();
+        }
+    }
+}
+
+function updatePhysicsInfo() {
+    const objectCount = document.getElementById('physicsObjectCount');
+    const fpsDisplay = document.getElementById('physicsFPS');
+    const collisionsDisplay = document.getElementById('physicsCollisions');
+    const energyDisplay = document.getElementById('physicsEnergy');
+    
+    if (objectCount) objectCount.textContent = physicsObjects.length;
+    if (fpsDisplay) fpsDisplay.textContent = isPhysicsRunning ? fps : 0;
+    if (collisionsDisplay) collisionsDisplay.textContent = collisionCount;
+    
+    // Calculate total kinetic energy
+    let totalEnergy = 0;
+    if (physicsMode !== 'solar') {
+        for (let obj of physicsObjects) {
+            const speed = Math.sqrt(obj.vx * obj.vx + obj.vy * obj.vy);
+            totalEnergy += 0.5 * obj.mass * speed * speed;
+        }
+    }
+    if (energyDisplay) energyDisplay.textContent = Math.round(totalEnergy);
+}
+
+// --- SOLAR SYSTEM EXPLORER LOGIC ---
+const planetsData = [
+    {
+        name: "Mercury",
+        vietnameseName: "Sao Thủy",
+        description: "Hành tinh nhỏ nhất và gần Mặt Trời nhất. Nó có bề mặt đầy miệng núi lửa giống như Mặt Trăng.",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Mercury_in_true_color.jpg/290px-Mercury_in_true_color.jpg",
+        stats: {
+            diameter: "4,880 km",
+            mass: "3.30 × 10^23 kg",
+            distanceFromSun: "57.9 triệu km",
+            orbitalPeriod: "88 ngày",
+            rotationPeriod: "58.6 ngày",
+            moons: 0
+        },
+        color: "text-slate-500"
+    },
+    {
+        name: "Venus",
+        vietnameseName: "Sao Kim",
+        description: "Hành tinh nóng nhất hệ mặt trời do hiệu ứng nhà kính dày đặc. Nó quay ngược chiều so với hầu hết các hành tinh khác.",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Venus-real_color.jpg/290px-Venus-real_color.jpg",
+        stats: {
+            diameter: "12,104 km",
+            mass: "4.87 × 10^24 kg",
+            distanceFromSun: "108.2 triệu km",
+            orbitalPeriod: "225 ngày",
+            rotationPeriod: "243 ngày",
+            moons: 0
+        },
+        color: "text-yellow-600"
+    },
+    {
+        name: "Earth",
+        vietnameseName: "Trái Đất",
+        description: "Hành tinh duy nhất được biết đến có sự sống. Bề mặt được bao phủ 71% bởi nước.",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_Earth_seen_from_Apollo_17.jpg/290px-The_Earth_seen_from_Apollo_17.jpg",
+        stats: {
+            diameter: "12,742 km",
+            mass: "5.97 × 10^24 kg",
+            distanceFromSun: "149.6 triệu km",
+            orbitalPeriod: "365.25 ngày",
+            rotationPeriod: "24 giờ",
+            moons: 1
+        },
+        color: "text-blue-600"
+    },
+    {
+        name: "Mars",
+        vietnameseName: "Sao Hỏa",
+        description: "Được gọi là Hành tinh Đỏ do oxit sắt trên bề mặt. Có ngọn núi cao nhất hệ mặt trời (Olympus Mons).",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/OSIRIS_Mars_true_color.jpg/290px-OSIRIS_Mars_true_color.jpg",
+        stats: {
+            diameter: "6,779 km",
+            mass: "6.39 × 10^23 kg",
+            distanceFromSun: "227.9 triệu km",
+            orbitalPeriod: "687 ngày",
+            rotationPeriod: "24.6 giờ",
+            moons: 2
+        },
+        color: "text-red-600"
+    },
+    {
+        name: "Jupiter",
+        vietnameseName: "Sao Mộc",
+        description: "Hành tinh lớn nhất hệ mặt trời. Nổi tiếng với Vết Đỏ Lớn, một cơn bão khổng lồ đã tồn tại hàng trăm năm.",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Jupiter_and_its_shrunken_Great_Red_Spot.jpg/290px-Jupiter_and_its_shrunken_Great_Red_Spot.jpg",
+        stats: {
+            diameter: "139,820 km",
+            mass: "1.90 × 10^27 kg",
+            distanceFromSun: "778.5 triệu km",
+            orbitalPeriod: "11.86 năm",
+            rotationPeriod: "9.9 giờ",
+            moons: 79
+        },
+        color: "text-orange-600"
+    },
+    {
+        name: "Saturn",
+        vietnameseName: "Sao Thổ",
+        description: "Nổi tiếng với hệ thống vành đai rực rỡ và phức tạp nhất. Là hành tinh có mật độ thấp nhất (nhẹ hơn nước).",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Saturn_during_Equinox.jpg/290px-Saturn_during_Equinox.jpg",
+        stats: {
+            diameter: "116,460 km",
+            mass: "5.68 × 10^26 kg",
+            distanceFromSun: "1.4 tỷ km",
+            orbitalPeriod: "29.45 năm",
+            rotationPeriod: "10.7 giờ",
+            moons: 82
+        },
+        color: "text-yellow-500"
+    },
+    {
+        name: "Uranus",
+        vietnameseName: "Sao Thiên Vương",
+        description: "Hành tinh băng khổng lồ với trục quay nghiêng gần 90 độ. Có màu xanh nhạt do khí metan trong khí quyển.",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Uranus2.jpg/290px-Uranus2.jpg",
+        stats: {
+            diameter: "50,724 km",
+            mass: "8.68 × 10^25 kg",
+            distanceFromSun: "2.87 tỷ km",
+            orbitalPeriod: "84 năm",
+            rotationPeriod: "17.2 giờ",
+            moons: 27
+        },
+        color: "text-cyan-500"
+    },
+    {
+        name: "Neptune",
+        vietnameseName: "Sao Hải Vương",
+        description: "Hành tinh xa nhất và có gió mạnh nhất hệ mặt trời. Có màu xanh đậm rực rỡ.",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Neptune_-_Voyager_2_%2829347980845%29_flatten_crop.jpg/290px-Neptune_-_Voyager_2_%2829347980845%29_flatten_crop.jpg",
+        stats: {
+            diameter: "49,244 km",
+            mass: "1.02 × 10^26 kg",
+            distanceFromSun: "4.5 tỷ km",
+            orbitalPeriod: "164.8 năm",
+            rotationPeriod: "16.1 giờ",
+            moons: 14
+        },
+        color: "text-blue-700"
+    }
+];
+
+let solarInitialized = false;
+
+function initSolarSystem() {
+    if (solarInitialized) return;
+    renderPlanets(planetsData);
+    solarInitialized = true;
+}
+
+function renderPlanets(planets) {
+    const grid = document.getElementById('planetsGrid');
+    grid.innerHTML = '';
+
+    planets.forEach(planet => {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow flex flex-col';
+        
+        card.innerHTML = `
+            <div class="h-48 overflow-hidden bg-slate-900 relative group">
+                <img src="${planet.image}" alt="${planet.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
+                <div class="absolute bottom-3 left-4">
+                    <h3 class="text-xl font-bold text-white">${planet.vietnameseName}</h3>
+                    <p class="text-slate-300 text-sm">${planet.name}</p>
+                </div>
+            </div>
+            <div class="p-4 flex-1 flex flex-col">
+                <p class="text-slate-600 text-sm mb-4 line-clamp-3">${planet.description}</p>
+                
+                <div class="mt-auto space-y-2">
+                    <div class="flex justify-between text-xs border-b border-slate-100 pb-2">
+                        <span class="text-slate-500">Đường kính</span>
+                        <span class="font-medium text-slate-700">${planet.stats.diameter}</span>
+                    </div>
+                    <div class="flex justify-between text-xs border-b border-slate-100 pb-2">
+                        <span class="text-slate-500">Khoảng cách</span>
+                        <span class="font-medium text-slate-700">${planet.stats.distanceFromSun}</span>
+                    </div>
+                    <div class="flex justify-between text-xs border-b border-slate-100 pb-2">
+                        <span class="text-slate-500">Chu kỳ quỹ đạo</span>
+                        <span class="font-medium text-slate-700">${planet.stats.orbitalPeriod}</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-500">Số mặt trăng</span>
+                        <span class="font-medium text-slate-700">${planet.stats.moons}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function filterPlanets() {
+    const query = document.getElementById('solarSearch').value.toLowerCase();
+    const filtered = planetsData.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        p.vietnameseName.toLowerCase().includes(query)
+    );
+    renderPlanets(filtered);
+}
+
+// --- SOLAR SYSTEM 3D VIEW ---
+let solar3DScene, solar3DCamera, solar3DRenderer, solar3DControls;
+let solar3DObjects = [];
+let solar3DAnimationId;
+let isSolar3DInitialized = false;
+let solarRaycaster, solarMouse;
+let focusedPlanet = null;
+let solarSpeed = 1.0;
+
+function setSolarView(view) {
+    const btnList = document.getElementById('btnSolarList');
+    const btn3D = document.getElementById('btnSolar3D');
+    const grid = document.getElementById('planetsGrid');
+    const container3D = document.getElementById('solar3DContainer');
+    const searchContainer = document.getElementById('solarSearchContainer');
+    const speedControl = document.getElementById('solarSpeedControl');
+
+    if (view === 'list') {
+        btnList.className = 'flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all bg-white text-blue-600 shadow-sm';
+        btn3D.className = 'flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all text-slate-500 hover:text-slate-700';
+        
+        grid.classList.remove('hidden');
+        container3D.classList.add('hidden');
+        searchContainer.classList.remove('opacity-50', 'pointer-events-none');
+        if (speedControl) speedControl.classList.add('hidden');
+        
+        if (solar3DAnimationId) cancelAnimationFrame(solar3DAnimationId);
+    } else {
+        btnList.className = 'flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all text-slate-500 hover:text-slate-700';
+        btn3D.className = 'flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all bg-white text-blue-600 shadow-sm';
+        
+        grid.classList.add('hidden');
+        container3D.classList.remove('hidden');
+        searchContainer.classList.add('opacity-50', 'pointer-events-none');
+        if (speedControl) speedControl.classList.remove('hidden');
+
+        if (!isSolar3DInitialized) {
+            initSolar3D();
+        } else {
+            animateSolar3D();
+        }
+    }
+}
+
+function initSolar3D() {
+    const container = document.getElementById('solar3DCanvas');
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+
+    // Scene
+    solar3DScene = new THREE.Scene();
+    solar3DScene.background = new THREE.Color(0x050b14); // Darker background
+
+    // Camera
+    solar3DCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 10000);
+    // Adjust initial camera for mobile
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+        solar3DCamera.position.set(0, 250, 500); // Further back on mobile
+    } else {
+        solar3DCamera.position.set(0, 200, 400);
+    }
+
+    // Renderer
+    solar3DRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    solar3DRenderer.setSize(width, height);
+    solar3DRenderer.shadowMap.enabled = true;
+    solar3DRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Optimize for mobile
+    container.appendChild(solar3DRenderer.domElement);
+
+    // Controls
+    solar3DControls = new THREE.OrbitControls(solar3DCamera, solar3DRenderer.domElement);
+    solar3DControls.enableDamping = true;
+    solar3DControls.dampingFactor = 0.05;
+    solar3DControls.minDistance = 50; // Prevent too close zoom
+    solar3DControls.maxDistance = 800; // Prevent too far zoom
+    solar3DControls.enablePan = true; // Allow panning on mobile
+    solar3DControls.touches = {
+        ONE: THREE.TOUCH.ROTATE,
+        TWO: THREE.TOUCH.DOLLY_PAN // 2 fingers for zoom+pan
+    };
+
+    // Raycaster for interaction
+    solarRaycaster = new THREE.Raycaster();
+    solarMouse = new THREE.Vector2();
+    
+    // Mouse click
+    solar3DRenderer.domElement.addEventListener('click', onSolar3DClick, false);
+    
+    // Touch tap (fix for mobile)
+    let touchStartTime = 0;
+    let touchStartPos = new THREE.Vector2();
+    
+    solar3DRenderer.domElement.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+            touchStartTime = Date.now();
+            touchStartPos.set(e.touches[0].clientX, e.touches[0].clientY);
+        }
+    }, { passive: false });
+    
+    solar3DRenderer.domElement.addEventListener('touchend', (e) => {
+        if (e.changedTouches.length === 1) {
+            const touchEndTime = Date.now();
+            const touchEndPos = new THREE.Vector2(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+            const distance = touchStartPos.distanceTo(touchEndPos);
+            const duration = touchEndTime - touchStartTime;
+            
+            // If tap is quick (< 500ms) and didn't move much (< 10px)
+            if (duration < 500 && distance < 10) {
+                // Prevent ghost click
+                if (e.cancelable) e.preventDefault();
+                
+                const fakeEvent = {
+                    clientX: touchEndPos.x,
+                    clientY: touchEndPos.y
+                };
+                onSolar3DClick(fakeEvent);
+            }
+        }
+    }, { passive: false });
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0x333333); // Softer ambient
+    solar3DScene.add(ambientLight);
+    
+    const pointLight = new THREE.PointLight(0xffffff, 2, 1000); // Sun light
+    solar3DScene.add(pointLight);
+
+    // Stars
+    addStars();
+
+    // Sun
+    const sunGeometry = new THREE.SphereGeometry(20, 64, 64);
+    const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffdd00 });
+    const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+    sun.userData = { name: 'Sun', isPlanet: true };
+    solar3DScene.add(sun);
+    
+    // Glow effect for Sun
+    const sunGlowGeo = new THREE.SphereGeometry(24, 64, 64);
+    const sunGlowMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.2 });
+    const sunGlow = new THREE.Mesh(sunGlowGeo, sunGlowMat);
+    solar3DScene.add(sunGlow);
+
+    // Planets Data
+    const planets3D = [
+        { name: "Mercury", color: 0xaaaaaa, size: 2, distance: 35, speed: 0.04, roughness: 0.7 },
+        { name: "Venus", color: 0xe3bb76, size: 4, distance: 50, speed: 0.015, roughness: 0.5 },
+        { name: "Earth", color: 0x2233ff, size: 4.2, distance: 70, speed: 0.01, roughness: 0.6 },
+        { name: "Mars", color: 0xff3300, size: 3, distance: 90, speed: 0.008, roughness: 0.8 },
+        { name: "Jupiter", color: 0xdcae96, size: 12, distance: 140, speed: 0.004, roughness: 0.4 },
+        { name: "Saturn", color: 0xf4d03f, size: 10, distance: 190, speed: 0.003, roughness: 0.4, ring: { inner: 14, outer: 22, color: 0xc0a392 } },
+        { name: "Uranus", color: 0x73c6b6, size: 7, distance: 240, speed: 0.002, roughness: 0.5 },
+        { name: "Neptune", color: 0x2e86c1, size: 7, distance: 280, speed: 0.001, roughness: 0.5 }
+    ];
+
+    solar3DObjects = [];
+
+    planets3D.forEach(p => {
+        // Orbit path
+        const orbitGeo = new THREE.RingGeometry(p.distance - 0.2, p.distance + 0.2, 256);
+        const orbitMat = new THREE.MeshBasicMaterial({ color: 0x60a5fa, side: THREE.DoubleSide, transparent: true, opacity: 0.15 });
+        const orbit = new THREE.Mesh(orbitGeo, orbitMat);
+        orbit.rotation.x = Math.PI / 2;
+        solar3DScene.add(orbit);
+
+        // Soft glow around orbit for visibility
+        const orbitGlowGeo = new THREE.RingGeometry(p.distance - 0.6, p.distance + 0.6, 128);
+        const orbitGlowMat = new THREE.MeshBasicMaterial({ color: 0x60a5fa, side: THREE.DoubleSide, transparent: true, opacity: 0.05 });
+        const orbitGlow = new THREE.Mesh(orbitGlowGeo, orbitGlowMat);
+        orbitGlow.rotation.x = Math.PI / 2;
+        solar3DScene.add(orbitGlow);
+
+        // Planet Group
+        const planetGroup = new THREE.Group();
+        solar3DScene.add(planetGroup);
+
+        // Planet Mesh
+        const geometry = new THREE.SphereGeometry(p.size, 64, 64);
+        const material = new THREE.MeshStandardMaterial({ 
+            color: p.color, 
+            roughness: p.roughness,
+            metalness: 0.1
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.x = p.distance;
+        mesh.userData = { name: p.name, isPlanet: true };
+        
+        // Add to group
+        planetGroup.add(mesh);
+
+        // Rings for Saturn
+        if (p.ring) {
+            const ringGeo = new THREE.RingGeometry(p.ring.inner, p.ring.outer, 64);
+            const ringMat = new THREE.MeshStandardMaterial({ 
+                color: p.ring.color, 
+                side: THREE.DoubleSide, 
+                transparent: true, 
+                opacity: 0.8,
+                roughness: 0.8
+            });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.rotation.x = Math.PI / 2;
+            mesh.add(ring);
+        }
+
+        // Store for animation
+        solar3DObjects.push({
+            group: planetGroup,
+            mesh: mesh,
+            speed: p.speed,
+            name: p.name,
+            distance: p.distance,
+            size: p.size
+        });
+    });
+
+    // Handle Resize
+    window.addEventListener('resize', onWindowResize, false);
+
+    isSolar3DInitialized = true;
+    animateSolar3D();
+}
+
+function onSolar3DClick(event) {
+    const container = document.getElementById('solar3DCanvas');
+    const rect = container.getBoundingClientRect();
+    
+    solarMouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+    solarMouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+    solarRaycaster.setFromCamera(solarMouse, solar3DCamera);
+
+    const meshes = solar3DObjects.map(obj => obj.mesh);
+    // Include Sun for interaction
+    const sunObj = solar3DScene.children.find(ch => ch.userData && ch.userData.name === 'Sun');
+    if (sunObj) meshes.push(sunObj);
+    const intersects = solarRaycaster.intersectObjects(meshes);
+
+    if (intersects.length > 0) {
+        const object = intersects[0].object;
+        const planetName = object.userData.name;
+        const planetObj = planetName === 'Sun'
+            ? { mesh: object, name: 'Sun', size: 20 }
+            : solar3DObjects.find(p => p.name === planetName);
+        if (planetObj) focusPlanet(planetObj);
+    } else {
+        // Click outside to reset
+        focusedPlanet = null;
+        document.getElementById('planetInfo3D').classList.add('hidden');
+    }
+}
+
+function focusPlanet(planetObj) {
+    // Close any existing info card
+    const infoCard = document.getElementById('planetInfo3D');
+    if (!infoCard.classList.contains('hidden')) {
+        infoCard.classList.add('hidden');
+    }
+
+    focusedPlanet = planetObj;
+
+    // Show Info Card
+    const nameEl = document.getElementById('p3dName');
+    const descEl = document.getElementById('p3dDesc');
+    const statsEl = document.getElementById('p3dStats');
+
+    const data = planetsData.find(p => p.name === planetObj.name);
+
+    if (data || planetObj.name === 'Sun') {
+        if (planetObj.name === 'Sun') {
+            nameEl.innerHTML = `<span class="w-2 h-6 bg-yellow-400 rounded-full block mr-2"></span>Mặt Trời`;
+            nameEl.className = `text-xl font-bold mb-2 flex items-center text-amber-400`;
+            descEl.textContent = 'Ngôi sao ở trung tâm hệ mặt trời, cung cấp năng lượng và ánh sáng cho các hành tinh. Nhiệt độ bề mặt ~5,500°C.';
+            statsEl.innerHTML = `
+                <div><span class="text-slate-500">Đường kính:</span> <span class="text-white">1,392,700 km</span></div>
+                <div><span class="text-slate-500">Khối lượng:</span> <span class="text-white">1.989 × 10^30 kg</span></div>
+                <div><span class="text-slate-500">Loại sao:</span> <span class="text-white">G-type (dải chính)</span></div>
+                <div><span class="text-slate-500">Khoảng cách Trái Đất:</span> <span class="text-white">~149.6 triệu km</span></div>
+            `;
+        } else {
+            nameEl.innerHTML = `<span class="w-2 h-6 bg-blue-500 rounded-full block mr-2"></span>${data.vietnameseName}`;
+            nameEl.className = `text-xl font-bold mb-2 flex items-center ${data.color}`;
+            descEl.textContent = data.description;
+            statsEl.innerHTML = `
+                <div><span class="text-slate-500">Đường kính:</span> <span class="text-white">${data.stats.diameter}</span></div>
+                <div><span class="text-slate-500">Khoảng cách:</span> <span class="text-white">${data.stats.distanceFromSun}</span></div>
+                <div><span class="text-slate-500">Chu kỳ:</span> <span class="text-white">${data.stats.orbitalPeriod}</span></div>
+                <div><span class="text-slate-500">Mặt trăng:</span> <span class="text-white">${data.stats.moons}</span></div>
+            `;
+        }
+
+        // Add close button functionality
+        const closeButton = document.getElementById('planetInfoClose');
+        if (closeButton) {
+            closeButton.onclick = () => {
+                infoCard.classList.add('hidden');
+                focusedPlanet = null;
+            };
+        }
+
+        infoCard.classList.remove('hidden');
+    }
+}
+
+function addStars() {
+    const geometry = new THREE.BufferGeometry();
+    const vertices = [];
+    for (let i = 0; i < 2000; i++) {
+        vertices.push(
+            THREE.MathUtils.randFloatSpread(2000),
+            THREE.MathUtils.randFloatSpread(2000),
+            THREE.MathUtils.randFloatSpread(2000)
+        );
+    }
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    const material = new THREE.PointsMaterial({ color: 0xffffff, size: 1.2, transparent: true, opacity: 0.8 });
+    const stars = new THREE.Points(geometry, material);
+    solar3DScene.add(stars);
+}
+
+function onWindowResize() {
+    if (!solar3DCamera || !solar3DRenderer) return;
+    const container = document.getElementById('solar3DContainer');
+    if (container.classList.contains('hidden')) return;
+    
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    
+    solar3DCamera.aspect = width / height;
+    solar3DCamera.updateProjectionMatrix();
+    solar3DRenderer.setSize(width, height);
+}
+
+function animateSolar3D() {
+    solar3DAnimationId = requestAnimationFrame(animateSolar3D);
+    
+    solar3DObjects.forEach(obj => {
+        obj.group.rotation.y += obj.speed * solarSpeed;
+        obj.mesh.rotation.y += 0.02; // Self rotation
+    });
+
+    // Camera following logic
+    if (focusedPlanet) {
+        // Smooth scale-up effect for focused object
+        const currentScale = focusedPlanet.mesh.scale.x;
+        const targetScale = 1.35; // enlarge
+        const newScale = currentScale + (targetScale - currentScale) * 0.08;
+        focusedPlanet.mesh.scale.set(newScale, newScale, newScale);
+
+        const targetVec = new THREE.Vector3();
+        focusedPlanet.mesh.getWorldPosition(targetVec);
+        
+        // Smoothly move controls target to planet
+        solar3DControls.target.lerp(targetVec, 0.05);
+        
+        // Calculate desired camera position (offset from planet)
+        // Offset depends on planet size to ensure it fills view nicely but not too close
+        const offsetDistance = focusedPlanet.size * 4 + 10;
+        const relativeOffset = new THREE.Vector3(offsetDistance, offsetDistance * 0.5, offsetDistance);
+        const desiredCamPos = targetVec.clone().add(relativeOffset);
+        
+        // Smoothly move camera
+        solar3DCamera.position.lerp(desiredCamPos, 0.05);
+
+        // Update Info Card Position
+        const infoCard = document.getElementById('planetInfo3D');
+        if (!infoCard.classList.contains('hidden')) {
+            const isMobile = window.innerWidth < 640; // sm breakpoint
+            
+            if (isMobile) {
+                // On mobile: fixed bottom center (already styled with Tailwind classes)
+                // No need to reposition dynamically
+                infoCard.style.transform = '';
+                infoCard.style.top = 'auto';
+                infoCard.style.left = '50%';
+                infoCard.style.bottom = '1rem';
+            } else {
+                // On desktop: floating label next to planet
+                const labelPos = targetVec.clone();
+                labelPos.y += focusedPlanet.size * 1.5; // Slightly above center
+                labelPos.x += focusedPlanet.size * 1.5; // Slightly right
+
+                labelPos.project(solar3DCamera);
+
+                const container = document.getElementById('solar3DCanvas');
+                const x = (labelPos.x * .5 + .5) * container.clientWidth;
+                const y = (labelPos.y * -.5 + .5) * container.clientHeight;
+
+                // Add some offset in pixels
+                infoCard.style.transform = `translate(${x + 20}px, ${y - 20}px)`;
+                infoCard.style.top = '0';
+                infoCard.style.left = '0';
+                infoCard.style.bottom = 'auto';
+            }
+        }
+    }
+
+    solar3DControls.update();
+    solar3DRenderer.render(solar3DScene, solar3DCamera);
+}
+
+function toggleSolarSpeedDropdown(event) {
+    event.stopPropagation();
+    const menu = document.getElementById('solarSpeedMenu');
+    const arrow = document.getElementById('solarSpeedArrow');
+    
+    if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+    } else {
+        menu.classList.add('hidden');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+function setSolarSpeed(speed) {
+    solarSpeed = speed;
+    const label = document.getElementById('solarSpeedLabel');
+    if (label) label.textContent = `${speed.toFixed(1)}x`;
+    
+    // Update active state in dropdown
+    const options = document.querySelectorAll('.speed-option');
+    options.forEach(opt => {
+        const val = parseFloat(opt.getAttribute('data-value'));
+        const checkIcon = opt.querySelector('.material-symbols-outlined');
+        
+        if (val === speed) {
+            opt.classList.remove('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+            opt.classList.add('text-blue-600', 'bg-blue-50', 'font-medium');
+            checkIcon.classList.remove('opacity-0', 'group-hover:opacity-100');
+        } else {
+            opt.classList.add('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+            opt.classList.remove('text-blue-600', 'bg-blue-50', 'font-medium');
+            checkIcon.classList.add('opacity-0', 'group-hover:opacity-100');
+        }
+    });
+
+    const menu = document.getElementById('solarSpeedMenu');
+    const arrow = document.getElementById('solarSpeedArrow');
+    if (menu) menu.classList.add('hidden');
+    if (arrow) arrow.style.transform = 'rotate(0deg)';
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    // Solar Speed Menu
+    const solarMenu = document.getElementById('solarSpeedMenu');
+    const solarBtn = document.getElementById('solarSpeedBtn');
+    if (solarMenu && !solarMenu.classList.contains('hidden') && solarBtn && !solarBtn.contains(e.target) && !solarMenu.contains(e.target)) {
+        solarMenu.classList.add('hidden');
+        const arrow = document.getElementById('solarSpeedArrow');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+
+    // Physics Speed Menu
+    const physicsMenu = document.getElementById('physicsSpeedMenu');
+    const physicsBtn = document.getElementById('physicsSpeedBtn');
+    if (physicsMenu && !physicsMenu.classList.contains('hidden') && physicsBtn && !physicsBtn.contains(e.target) && !physicsMenu.contains(e.target)) {
+        physicsMenu.classList.add('hidden');
+        const arrow = document.getElementById('physicsSpeedArrow');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+    
+    // Continent Dropdown
+    const continentMenu = document.getElementById('continentDropdownMenu');
+    const continentBtn = document.getElementById('continentFilterBtn');
+    if (continentMenu && !continentMenu.classList.contains('hidden') && continentBtn && !continentBtn.contains(e.target) && !continentMenu.contains(e.target)) {
+        continentMenu.classList.add('hidden');
+        const arrow = document.getElementById('continentDropdownArrow');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+
+    // BMI Activity Dropdown
+    const bmiMenu = document.getElementById('bmiActivityMenu');
+    const bmiBtn = document.getElementById('bmiActivityBtn');
+    if (bmiMenu && !bmiMenu.classList.contains('hidden') && bmiBtn && !bmiBtn.contains(e.target) && !bmiMenu.contains(e.target)) {
+        bmiMenu.classList.add('hidden');
+        const arrow = document.getElementById('bmiActivityArrow');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+});
+
+// BMI Activity Dropdown Logic
+function toggleActivityDropdown() {
+    const menu = document.getElementById('bmiActivityMenu');
+    const arrow = document.getElementById('bmiActivityArrow');
+    
+    if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+    } else {
+        menu.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+function setActivityLevel(value, label) {
+    document.getElementById('bmiActivity').value = value;
+    document.getElementById('bmiActivityLabel').innerText = label;
+    
+    // Update active state
+    const options = document.querySelectorAll('.activity-option');
+    options.forEach(opt => {
+        const val = parseFloat(opt.getAttribute('data-value'));
+        const checkIcon = opt.querySelector('.material-symbols-outlined');
+        
+        if (val === value) {
+            opt.classList.remove('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+            opt.classList.add('text-blue-600', 'bg-blue-50', 'font-medium');
+            checkIcon.classList.remove('opacity-0');
+        } else {
+            opt.classList.add('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+            opt.classList.remove('text-blue-600', 'bg-blue-50', 'font-medium');
+            checkIcon.classList.add('opacity-0');
+        }
+    });
+
+    toggleActivityDropdown();
+    calculateBMI();
+}
+
+// BMI/BMR Calculator Logic
+function calculateBMI() {
+    const height = parseFloat(document.getElementById('bmiHeight').value);
+    const weight = parseFloat(document.getElementById('bmiWeight').value);
+    const age = parseInt(document.getElementById('bmiAge').value);
+    const gender = document.querySelector('input[name="gender"]:checked').value;
+    const activity = parseFloat(document.getElementById('bmiActivity').value);
+
+    if (!height || !weight || !age) return;
+
+    // Calculate BMI
+    const heightInMeters = height / 100;
+    const bmi = weight / (heightInMeters * heightInMeters);
+    
+    // Update BMI Display
+    document.getElementById('bmiValue').innerText = bmi.toFixed(1);
+    
+    let status = '';
+    let colorClass = '';
+    let progress = 0;
+
+    if (bmi < 18.5) {
+        status = 'Thiếu cân';
+        colorClass = 'text-blue-600 bg-blue-50';
+        progress = 15;
+    } else if (bmi < 24.9) {
+        status = 'Bình thường';
+        colorClass = 'text-green-600 bg-green-50';
+        progress = 50;
+    } else if (bmi < 29.9) {
+        status = 'Thừa cân';
+        colorClass = 'text-orange-600 bg-orange-50';
+        progress = 75;
+    } else {
+        status = 'Béo phì';
+        colorClass = 'text-red-600 bg-red-50';
+        progress = 100;
+    }
+
+    const statusEl = document.getElementById('bmiStatus');
+    statusEl.innerText = status;
+    statusEl.className = `text-sm font-medium px-3 py-1 rounded-full inline-block ${colorClass}`;
+    
+    document.getElementById('bmiProgress').style.width = `${progress}%`;
+    
+    // Update Circle Color
+    const circle = document.getElementById('bmiCircle');
+    circle.className = `w-16 h-16 rounded-full border-4 flex items-center justify-center transition-colors ${colorClass.replace('bg-', 'border-').replace('50', '100')}`;
+    circle.querySelector('span').className = `material-symbols-outlined text-3xl ${colorClass.split(' ')[0]}`;
+
+    // Calculate BMR (Mifflin-St Jeor Equation)
+    let bmr = 0;
+    if (gender === 'male') {
+        bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+    } else {
+        bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+    }
+
+    // Calculate TDEE
+    const tdee = bmr * activity;
+
+    document.getElementById('bmrValue').innerText = Math.round(bmr).toLocaleString();
+    document.getElementById('tdeeValue').innerText = Math.round(tdee).toLocaleString();
+}
+
+// JSON Formatter Logic
+function formatJSON() {
+    const input = document.getElementById('jsonInput').value;
+    const output = document.getElementById('jsonOutput');
+    const errorBox = document.getElementById('jsonError');
+    const errorMessage = document.getElementById('jsonErrorMessage');
+
+    if (!input.trim()) {
+        output.value = '';
+        errorBox.classList.add('hidden');
+        return;
+    }
+
+    try {
+        const parsed = JSON.parse(input);
+        output.value = JSON.stringify(parsed, null, 4);
+        errorBox.classList.add('hidden');
+    } catch (e) {
+        output.value = '';
+        errorBox.classList.remove('hidden');
+        errorMessage.textContent = e.message;
+    }
+}
+
+function minifyJSON() {
+    const input = document.getElementById('jsonInput').value;
+    const output = document.getElementById('jsonOutput');
+    const errorBox = document.getElementById('jsonError');
+    const errorMessage = document.getElementById('jsonErrorMessage');
+
+    if (!input.trim()) {
+        output.value = '';
+        errorBox.classList.add('hidden');
+        return;
+    }
+
+    try {
+        const parsed = JSON.parse(input);
+        output.value = JSON.stringify(parsed);
+        errorBox.classList.add('hidden');
+    } catch (e) {
+        output.value = '';
+        errorBox.classList.remove('hidden');
+        errorMessage.textContent = e.message;
+    }
+}
+
+function copyJSON() {
+    const output = document.getElementById('jsonOutput');
+    if (!output.value) return;
+    
+    output.select();
+    document.execCommand('copy');
+    
+    // Visual feedback
+    const btn = event.currentTarget;
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">check</span> Copied';
+    btn.classList.add('text-green-600', 'border-green-200', 'bg-green-50');
+    
+    setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.classList.remove('text-green-600', 'border-green-200', 'bg-green-50');
+    }, 2000);
+}
+
+// Initialize App
+document.addEventListener('DOMContentLoaded', () => {
+    loadSettings();
+    switchTab('home');
+});
+
+
+
+
+// --- CSS GENERATOR LOGIC ---
+let currentCssTool = 'shadow';
+
+function switchCssTool(tool) {
+    currentCssTool = tool;
+    
+    // Update buttons
+    document.querySelectorAll('.css-tool-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-blue-50', 'text-blue-600', 'ring-1', 'ring-blue-200');
+        btn.classList.add('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+    });
+    
+    const activeBtn = document.getElementById(`btn-css-${tool}`);
+    activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+    activeBtn.classList.add('active', 'bg-blue-50', 'text-blue-600', 'ring-1', 'ring-blue-200');
+    
+    // Show/Hide controls
+    document.querySelectorAll('.css-controls').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`controls-${tool}`).classList.remove('hidden');
+    
+    // Reset preview box styles that might conflict
+    const preview = document.getElementById('css-preview-box');
+    preview.style = ''; // Clear inline styles
+    preview.className = "w-48 h-48 bg-white border border-slate-200 flex items-center justify-center transition-all duration-200 shadow-sm"; // Reset classes
+
+    // Re-apply current tool styles
+    updateCSS();
+}
+
+function updateCSS() {
+    const preview = document.getElementById('css-preview-box');
+    const output = document.getElementById('css-output');
+    
+    // Helper to hex to rgba
+    const hexToRgba = (hex, alpha) => {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+
+    if (currentCssTool === 'shadow') {
+        const x = document.getElementById('shadow-x').value;
+        const y = document.getElementById('shadow-y').value;
+        const blur = document.getElementById('shadow-blur').value;
+        const spread = document.getElementById('shadow-spread').value;
+        const opacity = document.getElementById('shadow-opacity').value;
+        const color = document.getElementById('shadow-color').value;
+        const inset = document.getElementById('shadow-inset').checked;
+        
+        // Update labels
+        document.getElementById('val-shadow-x').innerText = `${x}px`;
+        document.getElementById('val-shadow-y').innerText = `${y}px`;
+        document.getElementById('val-shadow-blur').innerText = `${blur}px`;
+        document.getElementById('val-shadow-spread').innerText = `${spread}px`;
+        document.getElementById('val-shadow-opacity').innerText = opacity;
+        
+        const rgba = hexToRgba(color, opacity);
+        const shadowValue = `${inset ? 'inset ' : ''}${x}px ${y}px ${blur}px ${spread}px ${rgba}`;
+        
+        preview.style.boxShadow = shadowValue;
+        output.value = `box-shadow: ${shadowValue};`;
+        
+    } else if (currentCssTool === 'gradient') {
+        const type = document.getElementById('gradient-type').value;
+        const angle = document.getElementById('gradient-angle').value;
+        const color1 = document.getElementById('gradient-color1').value;
+        const color2 = document.getElementById('gradient-color2').value;
+        
+        // Update labels
+        document.getElementById('val-gradient-angle').innerText = `${angle}deg`;
+        
+        // Toggle angle slider visibility
+        const angleGroup = document.getElementById('gradient-angle-group');
+        if (type === 'radial') {
+            angleGroup.classList.add('hidden');
+        } else {
+            angleGroup.classList.remove('hidden');
+        }
+        
+        let gradientValue = '';
+        if (type === 'linear') {
+            gradientValue = `linear-gradient(${angle}deg, ${color1}, ${color2})`;
+        } else {
+            gradientValue = `radial-gradient(circle, ${color1}, ${color2})`;
+        }
+        
+        preview.style.background = gradientValue;
+        output.value = `background: ${gradientValue};`;
+        
+    } else if (currentCssTool === 'radius') {
+        const isIndividual = document.getElementById('radius-individual').checked;
+        const individualControls = document.getElementById('radius-individual-controls');
+        const allControl = document.getElementById('radius-all').parentElement;
+        
+        let radiusValue = '';
+        
+        if (isIndividual) {
+            individualControls.classList.remove('opacity-50', 'pointer-events-none');
+            allControl.classList.add('opacity-50', 'pointer-events-none');
+            
+            const tl = document.getElementById('radius-tl').value;
+            const tr = document.getElementById('radius-tr').value;
+            const br = document.getElementById('radius-br').value;
+            const bl = document.getElementById('radius-bl').value;
+            
+            document.getElementById('val-radius-tl').innerText = `${tl}px`;
+            document.getElementById('val-radius-tr').innerText = `${tr}px`;
+            document.getElementById('val-radius-br').innerText = `${br}px`;
+            document.getElementById('val-radius-bl').innerText = `${bl}px`;
+            
+            radiusValue = `${tl}px ${tr}px ${br}px ${bl}px`;
+        } else {
+            individualControls.classList.add('opacity-50', 'pointer-events-none');
+            allControl.classList.remove('opacity-50', 'pointer-events-none');
+            
+            const all = document.getElementById('radius-all').value;
+            document.getElementById('val-radius-all').innerText = `${all}px`;
+            
+            radiusValue = `${all}px`;
+        }
+        
+        preview.style.borderRadius = radiusValue;
+        // Add a border so radius is visible if background is white
+        preview.style.border = '4px solid #3b82f6'; 
+        output.value = `border-radius: ${radiusValue};`;
+    }
+}
+
+function copyCssCode() {
+    const output = document.getElementById('css-output');
+    output.select();
+    document.execCommand('copy');
+    
+    // Visual feedback
+    const btn = document.querySelector('#tab-css button[onclick="copyCssCode()"]');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = `<span class="material-symbols-outlined text-[16px]">check</span> Copied!`;
+    btn.classList.add('text-green-400');
+    
+    setTimeout(() => {
+        btn.innerHTML = originalContent;
+        btn.classList.remove('text-green-400');
+    }, 2000);
+}
+
+// Initialize CSS Generator
+// We can call this safely because script.js is loaded at the end of body
+updateCSS();
+
+// --- CUSTOM DROPDOWN LOGIC ---
+function toggleGradientTypeDropdown() {
+    const menu = document.getElementById('gradient-type-menu');
+    const arrow = document.getElementById('gradient-type-arrow');
+    
+    if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+        
+        // Close on outside click
+        const closeDropdown = (e) => {
+            if (!e.target.closest('#controls-gradient .relative')) {
+                menu.classList.add('hidden');
+                arrow.style.transform = 'rotate(0deg)';
+                document.removeEventListener('click', closeDropdown);
+            }
+        };
+        setTimeout(() => {
+            document.addEventListener('click', closeDropdown);
+        }, 0);
+    } else {
+        menu.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+function selectGradientType(value, label) {
+    // Update hidden input
+    document.getElementById('gradient-type').value = value;
+    
+    // Update button label
+    document.getElementById('gradient-type-label').innerText = label;
+    
+    // Update checkmarks
+    document.getElementById('check-linear').classList.add('hidden');
+    document.getElementById('check-radial').classList.add('hidden');
+    document.getElementById(`check-${value}`).classList.remove('hidden');
+    
+    // Close dropdown
+    document.getElementById('gradient-type-menu').classList.add('hidden');
+    document.getElementById('gradient-type-arrow').style.transform = 'rotate(0deg)';
+    
+    // Trigger CSS update
+    updateCSS();
+}
