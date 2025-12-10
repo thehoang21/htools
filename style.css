@@ -46,6 +46,16 @@ body {
   appearance: none;
 }
 
+/* Universal Input & Select Fix - Prevent Overflow */
+input,
+textarea,
+select {
+  box-sizing: border-box !important;
+  max-width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 /* Fix iOS/iPad Zoom on focus: Force 16px */
 @media screen and (max-width: 768px) {
   .shadcn-input,
@@ -261,6 +271,18 @@ body {
   select {
     font-size: 16px !important;
     min-height: 44px; /* Larger touch target */
+  }
+
+  /* Ensure inputs don't overflow their containers */
+  input[type="time"],
+  input[type="date"],
+  input[type="number"],
+  input[type="text"],
+  textarea,
+  select {
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   /* Button touch targets */
