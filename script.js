@@ -1,3 +1,50 @@
+// --- TOAST NOTIFICATION SYSTEM ---
+function showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    const toastId = 'toast-' + Date.now();
+    toast.id = toastId;
+    
+    // Define colors based on type
+    const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-500'
+    };
+    
+    const icons = {
+        success: 'check_circle',
+        error: 'error',
+        warning: 'warning',
+        info: 'info'
+    };
+    
+    const bgColor = colors[type] || colors.info;
+    const icon = icons[type] || icons.info;
+    
+    toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 min-w-[280px] max-w-[400px] pointer-events-auto animate-fade-in`;
+    toast.innerHTML = `
+        <span class="material-symbols-outlined text-[20px] shrink-0">${icon}</span>
+        <span class="flex-1 text-sm font-medium">${message}</span>
+        <button onclick="document.getElementById('${toastId}').remove()" class="shrink-0 hover:bg-white/20 rounded p-1 transition-colors">
+            <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+    `;
+    
+    container.appendChild(toast);
+    
+    // Auto remove after duration
+    setTimeout(() => {
+        if (document.getElementById(toastId)) {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, duration);
+}
+
 // --- MODAL LOGIC ---
 const resetModal = document.getElementById('resetModal');
 const resetModalBackdrop = document.getElementById('resetModalBackdrop');
@@ -164,14 +211,17 @@ function switchTab(tabName) {
         'sorting': 'Biểu Diễn Thuật Toán',
         'typing': 'Kiểm Tra Tốc Độ Gõ',
         'countries': 'Thông Tin Quốc Gia',
+        'worldmap': 'Bản Đồ Thế Giới',  
         'physics': 'Mô Phỏng Vật Lý',
         'solar': 'Khám Phá Hệ Mặt Trời',
+        'eclipse': 'Nhật/Nguyệt Thực',
         'bmi': 'Công cụ tính BMI/BMR',
         'json': 'JSON Formatter',
         'css': 'Trình Tạo CSS',
         'regex': 'Regex Tester',
         'markdown': 'Xem trước Markdown',
-        'password': 'Tạo Mật Khẩu'
+        'password': 'Tạo Mật Khẩu',
+        'diff': 'So Sánh Văn Bản'
     };
     document.getElementById('pageTitle').innerText = titles[tabName];
 
@@ -195,6 +245,12 @@ function switchTab(tabName) {
         initPhysics();
     } else if (tabName === 'solar') {
         initSolarSystem();
+    } else if (tabName === 'worldmap') {
+        initWorldMap();
+    } else if (tabName === 'eclipse') {
+        initEclipseSimulator();
+    } else if (tabName === 'diff') {
+        initDiffChecker();
     }
 
     if (window.innerWidth < 1024) {
@@ -1310,11 +1366,11 @@ function initMap() {
         return;
     }
     
-    const mapContainer = document.getElementById('worldMap');
+    const mapContainer = document.getElementById('homeWorldMap');
     if (!mapContainer) return;
 
     // Initialize map
-    timeMap = L.map('worldMap', {
+    timeMap = L.map('homeWorldMap', {
         center: [20, 0],
         zoom: 2,
         minZoom: 2,
@@ -3114,6 +3170,24 @@ function startPhysicsSimulation() {
     if (playIcon) playIcon.textContent = 'pause';
     if (playText) playText.textContent = 'Tạm dừng';
     
+    // Disable controls
+    const speedBtn = document.getElementById('physicsSpeedBtn');
+    const ballCountInput = document.getElementById('ballCount');
+    const addBallsBtn = document.querySelector('button[onclick="addBalls()"]');
+    
+    if (speedBtn) {
+        speedBtn.disabled = true;
+        speedBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+    if (ballCountInput) {
+        ballCountInput.disabled = true;
+        ballCountInput.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+    if (addBallsBtn) {
+        addBallsBtn.disabled = true;
+        addBallsBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+    
     physicsLoop();
 }
 
@@ -3135,6 +3209,8 @@ function stopPhysicsSimulation() {
     }
     if (playIcon) playIcon.textContent = 'play_arrow';
     if (playText) playText.textContent = 'Tiếp tục';
+    
+    // Keep controls disabled when paused (only enable on reset)
 }
 
 function resetPhysicsSimulation() {
@@ -3155,23 +3231,90 @@ function resetPhysicsSimulation() {
     const playText = document.getElementById('physicsPlayText');
     if (playText) playText.textContent = 'Bắt đầu';
     
+    // Enable controls
+    const speedBtn = document.getElementById('physicsSpeedBtn');
+    const ballCountInput = document.getElementById('ballCount');
+    const addBallsBtn = document.querySelector('button[onclick="addBalls()"]');
+    
+    if (speedBtn) {
+        speedBtn.disabled = false;
+        speedBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+    if (ballCountInput) {
+        ballCountInput.disabled = false;
+        ballCountInput.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+    if (addBallsBtn) {
+        addBallsBtn.disabled = false;
+        addBallsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+    
     drawPhysics();
     updatePhysicsInfo();
 }
 
 function addBalls() {
-    if (physicsMode === 'solar') return;
+    if (physicsMode === 'solar' || isPhysicsRunning) return;
     
-    const count = parseInt(document.getElementById('ballCount')?.value) || 5;
+    const ballCountInput = document.getElementById('ballCount');
+    const count = parseInt(ballCountInput?.value) || 5;
     
+    if (count < 1 || count > 50) {
+        alert('Số bóng phải từ 1 đến 50');
+        return;
+    }
+    
+    let newObjects = [];
     if (physicsMode === 'bouncing') {
-        physicsObjects = physicsObjects.concat(createBouncingBalls(count));
+        newObjects = createBouncingBalls(count);
     } else if (physicsMode === 'gravity') {
-        physicsObjects = physicsObjects.concat(createGravityObjects(count));
+        newObjects = createGravityObjects(count);
+    }
+    
+    physicsObjects = physicsObjects.concat(newObjects);
+    
+    // Update input to show total ball count
+    if (ballCountInput) {
+        ballCountInput.value = physicsObjects.length;
     }
     
     updatePhysicsInfo();
-    if (!isPhysicsRunning) drawPhysics();
+    drawPhysics();
+}
+
+function adjustBallCount(delta) {
+    if (isPhysicsRunning) return;
+    
+    const input = document.getElementById('ballCount');
+    if (!input) return;
+    
+    let newValue = (parseInt(input.value) || 0) + delta;
+    
+    if (newValue >= 1 && newValue <= 50) {
+        input.value = newValue;
+        updateBallCount();
+    }
+}
+
+function updateBallCount() {
+    if (isPhysicsRunning || physicsMode === 'solar') return;
+    
+    const ballCountInput = document.getElementById('ballCount');
+    const count = parseInt(ballCountInput?.value);
+    
+    if (!count || count < 1 || count > 50) {
+        ballCountInput.value = physicsObjects.length || 10;
+        return;
+    }
+    
+    if (physicsMode === 'bouncing') {
+        physicsObjects = createBouncingBalls(count);
+    } else if (physicsMode === 'gravity') {
+        physicsObjects = createGravityObjects(count);
+    }
+    
+    updatePhysicsInfo();
+    drawPhysics();
 }
 
 function togglePhysicsSpeedDropdown(event) {
@@ -3513,7 +3656,7 @@ const planetsData = [
         name: "Mercury",
         vietnameseName: "Sao Thủy",
         description: "Hành tinh nhỏ nhất và gần Mặt Trời nhất. Nó có bề mặt đầy miệng núi lửa giống như Mặt Trăng.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Mercury_in_true_color.jpg/290px-Mercury_in_true_color.jpg",
+        image: "https://cdn.pixabay.com/photo/2021/09/12/16/02/mercury-6618698_1280.jpg",
         stats: {
             diameter: "4,880 km",
             mass: "3.30 × 10^23 kg",
@@ -3528,7 +3671,7 @@ const planetsData = [
         name: "Venus",
         vietnameseName: "Sao Kim",
         description: "Hành tinh nóng nhất hệ mặt trời do hiệu ứng nhà kính dày đặc. Nó quay ngược chiều so với hầu hết các hành tinh khác.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Venus-real_color.jpg/290px-Venus-real_color.jpg",
+        image: "https://cdn.mos.cms.futurecdn.net/RifjtkFLBEFgzkZqWEh69P-970-80.jpg.webp",
         stats: {
             diameter: "12,104 km",
             mass: "4.87 × 10^24 kg",
@@ -3543,7 +3686,7 @@ const planetsData = [
         name: "Earth",
         vietnameseName: "Trái Đất",
         description: "Hành tinh duy nhất được biết đến có sự sống. Bề mặt được bao phủ 71% bởi nước.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_Earth_seen_from_Apollo_17.jpg/290px-The_Earth_seen_from_Apollo_17.jpg",
+        image: "https://s3.amazonaws.com/cms.ipressroom.com/173/files/20233/6436fb312cfac278e61b35e3_Earth/Earth_mid.jpg",
         stats: {
             diameter: "12,742 km",
             mass: "5.97 × 10^24 kg",
@@ -3558,7 +3701,7 @@ const planetsData = [
         name: "Mars",
         vietnameseName: "Sao Hỏa",
         description: "Được gọi là Hành tinh Đỏ do oxit sắt trên bề mặt. Có ngọn núi cao nhất hệ mặt trời (Olympus Mons).",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/OSIRIS_Mars_true_color.jpg/290px-OSIRIS_Mars_true_color.jpg",
+        image: "https://scitechdaily.com/images/Mars-Planet-Space.jpg",
         stats: {
             diameter: "6,779 km",
             mass: "6.39 × 10^23 kg",
@@ -3573,7 +3716,7 @@ const planetsData = [
         name: "Jupiter",
         vietnameseName: "Sao Mộc",
         description: "Hành tinh lớn nhất hệ mặt trời. Nổi tiếng với Vết Đỏ Lớn, một cơn bão khổng lồ đã tồn tại hàng trăm năm.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Jupiter_and_its_shrunken_Great_Red_Spot.jpg/290px-Jupiter_and_its_shrunken_Great_Red_Spot.jpg",
+        image: "https://cdn.pixabay.com/photo/2020/02/22/08/15/space-4869815_1280.jpg",
         stats: {
             diameter: "139,820 km",
             mass: "1.90 × 10^27 kg",
@@ -3588,7 +3731,7 @@ const planetsData = [
         name: "Saturn",
         vietnameseName: "Sao Thổ",
         description: "Nổi tiếng với hệ thống vành đai rực rỡ và phức tạp nhất. Là hành tinh có mật độ thấp nhất (nhẹ hơn nước).",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Saturn_during_Equinox.jpg/290px-Saturn_during_Equinox.jpg",
+        image: "https://images.interestingengineering.com/2022/10/18/image/jpeg/zzV5Jos6vgklolrCzKJcQUG8Aiqld9S8qaoc5GJs.jpg",
         stats: {
             diameter: "116,460 km",
             mass: "5.68 × 10^26 kg",
@@ -3603,7 +3746,7 @@ const planetsData = [
         name: "Uranus",
         vietnameseName: "Sao Thiên Vương",
         description: "Hành tinh băng khổng lồ với trục quay nghiêng gần 90 độ. Có màu xanh nhạt do khí metan trong khí quyển.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Uranus2.jpg/290px-Uranus2.jpg",
+        image: "https://assets.terve.fi/fj4t07ricqpm/1QEDq0c7LePAs7dvrxacTj/970d5c72c88e5f8d078c5c67cdb5d5a3/VH_planeetat_Uranus__1__BNNqi.jpg?w=3840&q=75",
         stats: {
             diameter: "50,724 km",
             mass: "8.68 × 10^25 kg",
@@ -3618,7 +3761,7 @@ const planetsData = [
         name: "Neptune",
         vietnameseName: "Sao Hải Vương",
         description: "Hành tinh xa nhất và có gió mạnh nhất hệ mặt trời. Có màu xanh đậm rực rỡ.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Neptune_-_Voyager_2_%2829347980845%29_flatten_crop.jpg/290px-Neptune_-_Voyager_2_%2829347980845%29_flatten_crop.jpg",
+        image: "https://cdn.mos.cms.futurecdn.net/PezBzd9Fehsq9XWgWMauVV.jpg",
         stats: {
             diameter: "49,244 km",
             mass: "1.02 × 10^26 kg",
@@ -3649,7 +3792,7 @@ function renderPlanets(planets) {
         
         card.innerHTML = `
             <div class="h-48 overflow-hidden bg-slate-900 relative group">
-                <img src="${planet.image}" alt="${planet.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                <img src="${planet.image}" alt="${planet.name}" class="w-full h-full object-cover transition-transform duration-500 md:group-hover:scale-110">
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
                 <div class="absolute bottom-3 left-4">
                     <h3 class="text-xl font-bold text-white">${planet.vietnameseName}</h3>
@@ -4743,7 +4886,7 @@ function generatePassword() {
 
     // Validate at least one option selected
     if (charSet.length === 0) {
-        alert('Vui lòng chọn ít nhất một loại ký tự!');
+        showToast('Vui lòng chọn ít nhất một loại ký tự!', 'warning');
         return;
     }
 
@@ -4758,7 +4901,7 @@ function generatePassword() {
     }
 
     if (charSet.length === 0) {
-        alert('Không còn ký tự nào khả dụng với các tùy chọn hiện tại!');
+        showToast('Không còn ký tự nào khả dụng với các tùy chọn hiện tại!', 'error');
         return;
     }
 
@@ -4841,11 +4984,11 @@ function updatePasswordLength() {
     document.getElementById('passwordLengthValue').textContent = length;
 }
 
-function copyPassword() {
+function copyPassword(event) {
     const passwordInput = document.getElementById('generatedPassword');
     
     if (!passwordInput.value) {
-        alert('Chưa có mật khẩu để sao chép!');
+        showToast('Chưa có mật khẩu để sao chép!', 'warning');
         return;
     }
 
@@ -4862,7 +5005,7 @@ function copyPassword() {
             btn.classList.add('bg-green-100', 'hover:bg-green-200', 'text-green-700');
         }, 2000);
     }).catch(err => {
-        alert('Lỗi khi sao chép: ' + err);
+        showToast('Lỗi khi sao chép: ' + err, 'error');
     });
 }
 
@@ -4888,7 +5031,7 @@ function generateMultiplePasswords() {
     if (includeSymbols) charSet += passwordCharSets.symbols;
 
     if (charSet.length === 0) {
-        alert('Vui lòng chọn ít nhất một loại ký tự!');
+        showToast('Vui lòng chọn ít nhất một loại ký tự!', 'warning');
         return;
     }
 
@@ -4901,7 +5044,7 @@ function generateMultiplePasswords() {
     }
 
     if (charSet.length === 0) {
-        alert('Không còn ký tự nào khả dụng với các tùy chọn hiện tại!');
+        showToast('Không còn ký tự nào khả dụng với các tùy chọn hiện tại!', 'error');
         return;
     }
 
@@ -4948,7 +5091,7 @@ function copyPasswordFromList(btn) {
             btn.classList.remove('bg-green-100', 'text-green-600', 'border-green-300');
         }, 2000);
     }).catch(err => {
-        alert('Lỗi khi sao chép: ' + err);
+        showToast('Lỗi khi sao chép: ' + err, 'error');
     });
 }
 
@@ -4956,5 +5099,1170 @@ function copyPasswordFromList(btn) {
 if (document.getElementById('generatedPassword')) {
     generatePassword();
 }
+
+// ==============================================
+// WORLD MAP
+// ==============================================
+let worldMap = null;
+let currentMapType = 'street';
+let mapLayers = {};
+let currentMarker = null;
+let mapMarkersCount = 0;
+let mapClicksCount = 0;
+
+function initWorldMap() {
+    if (worldMap) {
+        worldMap.invalidateSize();
+        return;
+    }
+
+    // Initialize map centered on Vietnam
+    worldMap = L.map('worldMap').setView([16.0544, 108.2022], 5);
+
+    // Define different map layers
+    mapLayers = {
+        street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 19
+        }),
+        satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '&copy; <a href="https://www.esri.com/">Esri</a>',
+            maxZoom: 19
+        }),
+        terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://opentopomap.org/">OpenTopoMap</a>',
+            maxZoom: 17
+        }),
+        topo: L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 19
+        })
+    };
+
+    // Add default layer
+    mapLayers.street.addTo(worldMap);
+
+    // Update coordinates on move
+    worldMap.on('move', updateMapCoordinates);
+    worldMap.on('zoom', updateMapCoordinates);
+    
+    // Click to show coordinates
+    worldMap.on('click', function(e) {
+        const lat = e.latlng.lat.toFixed(6);
+        const lng = e.latlng.lng.toFixed(6);
+        
+        // Increment clicks count
+        mapClicksCount++;
+        updateMapStats();
+        
+        // Remove old marker if exists
+        if (currentMarker) {
+            worldMap.removeLayer(currentMarker);
+            mapMarkersCount--;
+        }
+        
+        // Add new marker
+        currentMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(worldMap);
+        currentMarker.bindPopup(`<b>Tọa độ:</b><br>Latitude: ${lat}<br>Longitude: ${lng}`).openPopup();
+        mapMarkersCount++;
+        
+        // Update coordinates display
+        document.getElementById('mapCoordinates').textContent = `${lat}, ${lng}`;
+        updateMapStats();
+    });
+
+    // Initial coordinate update
+    updateMapCoordinates();
+}
+
+function updateMapCoordinates() {
+    if (!worldMap) return;
+    
+    const center = worldMap.getCenter();
+    const zoom = worldMap.getZoom();
+    
+    const coordsEl = document.getElementById('mapCoordinates');
+    const zoomEl = document.getElementById('mapZoom');
+    
+    if (coordsEl && !coordsEl.textContent.includes(',')) {
+        coordsEl.textContent = `${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`;
+    }
+    if (zoomEl) {
+        zoomEl.textContent = zoom;
+    }
+}
+
+function updateMapStats() {
+    const markersEl = document.getElementById('mapMarkers');
+    const clicksEl = document.getElementById('mapClicks');
+    
+    if (markersEl) markersEl.textContent = mapMarkersCount;
+    if (clicksEl) clicksEl.textContent = mapClicksCount;
+}
+
+function setMapType(type) {
+    if (!worldMap || !mapLayers[type]) return;
+    
+    // Remove current layer
+    if (mapLayers[currentMapType]) {
+        worldMap.removeLayer(mapLayers[currentMapType]);
+    }
+    
+    // Add new layer
+    mapLayers[type].addTo(worldMap);
+    currentMapType = type;
+}
+
+function toggleMapTypeDropdown(event) {
+    event.stopPropagation();
+    const menu = document.getElementById('mapTypeMenu');
+    const arrow = document.getElementById('mapTypeArrow');
+    
+    if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+    } else {
+        menu.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+function selectMapType(type, icon, text) {
+    setMapType(type);
+    document.getElementById('mapTypeIcon').textContent = icon;
+    document.getElementById('mapTypeText').textContent = text;
+    document.getElementById('mapTypeMenu').classList.add('hidden');
+    document.getElementById('mapTypeArrow').style.transform = 'rotate(0deg)';
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const menu = document.getElementById('mapTypeMenu');
+    const btn = document.getElementById('mapTypeBtn');
+    if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.add('hidden');
+        const arrow = document.getElementById('mapTypeArrow');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+});
+
+let mapSearchDebounceTimer = null;
+let currentSuggestions = [];
+
+function handleMapSearchInput(event) {
+    const query = event.target.value.trim();
+    
+    // Clear previous timer
+    if (mapSearchDebounceTimer) {
+        clearTimeout(mapSearchDebounceTimer);
+    }
+    
+    if (query.length < 2) {
+        hideMapSuggestions();
+        return;
+    }
+    
+    // Debounce: wait 500ms after user stops typing
+    mapSearchDebounceTimer = setTimeout(() => {
+        fetchMapSuggestions(query);
+    }, 500);
+}
+
+function fetchMapSuggestions(query) {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`;
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            currentSuggestions = data;
+            displayMapSuggestions(data);
+        })
+        .catch(error => {
+            console.error('Error fetching suggestions:', error);
+        });
+}
+
+function displayMapSuggestions(suggestions) {
+    const suggestionsList = document.getElementById('mapSuggestionsList');
+    const suggestionsContainer = document.getElementById('mapSuggestions');
+    
+    if (!suggestions || suggestions.length === 0) {
+        hideMapSuggestions();
+        return;
+    }
+    
+    suggestionsList.innerHTML = suggestions.map((item, index) => `
+        <button onclick="selectMapSuggestion(${index})" class="w-full px-4 py-2.5 text-left hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0">
+            <div class="flex items-start gap-2">
+                <span class="material-symbols-outlined text-slate-400 text-[18px] mt-0.5">location_on</span>
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm text-slate-800 font-medium truncate">${item.display_name.split(',')[0]}</div>
+                    <div class="text-xs text-slate-500 truncate">${item.display_name}</div>
+                </div>
+            </div>
+        </button>
+    `).join('');
+    
+    suggestionsContainer.classList.remove('hidden');
+}
+
+function selectMapSuggestion(index) {
+    const suggestion = currentSuggestions[index];
+    if (!suggestion) return;
+    
+    const lat = parseFloat(suggestion.lat);
+    const lng = parseFloat(suggestion.lon);
+    
+    // Update search input
+    document.getElementById('mapSearch').value = suggestion.display_name;
+    
+    // Hide suggestions
+    hideMapSuggestions();
+    
+    // Fly to location
+    worldMap.flyTo([lat, lng], 12);
+    
+    // Remove old marker if exists
+    if (currentMarker) {
+        worldMap.removeLayer(currentMarker);
+        mapMarkersCount--;
+    }
+    
+    // Add marker
+    currentMarker = L.marker([lat, lng]).addTo(worldMap);
+    currentMarker.bindPopup(`<b>${suggestion.display_name}</b>`).openPopup();
+    mapMarkersCount++;
+    updateMapStats();
+    
+    showToast('Đã tìm thấy địa điểm!', 'success');
+}
+
+function showMapSuggestions() {
+    const query = document.getElementById('mapSearch').value.trim();
+    if (query.length >= 2 && currentSuggestions.length > 0) {
+        document.getElementById('mapSuggestions').classList.remove('hidden');
+    }
+}
+
+function hideMapSuggestions() {
+    document.getElementById('mapSuggestions').classList.add('hidden');
+}
+
+function searchLocation() {
+    const query = document.getElementById('mapSearch').value.trim();
+    if (!query) {
+        showToast('Vui lòng nhập địa điểm cần tìm', 'warning');
+        return;
+    }
+    
+    // Hide suggestions
+    hideMapSuggestions();
+    
+    // Use Nominatim API for geocoding
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                const result = data[0];
+                const lat = parseFloat(result.lat);
+                const lng = parseFloat(result.lon);
+                
+                // Fly to location
+                worldMap.flyTo([lat, lng], 12);
+                
+                // Remove old marker if exists
+                if (currentMarker) {
+                    worldMap.removeLayer(currentMarker);
+                    mapMarkersCount--;
+                }
+                
+                // Add marker
+                currentMarker = L.marker([lat, lng]).addTo(worldMap);
+                currentMarker.bindPopup(`<b>${result.display_name}</b>`).openPopup();
+                mapMarkersCount++;
+                updateMapStats();
+                
+                showToast('Đã tìm thấy địa điểm!', 'success');
+            } else {
+                showToast('Không tìm thấy địa điểm', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error searching location:', error);
+            showToast('Lỗi khi tìm kiếm địa điểm', 'error');
+        });
+}
+
+// Add Enter key support for search and close suggestions on click outside
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('mapSearch');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchLocation();
+            }
+        });
+    }
+    
+    // Close suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        const suggestionsContainer = document.getElementById('mapSuggestions');
+        const searchInput = document.getElementById('mapSearch');
+        if (suggestionsContainer && searchInput && 
+            !suggestionsContainer.contains(e.target) && 
+            !searchInput.contains(e.target)) {
+            hideMapSuggestions();
+        }
+    });
+});
+
+
+// ============================================================
+// ECLIPSE SIMULATOR - Mô phỏng Nhật thực & Nguyệt thực 3D
+// ============================================================
+
+let eclipseScene, eclipseCamera, eclipseRenderer, eclipseControls;
+let eclipseSun, eclipseMoon, eclipseEarth;
+let eclipseAnimationId = null;
+let eclipseType = 'solar'; // 'solar' or 'lunar'
+let eclipseIsPlaying = false;
+let eclipseProgress = 0;
+let eclipseSpeed = 1.0;
+let eclipseStars = [];
+let eclipseLights = {};
+
+// Khởi tạo Three.js scene khi tab được mở
+function initEclipseSimulator() {
+    const container = document.getElementById('eclipseCanvas');
+    if (!container) return;
+    
+    // Setup scene
+    eclipseScene = new THREE.Scene();
+    eclipseScene.background = new THREE.Color(0x000510);
+    
+    // Setup camera
+    const width = container.clientWidth;
+    const height = 500;
+    eclipseCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    eclipseCamera.position.set(0, 5, 25);
+    eclipseCamera.lookAt(0, 0, 0);
+    
+    // Setup renderer
+    eclipseRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    eclipseRenderer.setSize(width, height);
+    eclipseRenderer.shadowMap.enabled = true;
+    eclipseRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.innerHTML = '';
+    container.appendChild(eclipseRenderer.domElement);
+    
+    // Add OrbitControls for camera interaction
+    eclipseControls = new THREE.OrbitControls(eclipseCamera, eclipseRenderer.domElement);
+    eclipseControls.enableDamping = true;
+    eclipseControls.dampingFactor = 0.05;
+    eclipseControls.minDistance = 10;
+    eclipseControls.maxDistance = 50;
+    eclipseControls.enablePan = false;
+    
+    // Create starfield
+    createStarfield();
+    
+    // Create celestial bodies
+    createSolarEclipseObjects();
+    
+    // Lighting
+    setupLighting();
+    
+    // Start render loop
+    renderEclipse();
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        if (document.getElementById('tab-eclipse').classList.contains('hidden')) return;
+        const newWidth = container.clientWidth;
+        eclipseCamera.aspect = newWidth / 500;
+        eclipseCamera.updateProjectionMatrix();
+        eclipseRenderer.setSize(newWidth, 500);
+    });
+}
+
+function createStarfield() {
+    const starGeometry = new THREE.BufferGeometry();
+    const starVertices = [];
+    
+    for (let i = 0; i < 1000; i++) {
+        const x = (Math.random() - 0.5) * 200;
+        const y = (Math.random() - 0.5) * 200;
+        const z = (Math.random() - 0.5) * 200;
+        starVertices.push(x, y, z);
+    }
+    
+    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+    const starMaterial = new THREE.PointsMaterial({ 
+        color: 0xffffff, 
+        size: 0.5,
+        transparent: true,
+        opacity: 0.8
+    });
+    
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    eclipseScene.add(stars);
+    eclipseStars.push(stars);
+}
+
+function setupLighting() {
+    // Ambient light
+    const ambientLight = new THREE.AmbientLight(0x333333, 0.3);
+    eclipseScene.add(ambientLight);
+    
+    // Sun light (point light from sun position)
+    const sunLight = new THREE.PointLight(0xffffff, 2, 100);
+    sunLight.position.set(0, 0, 0);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 2048;
+    sunLight.shadow.mapSize.height = 2048;
+    eclipseScene.add(sunLight);
+    eclipseLights.sunLight = sunLight;
+}
+
+function createSolarEclipseObjects() {
+    // Remove existing objects
+    if (eclipseSun) eclipseScene.remove(eclipseSun);
+    if (eclipseMoon) eclipseScene.remove(eclipseMoon);
+    if (eclipseEarth) eclipseScene.remove(eclipseEarth);
+    
+    // Create Sun
+    const sunGeometry = new THREE.SphereGeometry(3, 32, 32);
+    const sunMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0xFDB813,
+        emissive: 0xFDB813,
+        emissiveIntensity: 1
+    });
+    eclipseSun = new THREE.Mesh(sunGeometry, sunMaterial);
+    eclipseSun.position.set(0, 0, 0);
+    eclipseScene.add(eclipseSun);
+    
+    // Add sun glow
+    const glowGeometry = new THREE.SphereGeometry(3.5, 32, 32);
+    const glowMaterial = new THREE.MeshBasicMaterial({
+        color: 0xFDB813,
+        transparent: true,
+        opacity: 0.3
+    });
+    const sunGlow = new THREE.Mesh(glowGeometry, glowMaterial);
+    eclipseSun.add(sunGlow);
+    
+    // Create Moon
+    const moonGeometry = new THREE.SphereGeometry(1.2, 32, 32);
+    const moonTexture = createMoonTexture();
+    const moonMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x888888,
+        roughness: 0.9,
+        metalness: 0.1,
+        map: moonTexture
+    });
+    eclipseMoon = new THREE.Mesh(moonGeometry, moonMaterial);
+    eclipseMoon.position.set(-15, 0, 5);
+    eclipseMoon.castShadow = true;
+    eclipseMoon.receiveShadow = true;
+    eclipseScene.add(eclipseMoon);
+}
+
+function createLunarEclipseObjects() {
+    // Remove existing objects
+    if (eclipseSun) eclipseScene.remove(eclipseSun);
+    if (eclipseMoon) eclipseScene.remove(eclipseMoon);
+    if (eclipseEarth) eclipseScene.remove(eclipseEarth);
+    
+    // Create Sun (smaller, further away)
+    const sunGeometry = new THREE.SphereGeometry(2.5, 32, 32);
+    const sunMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0xFDB813,
+        emissive: 0xFDB813,
+        emissiveIntensity: 1
+    });
+    eclipseSun = new THREE.Mesh(sunGeometry, sunMaterial);
+    eclipseSun.position.set(-25, 0, -5);
+    eclipseScene.add(eclipseSun);
+    
+    // Add sun glow
+    const glowGeometry = new THREE.SphereGeometry(3, 32, 32);
+    const glowMaterial = new THREE.MeshBasicMaterial({
+        color: 0xFDB813,
+        transparent: true,
+        opacity: 0.2
+    });
+    const sunGlow = new THREE.Mesh(glowGeometry, glowMaterial);
+    eclipseSun.add(sunGlow);
+    
+    // Create Earth (larger, more prominent)
+    const earthGeometry = new THREE.SphereGeometry(2.5, 32, 32);
+    const earthTexture = createEarthTexture();
+    const earthMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x2233ff,
+        roughness: 0.7,
+        metalness: 0.2,
+        map: earthTexture
+    });
+    eclipseEarth = new THREE.Mesh(earthGeometry, earthMaterial);
+    eclipseEarth.position.set(-8, 0, 0);
+    eclipseEarth.castShadow = true;
+    eclipseScene.add(eclipseEarth);
+    
+    // Create Moon (larger, more visible)
+    const moonGeometry = new THREE.SphereGeometry(1.8, 32, 32);
+    const moonTexture = createMoonTexture();
+    const moonMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0xeeeeee,
+        roughness: 0.8,
+        metalness: 0.1,
+        map: moonTexture
+    });
+    eclipseMoon = new THREE.Mesh(moonGeometry, moonMaterial);
+    eclipseMoon.position.set(10, 0, 0);
+    eclipseMoon.receiveShadow = true;
+    eclipseScene.add(eclipseMoon);
+    
+    // Add moon glow for better visibility
+    const moonGlowGeometry = new THREE.SphereGeometry(2.2, 32, 32);
+    const moonGlowMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.15
+    });
+    const moonGlow = new THREE.Mesh(moonGlowGeometry, moonGlowMaterial);
+    eclipseMoon.add(moonGlow);
+}
+
+function createMoonTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    
+    // Base color
+    ctx.fillStyle = '#888888';
+    ctx.fillRect(0, 0, 512, 512);
+    
+    // Add craters
+    for (let i = 0; i < 30; i++) {
+        const x = Math.random() * 512;
+        const y = Math.random() * 512;
+        const radius = Math.random() * 30 + 10;
+        
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+        gradient.addColorStop(0, '#666666');
+        gradient.addColorStop(1, '#888888');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    return texture;
+}
+
+function createEarthTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    
+    // Ocean
+    ctx.fillStyle = '#2233ff';
+    ctx.fillRect(0, 0, 512, 512);
+    
+    // Continents (simplified)
+    ctx.fillStyle = '#228B22';
+    for (let i = 0; i < 20; i++) {
+        const x = Math.random() * 512;
+        const y = Math.random() * 512;
+        const width = Math.random() * 100 + 50;
+        const height = Math.random() * 80 + 40;
+        
+        ctx.beginPath();
+        ctx.ellipse(x, y, width, height, Math.random() * Math.PI, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Clouds
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    for (let i = 0; i < 30; i++) {
+        const x = Math.random() * 512;
+        const y = Math.random() * 512;
+        const radius = Math.random() * 30 + 10;
+        
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    return texture;
+}
+
+function renderEclipse() {
+    if (!eclipseRenderer || !eclipseScene || !eclipseCamera) return;
+    
+    // Update controls
+    if (eclipseControls) eclipseControls.update();
+    
+    // Rotate celestial bodies
+    if (eclipseSun) eclipseSun.rotation.y += 0.001;
+    if (eclipseMoon) eclipseMoon.rotation.y += 0.003;
+    if (eclipseEarth) eclipseEarth.rotation.y += 0.002;
+    
+    // Rotate stars slowly
+    eclipseStars.forEach(stars => {
+        stars.rotation.y += 0.0001;
+    });
+    
+    eclipseRenderer.render(eclipseScene, eclipseCamera);
+    requestAnimationFrame(renderEclipse);
+}
+
+function updateEclipsePositions() {
+    if (!eclipseMoon) return;
+    
+    const progress = eclipseProgress / 100;
+    
+    if (eclipseType === 'solar') {
+        // Moon moves from left to right across the sun
+        const startX = -15;
+        const endX = 15;
+        eclipseMoon.position.x = startX + (endX - startX) * progress;
+        eclipseMoon.position.z = 5 - Math.sin(progress * Math.PI) * 2;
+        
+    } else {
+        // Moon moves from right to left, passing through Earth's shadow
+        const startX = 10;
+        const endX = -14;
+        eclipseMoon.position.x = startX + (endX - startX) * progress;
+        eclipseMoon.position.z = Math.sin(progress * Math.PI) * 1.5; // Slight arc movement
+        
+        // Change moon color during totality (blood moon effect)
+        if (progress > 0.35 && progress < 0.65) {
+            const intensity = 1 - Math.abs(progress - 0.5) * 2;
+            eclipseMoon.material.color.setHex(0xcc2200);
+            eclipseMoon.material.emissive = new THREE.Color(0x8B0000);
+            eclipseMoon.material.emissiveIntensity = intensity * 0.8;
+        } else {
+            eclipseMoon.material.color.setHex(0xeeeeee);
+            eclipseMoon.material.emissive = new THREE.Color(0x000000);
+            eclipseMoon.material.emissiveIntensity = 0;
+        }
+    }
+    
+    updateEclipsePhase();
+}
+
+function resizeEclipseCanvas() {
+    // Not needed for Three.js version
+}
+
+function setEclipseType(type) {
+    eclipseType = type;
+    eclipseProgress = 0;
+    document.getElementById('eclipseProgress').value = 0;
+    updateEclipseProgress(0);
+    
+    // Update button states
+    const solarBtn = document.getElementById('btnSolarEclipse');
+    const lunarBtn = document.getElementById('btnLunarEclipse');
+    
+    if (type === 'solar') {
+        solarBtn.className = 'eclipse-type-btn flex-1 sm:flex-initial px-4 py-2 rounded-lg text-sm font-medium transition-all bg-blue-600 hover:bg-blue-700 text-white shadow-md';
+        lunarBtn.className = 'eclipse-type-btn flex-1 sm:flex-initial px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
+        
+        document.getElementById('eclipseTypeDisplay').textContent = 'Nhật thực';
+        document.getElementById('eclipseExplanation').innerHTML = `
+            <p><strong class="text-slate-800">Nhật thực</strong> xảy ra khi Mặt Trăng di chuyển giữa Trái Đất và Mặt Trời, che khuất ánh sáng mặt trời.</p>
+            <p>Có 3 loại nhật thực chính:</p>
+            <ul class="list-disc pl-5 space-y-1">
+                <li><strong>Toàn phần:</strong> Mặt Trăng che khuất hoàn toàn Mặt Trời</li>
+                <li><strong>Một phần:</strong> Mặt Trăng chỉ che khuất một phần Mặt Trời</li>
+                <li><strong>Hình khuyên:</strong> Mặt Trăng nhỏ hơn Mặt Trời, tạo thành vòng sáng</li>
+            </ul>
+        `;
+        
+        createSolarEclipseObjects();
+        
+    } else {
+        lunarBtn.className = 'eclipse-type-btn flex-1 sm:flex-initial px-4 py-2 rounded-lg text-sm font-medium transition-all bg-blue-600 hover:bg-blue-700 text-white shadow-md';
+        solarBtn.className = 'eclipse-type-btn flex-1 sm:flex-initial px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
+        
+        document.getElementById('eclipseTypeDisplay').textContent = 'Nguyệt thực';
+        document.getElementById('eclipseExplanation').innerHTML = `
+            <p><strong class="text-slate-800">Nguyệt thực</strong> xảy ra khi Trái Đất nằm giữa Mặt Trời và Mặt Trăng, bóng Trái Đất che khuất Mặt Trăng.</p>
+            <p>Có 3 loại nguyệt thực chính:</p>
+            <ul class="list-disc pl-5 space-y-1">
+                <li><strong>Toàn phần:</strong> Mặt Trăng hoàn toàn nằm trong bóng tối của Trái Đất</li>
+                <li><strong>Một phần:</strong> Chỉ một phần Mặt Trăng bị che khuất</li>
+                <li><strong>Bán nguyệt:</strong> Mặt Trăng đi qua bóng mờ của Trái Đất</li>
+            </ul>
+        `;
+        
+        createLunarEclipseObjects();
+    }
+    
+    if (eclipseIsPlaying) {
+        stopEclipseSimulation();
+    }
+}
+
+function drawEclipse() {
+    // Not needed for Three.js version
+}
+
+function drawStars() {
+    // Not needed for Three.js version
+}
+
+function drawSolarEclipse() {
+    // Not needed for Three.js version
+}
+
+function drawLunarEclipse() {
+    // Not needed for Three.js version
+}
+
+function updateEclipsePhase() {
+    let phase = 'Bắt đầu';
+    let coverage = 0;
+    
+    if (eclipseProgress < 25) {
+        phase = 'Bắt đầu';
+        coverage = eclipseProgress * 4;
+    } else if (eclipseProgress < 50) {
+        phase = 'Một phần';
+        coverage = 25 + (eclipseProgress - 25) * 3;
+    } else if (eclipseProgress < 75) {
+        phase = 'Toàn phần';
+        coverage = 100;
+    } else {
+        phase = 'Kết thúc';
+        coverage = 100 - (eclipseProgress - 75) * 4;
+    }
+    
+    document.getElementById('eclipsePhase').textContent = `Pha: ${phase}`;
+    document.getElementById('eclipseCurrentPhase').textContent = phase;
+    document.getElementById('eclipseCoverage').textContent = Math.round(coverage) + '%';
+    
+    // Update time
+    const totalSeconds = Math.floor((eclipseProgress / 100) * 180); // 3 minutes total
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    document.getElementById('eclipseTime').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function toggleEclipseSimulation() {
+    if (eclipseIsPlaying) {
+        stopEclipseSimulation();
+    } else {
+        // If at 100%, reset to 0 before starting
+        if (eclipseProgress >= 100) {
+            eclipseProgress = 0;
+            document.getElementById('eclipseProgress').value = 0;
+            document.getElementById('eclipseProgressValue').textContent = '0%';
+            updateEclipsePositions();
+        }
+        startEclipseSimulation();
+    }
+}
+
+function startEclipseSimulation() {
+    eclipseIsPlaying = true;
+    document.getElementById('eclipsePlayIcon').textContent = 'pause';
+    document.getElementById('eclipsePlayText').textContent = 'Tạm dừng';
+    animateEclipse();
+}
+
+function stopEclipseSimulation() {
+    eclipseIsPlaying = false;
+    document.getElementById('eclipsePlayIcon').textContent = 'play_arrow';
+    document.getElementById('eclipsePlayText').textContent = 'Tiếp tục';
+    if (eclipseAnimationId) {
+        cancelAnimationFrame(eclipseAnimationId);
+        eclipseAnimationId = null;
+    }
+}
+
+function animateEclipse() {
+    if (!eclipseIsPlaying) return;
+    
+    eclipseProgress += 0.3 * eclipseSpeed;
+    
+    if (eclipseProgress >= 100) {
+        eclipseProgress = 100;
+        stopEclipseSimulation();
+        // Change button text to indicate can restart
+        document.getElementById('eclipsePlayText').textContent = 'Bắt đầu';
+    }
+    
+    document.getElementById('eclipseProgress').value = eclipseProgress;
+    document.getElementById('eclipseProgressValue').textContent = Math.round(eclipseProgress) + '%';
+    
+    updateEclipsePositions();
+    
+    eclipseAnimationId = requestAnimationFrame(animateEclipse);
+}
+
+function updateEclipseProgress(value) {
+    eclipseProgress = parseFloat(value);
+    document.getElementById('eclipseProgressValue').textContent = Math.round(eclipseProgress) + '%';
+    updateEclipsePositions();
+}
+
+function resetEclipseSimulation() {
+    stopEclipseSimulation();
+    eclipseProgress = 0;
+    document.getElementById('eclipseProgress').value = 0;
+    document.getElementById('eclipseProgressValue').textContent = '0%';
+    document.getElementById('eclipsePlayIcon').textContent = 'play_arrow';
+    document.getElementById('eclipsePlayText').textContent = 'Bắt đầu';
+    
+    // Reset camera position and controls
+    if (eclipseCamera && eclipseControls) {
+        eclipseCamera.position.set(0, 5, 25);
+        eclipseCamera.lookAt(0, 0, 0);
+        eclipseControls.reset();
+    }
+    
+    // Reset celestial body positions
+    updateEclipsePositions();
+    
+    showToast('Đã đặt lại mô phỏng về trạng thái ban đầu', 'success');
+}
+
+function setEclipseSpeed(speed) {
+    eclipseSpeed = speed;
+    document.getElementById('eclipseSpeedLabel').textContent = speed + 'x';
+    
+    // Update dropdown check marks
+    document.querySelectorAll('.eclipse-speed-option').forEach(option => {
+        const value = parseFloat(option.getAttribute('data-value'));
+        const checkIcon = option.querySelector('.material-symbols-outlined');
+        
+        if (value === speed) {
+            option.classList.remove('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+            option.classList.add('text-blue-600', 'bg-blue-50', 'font-medium');
+            checkIcon.classList.remove('opacity-0');
+        } else {
+            option.classList.remove('text-blue-600', 'bg-blue-50', 'font-medium');
+            option.classList.add('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+            checkIcon.classList.add('opacity-0');
+        }
+    });
+    
+    toggleEclipseSpeedDropdown();
+}
+
+function toggleEclipseSpeedDropdown(event) {
+    if (event) event.stopPropagation();
+    
+    const menu = document.getElementById('eclipseSpeedMenu');
+    const arrow = document.getElementById('eclipseSpeedArrow');
+    
+    if (menu.classList.contains('hidden')) {
+        // Close other dropdowns
+        document.querySelectorAll('[id$="Menu"]:not(#eclipseSpeedMenu)').forEach(m => {
+            if (!m.classList.contains('hidden')) {
+                m.classList.add('hidden');
+                const parentArrow = m.previousElementSibling?.querySelector('[id$="Arrow"]');
+                if (parentArrow) parentArrow.classList.remove('rotate-180');
+            }
+        });
+        
+        menu.classList.remove('hidden');
+        arrow.classList.add('rotate-180');
+    } else {
+        menu.classList.add('hidden');
+        arrow.classList.remove('rotate-180');
+    }
+}
+
+// Close eclipse speed dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const speedBtn = document.getElementById('eclipseSpeedBtn');
+    const speedMenu = document.getElementById('eclipseSpeedMenu');
+    
+    if (speedBtn && speedMenu && !speedBtn.contains(e.target) && !speedMenu.contains(e.target)) {
+        speedMenu.classList.add('hidden');
+        const arrow = document.getElementById('eclipseSpeedArrow');
+        if (arrow) arrow.classList.remove('rotate-180');
+    }
+});
+
+
+// ============================================================
+// DIFF CHECKER - So sánh văn bản và code
+// ============================================================
+
+function initDiffChecker() {
+    // Add event listeners for character counting
+    const leftText = document.getElementById('diffTextLeft');
+    const rightText = document.getElementById('diffTextRight');
+    
+    if (leftText) {
+        leftText.addEventListener('input', () => updateDiffStats('left'));
+    }
+    
+    if (rightText) {
+        rightText.addEventListener('input', () => updateDiffStats('right'));
+    }
+    
+    // Initial stats update
+    updateDiffStats('left');
+    updateDiffStats('right');
+}
+
+function updateDiffStats(side) {
+    const textarea = document.getElementById(side === 'left' ? 'diffTextLeft' : 'diffTextRight');
+    const text = textarea.value;
+    const lines = text.split('\n').length;
+    const chars = text.length;
+    
+    document.getElementById(side === 'left' ? 'diffLeftLines' : 'diffRightLines').textContent = lines;
+    document.getElementById(side === 'left' ? 'diffLeftChars' : 'diffRightChars').textContent = chars;
+}
+
+let isScrollingSyncing = false;
+
+function syncDiffScroll(source) {
+    if (isScrollingSyncing) return;
+    
+    isScrollingSyncing = true;
+    
+    const leftOutput = document.getElementById('diffOutputLeft');
+    const rightOutput = document.getElementById('diffOutputRight');
+    
+    if (source === 'left') {
+        rightOutput.scrollTop = leftOutput.scrollTop;
+    } else {
+        leftOutput.scrollTop = rightOutput.scrollTop;
+    }
+    
+    setTimeout(() => {
+        isScrollingSyncing = false;
+    }, 50);
+}
+
+function compareDiff() {
+    const leftText = document.getElementById('diffTextLeft').value;
+    const rightText = document.getElementById('diffTextRight').value;
+    
+    if (!leftText && !rightText) {
+        showToast('Vui lòng nhập văn bản vào cả hai ô', 'warning');
+        return;
+    }
+    
+    const ignoreCase = document.getElementById('diffIgnoreCase').checked;
+    const ignoreWhitespace = document.getElementById('diffIgnoreWhitespace').checked;
+    const showLineNumbers = document.getElementById('diffShowLineNumbers').checked;
+    
+    // Split into lines
+    let leftLines = leftText.split('\n');
+    let rightLines = rightText.split('\n');
+    
+    // Preprocessing
+    if (ignoreCase) {
+        leftLines = leftLines.map(line => line.toLowerCase());
+        rightLines = rightLines.map(line => line.toLowerCase());
+    }
+    
+    if (ignoreWhitespace) {
+        leftLines = leftLines.map(line => line.replace(/\s+/g, ''));
+        rightLines = rightLines.map(line => line.replace(/\s+/g, ''));
+    }
+    
+    // Calculate diff using simple LCS algorithm
+    const diff = calculateDiff(leftLines, rightLines);
+    
+    // Render diff directly on the textareas
+    renderDiff(diff, leftText.split('\n'), rightText.split('\n'), showLineNumbers);
+    
+    // Show results
+    document.getElementById('diffResults').classList.remove('hidden');
+    
+    // Hide textareas, show outputs
+    document.getElementById('diffTextLeft').classList.add('hidden');
+    document.getElementById('diffTextRight').classList.add('hidden');
+    document.getElementById('diffOutputLeft').classList.remove('hidden');
+    document.getElementById('diffOutputRight').classList.remove('hidden');
+    
+    // Scroll to results
+    document.getElementById('diffResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    showToast('So sánh hoàn tất!', 'success');
+}
+
+function calculateDiff(left, right) {
+    const maxLen = Math.max(left.length, right.length);
+    const diff = {
+        added: 0,
+        removed: 0,
+        changed: 0,
+        leftResult: [],
+        rightResult: []
+    };
+    
+    // Simple line-by-line comparison
+    const leftSet = new Set(left);
+    const rightSet = new Set(right);
+    
+    for (let i = 0; i < maxLen; i++) {
+        const leftLine = i < left.length ? left[i] : null;
+        const rightLine = i < right.length ? right[i] : null;
+        
+        if (leftLine === null && rightLine !== null) {
+            // Added in right
+            diff.added++;
+            diff.leftResult.push({ type: 'empty', line: '' });
+            diff.rightResult.push({ type: 'added', line: rightLine });
+        } else if (leftLine !== null && rightLine === null) {
+            // Removed from left
+            diff.removed++;
+            diff.leftResult.push({ type: 'removed', line: leftLine });
+            diff.rightResult.push({ type: 'empty', line: '' });
+        } else if (leftLine !== rightLine) {
+            // Changed
+            diff.changed++;
+            diff.leftResult.push({ type: 'changed', line: leftLine });
+            diff.rightResult.push({ type: 'changed', line: rightLine });
+        } else {
+            // Same
+            diff.leftResult.push({ type: 'same', line: leftLine });
+            diff.rightResult.push({ type: 'same', line: rightLine });
+        }
+    }
+    
+    return diff;
+}
+
+function renderDiff(diff, originalLeft, originalRight, showLineNumbers) {
+    const leftOutput = document.getElementById('diffOutputLeft');
+    const rightOutput = document.getElementById('diffOutputRight');
+    
+    // Update stats
+    document.getElementById('diffAddedCount').textContent = diff.added;
+    document.getElementById('diffRemovedCount').textContent = diff.removed;
+    document.getElementById('diffChangedCount').textContent = diff.changed;
+    
+    // Calculate similarity
+    const totalLines = Math.max(diff.leftResult.length, diff.rightResult.length);
+    const sameLines = diff.leftResult.filter(item => item.type === 'same').length;
+    const similarity = totalLines > 0 ? Math.round((sameLines / totalLines) * 100) : 100;
+    document.getElementById('diffSimilarity').textContent = similarity + '%';
+    
+    // Render left
+    let leftHtml = '';
+    diff.leftResult.forEach((item, index) => {
+        const lineNum = showLineNumbers ? `<span class="inline-block w-8 text-slate-400 select-none">${index + 1}</span>` : '';
+        const originalLine = index < originalLeft.length ? escapeHtml(originalLeft[index]) : '';
+        
+        let bgClass = '';
+        let textClass = 'text-slate-800';
+        
+        if (item.type === 'removed') {
+            bgClass = 'bg-red-100 border-l-4 border-red-400';
+            textClass = 'text-red-900';
+        } else if (item.type === 'changed') {
+            bgClass = 'bg-yellow-100 border-l-4 border-yellow-400';
+            textClass = 'text-yellow-900';
+        } else if (item.type === 'empty') {
+            bgClass = 'bg-slate-100';
+            textClass = 'text-slate-400';
+        }
+        
+        leftHtml += `<div class="px-2 py-0.5 ${bgClass} ${textClass} whitespace-pre-wrap break-all">${lineNum}${originalLine || '&nbsp;'}</div>`;
+    });
+    
+    // Render right
+    let rightHtml = '';
+    diff.rightResult.forEach((item, index) => {
+        const lineNum = showLineNumbers ? `<span class="inline-block w-8 text-slate-400 select-none">${index + 1}</span>` : '';
+        const originalLine = index < originalRight.length ? escapeHtml(originalRight[index]) : '';
+        
+        let bgClass = '';
+        let textClass = 'text-slate-800';
+        
+        if (item.type === 'added') {
+            bgClass = 'bg-green-100 border-l-4 border-green-400';
+            textClass = 'text-green-900';
+        } else if (item.type === 'changed') {
+            bgClass = 'bg-yellow-100 border-l-4 border-yellow-400';
+            textClass = 'text-yellow-900';
+        } else if (item.type === 'empty') {
+            bgClass = 'bg-slate-100';
+            textClass = 'text-slate-400';
+        }
+        
+        rightHtml += `<div class="px-2 py-0.5 ${bgClass} ${textClass} whitespace-pre-wrap break-all">${lineNum}${originalLine || '&nbsp;'}</div>`;
+    });
+    
+    leftOutput.innerHTML = leftHtml;
+    rightOutput.innerHTML = rightHtml;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function swapDiffTexts() {
+    const leftText = document.getElementById('diffTextLeft');
+    const rightText = document.getElementById('diffTextRight');
+    
+    const temp = leftText.value;
+    leftText.value = rightText.value;
+    rightText.value = temp;
+    
+    updateDiffStats('left');
+    updateDiffStats('right');
+    
+    showToast('Đã đảo văn bản', 'success');
+}
+
+function clearDiff() {
+    document.getElementById('diffTextLeft').value = '';
+    document.getElementById('diffTextRight').value = '';
+    document.getElementById('diffResults').classList.add('hidden');
+    
+    // Show textareas, hide outputs
+    document.getElementById('diffTextLeft').classList.remove('hidden');
+    document.getElementById('diffTextRight').classList.remove('hidden');
+    document.getElementById('diffOutputLeft').classList.add('hidden');
+    document.getElementById('diffOutputRight').classList.add('hidden');
+    
+    updateDiffStats('left');
+    updateDiffStats('right');
+    
+    showToast('Đã xóa tất cả', 'success');
+}
+
+function clearDiffText(side) {
+    if (side === 'left') {
+        document.getElementById('diffTextLeft').value = '';
+        updateDiffStats('left');
+    } else {
+        document.getElementById('diffTextRight').value = '';
+        updateDiffStats('right');
+    }
+    
+    // Show textareas, hide outputs
+    document.getElementById('diffTextLeft').classList.remove('hidden');
+    document.getElementById('diffTextRight').classList.remove('hidden');
+    document.getElementById('diffOutputLeft').classList.add('hidden');
+    document.getElementById('diffOutputRight').classList.add('hidden');
+    document.getElementById('diffResults').classList.add('hidden');
+    
+    showToast('Đã xóa văn bản', 'success');
+}
+
+
 
 
