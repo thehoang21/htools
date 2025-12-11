@@ -480,8 +480,13 @@ select {
   background-color: white;
   cursor: pointer;
   position: relative;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
+}
+
+.custom-checkbox:hover {
+  border-color: #94a3b8;
+  transform: scale(1.05);
 }
 
 .custom-checkbox:checked {
@@ -491,11 +496,50 @@ select {
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
+  animation: checkboxCheck 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.custom-checkbox:not(:checked) {
+  animation: checkboxUncheck 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .custom-checkbox:focus {
   outline: none;
   box-shadow: 0 0 0 2px #eff6ff, 0 0 0 4px #60a5fa;
+}
+
+.custom-checkbox:active {
+  transform: scale(0.95);
+}
+
+/* Checkbox animations */
+@keyframes checkboxCheck {
+  0% {
+    transform: scale(0.8) rotate(-5deg);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1) rotate(2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes checkboxUncheck {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @media (max-width: 768px) {

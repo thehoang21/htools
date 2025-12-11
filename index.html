@@ -2006,7 +2006,7 @@
                 </div>
 
                 <!-- Countries Grid (Card View) -->
-                <div id="countriesGrid" class="hidden grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                <div id="countriesGrid" class="hidden grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                     <!-- Countries will be loaded here -->
                 </div>
 
@@ -2165,7 +2165,7 @@
 
                                 <!-- Dropdown Menu -->
                                 <div id="physicsSpeedMenu"
-                                    class="hidden absolute top-full left-0 mt-1 w-32 bg-white border border-slate-200 rounded-lg shadow-xl z-50 overflow-hidden">
+                                    class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-50 overflow-hidden">
                                     <div class="max-h-60 overflow-y-auto py-1 custom-scrollbar">
                                         <div onclick="setPhysicsSpeed(0.1)"
                                             class="physics-speed-option px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 cursor-pointer transition-colors flex items-center justify-between group border-b border-slate-100 last:border-b-0"
@@ -2364,7 +2364,7 @@
 
                                 <!-- Dropdown Menu -->
                                 <div id="solarSpeedMenu"
-                                    class="hidden absolute top-full left-0 mt-1 w-32 bg-white border border-slate-200 rounded-lg shadow-xl z-50 overflow-hidden">
+                                    class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-50 overflow-hidden">
                                     <div class="max-h-60 overflow-y-auto py-1 custom-scrollbar">
                                         <div onclick="setSolarSpeed(0.1)"
                                             class="speed-option px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 cursor-pointer transition-colors flex items-center justify-between group border-b border-slate-100 last:border-b-0"
@@ -2522,7 +2522,7 @@
                                 </button>
 
                                 <div id="eclipseSpeedMenu"
-                                    class="hidden absolute top-full left-0 mt-1 w-32 bg-white border border-slate-200 rounded-lg shadow-xl z-50 overflow-hidden">
+                                    class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-50 overflow-hidden">
                                     <div class="max-h-60 overflow-y-auto py-1 custom-scrollbar">
                                         <div onclick="setEclipseSpeed(0.5)"
                                             class="eclipse-speed-option px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 cursor-pointer transition-colors flex items-center justify-between group border-b border-slate-100 last:border-b-0"
@@ -3913,38 +3913,38 @@
                                         </button>
 
                                         <div id="regex-patterns-menu"
-                                            class="hidden absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-xl z-50 overflow-hidden max-h-60 overflow-y-auto custom-scrollbar">
+                                            class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto custom-scrollbar">
                                             <div onclick="selectRegexPattern('\\w+@\\w+\\.\\w+', 'Email')"
                                                 class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
-                                                <div class="font-medium">Email</div>
-                                                <div class="text-xs text-slate-400 font-mono">\w+@\w+\.\w+</div>
+                                                <div class="font-medium break-words">Email</div>
+                                                <div class="text-xs text-slate-400 font-mono break-all">\w+@\w+\.\w+</div>
                                             </div>
                                             <div onclick="selectRegexPattern('^https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)$', 'URL')"
                                                 class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
-                                                <div class="font-medium">URL</div>
-                                                <div class="text-xs text-slate-400 font-mono">^https?://...</div>
+                                                <div class="font-medium break-words">URL</div>
+                                                <div class="text-xs text-slate-400 font-mono break-all">^https?://...</div>
                                             </div>
                                             <div onclick="selectRegexPattern('^\\d{3}-?\\d{3}-?\\d{4}$', 'Phone (US)')"
                                                 class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
-                                                <div class="font-medium">Phone (US)</div>
-                                                <div class="text-xs text-slate-400 font-mono">^\d{3}-?\d{3}-?\d{4}$
+                                                <div class="font-medium break-words">Phone (US)</div>
+                                                <div class="text-xs text-slate-400 font-mono break-all">^\d{3}-?\d{3}-?\d{4}$
                                                 </div>
                                             </div>
                                             <div onclick="selectRegexPattern('^\\d{4}-\\d{2}-\\d{2}$', 'Date (YYYY-MM-DD)')"
                                                 class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
-                                                <div class="font-medium">Date (YYYY-MM-DD)</div>
-                                                <div class="text-xs text-slate-400 font-mono">^\d{4}-\d{2}-\d{2}$</div>
+                                                <div class="font-medium break-words">Date (YYYY-MM-DD)</div>
+                                                <div class="text-xs text-slate-400 font-mono break-all">^\d{4}-\d{2}-\d{2}$</div>
                                             </div>
                                             <div onclick="selectRegexPattern('^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$', 'Hex Color')"
                                                 class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
-                                                <div class="font-medium">Hex Color</div>
-                                                <div class="text-xs text-slate-400 font-mono">^#?([a-fA-F0-9]{6}...)
+                                                <div class="font-medium break-words">Hex Color</div>
+                                                <div class="text-xs text-slate-400 font-mono break-all">^#?([a-fA-F0-9]{6}...)
                                                 </div>
                                             </div>
                                             <div onclick="selectRegexPattern('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$', 'Strong Password')"
                                                 class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
-                                                <div class="font-medium">Strong Password</div>
-                                                <div class="text-xs text-slate-400 font-mono">^(?=.*[a-z])(?=.*[A-Z])...
+                                                <div class="font-medium break-words">Strong Password</div>
+                                                <div class="text-xs text-slate-400 font-mono break-all">^(?=.*[a-z])(?=.*[A-Z])...
                                                 </div>
                                             </div>
                                         </div>

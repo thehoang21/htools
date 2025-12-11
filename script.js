@@ -211,19 +211,22 @@ function switchTab(tabName) {
         'sorting': 'Biểu Diễn Thuật Toán',
         'typing': 'Kiểm Tra Tốc Độ Gõ',
         'countries': 'Thông Tin Quốc Gia',
-        'worldmap': 'Bản Đồ Thế Giới',  
+        'worldmap': 'Bản Đồ Thế Giới',
         'physics': 'Mô Phỏng Vật Lý',
         'solar': 'Khám Phá Hệ Mặt Trời',
-        'eclipse': 'Nhật/Nguyệt Thực',
-        'bmi': 'Công cụ tính BMI/BMR',
+        'eclipse': 'Mô Phỏng Nhật/Nguyệt Thực',
+        'bmi': 'Tính BMI/BMR',
+        'password': 'Tạo Mật Khẩu',
+        'diff': 'So Sánh Văn Bản',
         'json': 'JSON Formatter',
         'css': 'Trình Tạo CSS',
-        'regex': 'Regex Tester',
-        'markdown': 'Xem trước Markdown',
-        'password': 'Tạo Mật Khẩu',
-        'diff': 'So Sánh Văn Bản'
+        'regex': 'Regex Tester'
     };
-    document.getElementById('pageTitle').innerText = titles[tabName];
+    
+    const pageTitle = document.getElementById('pageTitle');
+    if (pageTitle) {
+        pageTitle.innerText = titles[tabName] || 'Công cụ';
+    }
 
     if (tabName === 'bmi') {
         calculateBMI();
