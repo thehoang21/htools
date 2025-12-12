@@ -71,6 +71,20 @@
     <link rel="stylesheet" href="style.css">
 
     <style>
+                /* Áp dụng safe-area cho sidebar/menu */
+                @supports(padding-top: env(safe-area-inset-top)) {
+                    #sidebar {
+                        padding-top: env(safe-area-inset-top);
+                    }
+                }
+
+                /* Cố định header/navbar khi scroll */
+                .fixed-header {
+                    position: sticky;
+                    top: 0;
+                    z-index: 30;
+                    background: white;
+                }
         /* Các utility bổ sung cho Material Symbols để căn chỉnh tốt hơn với Tailwind */
         .material-symbols-outlined {
             font-size: 20px;
@@ -137,7 +151,7 @@
         </button>
 
         <div
-            class="h-16 flex items-center justify-between px-5 border-b border-slate-100 shrink-0 overflow-hidden whitespace-nowrap bg-white group-[.sidebar-collapsed]:justify-center group-[.sidebar-collapsed]:px-0">
+            class="h-16 flex items-center justify-between px-5 border-b border-slate-100 shrink-0 overflow-hidden whitespace-nowrap bg-white group-[.sidebar-collapsed]:justify-center group-[.sidebar-collapsed]:px-0 fixed-header">
             <div class="flex items-center gap-3 group-[.sidebar-collapsed]:gap-0 transition-all duration-200">
                 <div
                     class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-600/20">
