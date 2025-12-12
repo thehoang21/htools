@@ -212,7 +212,7 @@ function switchTab(tabName) {
         'typing': 'Kiểm Tra Tốc Độ Gõ',
         'countries': 'Thông Tin Quốc Gia',
         'worldmap': 'Bản Đồ Thế Giới',
-        'solar': 'Khám Phá Hệ Mặt Trời',
+        'solar': 'Hệ Mặt Trời',
         'bmi': 'Tính BMI/BMR',
         'password': 'Tạo Mật Khẩu',
         'diff': 'So Sánh Văn Bản',

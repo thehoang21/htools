@@ -162,7 +162,7 @@
             <!-- Single Item: Thời gian -->
             <button onclick="switchTab('time')" id="nav-time"
                 class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-left relative overflow-hidden text-slate-500 hover:bg-slate-50 hover:text-slate-900 [&.active]:bg-blue-50 [&.active]:text-blue-600 [&.active]:font-semibold group-[.sidebar-collapsed]:justify-center group-[.sidebar-collapsed]:px-0">
-                <span class="material-symbols-outlined shrink-0">globe</span>
+                <span class="material-symbols-outlined shrink-0">schedule</span>
                 <span
                     class="font-medium text-sm whitespace-nowrap transition-all duration-200 group-[.sidebar-collapsed]:hidden">Thời
                     gian</span>
@@ -234,8 +234,8 @@
                         </button>
                         <button onclick="switchTab('solar')" id="nav-solar"
                             class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                            <span class="material-symbols-outlined text-[18px] shrink-0">public</span>
-                            <span>Khám Phá Hệ Mặt Trời</span>
+                            <span class="material-symbols-outlined text-[18px] shrink-0">planet</span>
+                            <span>Hệ Mặt Trời</span>
                         </button>
                         <!-- Đã loại bỏ Mô Phỏng Vật Lý và Nhật/Nguyệt Thực -->
                     </div>
@@ -258,7 +258,7 @@
                     <div class="pl-4 space-y-1">
                         <button onclick="switchTab('sorting')" id="nav-sorting"
                             class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                            <span class="material-symbols-outlined text-[18px] shrink-0">bar_chart</span>
+                            <span class="material-symbols-outlined text-[18px] shrink-0">developer_mode_tv</span>
                             <span>Biểu Diễn Thuật Toán</span>
                         </button>
                         <button onclick="switchTab('typing')" id="nav-typing"
@@ -268,17 +268,17 @@
                         </button>
                         <button onclick="switchTab('bmi')" id="nav-bmi"
                             class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                            <span class="material-symbols-outlined text-[18px] shrink-0">monitor_weight</span>
+                            <span class="material-symbols-outlined text-[18px] shrink-0">accessibility_new</span>
                             <span>Công cụ tính BMI/BMR</span>
                         </button>
                         <button onclick="switchTab('password')" id="nav-password"
                             class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                            <span class="material-symbols-outlined text-[18px] shrink-0">lock</span>
+                            <span class="material-symbols-outlined text-[18px] shrink-0">password</span>
                             <span>Tạo Mật Khẩu</span>
                         </button>
                         <button onclick="switchTab('diff')" id="nav-diff"
                             class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all text-sm [&.active]:text-blue-600 [&.active]:font-medium [&.active]:bg-blue-50">
-                            <span class="material-symbols-outlined text-[18px] shrink-0">difference</span>
+                            <span class="material-symbols-outlined text-[18px] shrink-0">text_compare</span>
                             <span>So Sánh Văn Bản</span>
                         </button>
                     </div>
@@ -426,7 +426,7 @@
                     <div class="relative z-10">
                         <div class="text-sm font-medium text-slate-500 uppercase tracking-widest mb-2" id="timeDate">
                             Loading date...</div>
-                        <div class="text-6xl sm:text-7xl md:text-8xl font-bold text-slate-800 tracking-tighter font-mono"
+                        <div class="text-6xl sm:text-7xl md:text-8xl font-bold text-slate-800 tracking-tighter tracking-wide"
                             id="timeClock">00:00:00</div>
                         <div
                             class="mt-2 flex items-center justify-center gap-2 text-blue-600 bg-blue-50 px-3 py-1 rounded-full text-xs font-semibold">
@@ -2311,7 +2311,7 @@
                             <span class="text-sm text-slate-600 whitespace-nowrap">Tốc độ:</span>
                             <div class="relative flex-1 sm:flex-initial">
                                 <button onclick="toggleSolarSpeedDropdown(event)" id="solarSpeedBtn"
-                                    class="h-11 flex items-center justify-between w-full sm:w-[100px] px-3 bg-white text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-sm">
+                                    class="h-11 flex items-center justify-between w-full sm:w-[300px] px-3 bg-white text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-sm">
                                     <span id="solarSpeedLabel" class="text-sm font-medium">1.0x</span>
                                     <span id="solarSpeedArrow"
                                         class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-200">expand_more</span>
@@ -2486,7 +2486,7 @@
                                 </button>
                                 <button onclick="selectMapType('topo', 'landscape', 'Địa lý')"
                                     class="w-full px-4 py-2.5 text-left hover:bg-slate-50 transition-colors flex items-center gap-2 text-sm text-slate-700 border-b border-slate-100 last:border-b-0">
-                                    <span class="material-symbols-outlined text-[18px]">landscape</span>
+                                    <span class="material-symbols-outlined text-[18px]">map</span>
                                     <span>Địa lý</span>
                                 </button>
                             </div>
@@ -3015,7 +3015,7 @@
                                 Đảo
                             </button>
                             <button onclick="clearDiff()"
-                                class="flex-1 lg:flex-initial px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                                class="flex-1 lg:flex-initial px-4 py-2 bg-white border border-slate-200 hover:bg-red-500 hover:text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
                                 <span class="material-symbols-outlined text-[18px]">delete</span>
                                 Xóa
                             </button>
@@ -3173,7 +3173,7 @@
                     </div>
 
                     <!-- Output Section -->
-                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col h-full">
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-col h-full">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                                 <span class="material-symbols-outlined text-green-600">terminal</span>
@@ -3247,7 +3247,7 @@
                     </button>
                 </div>
 
-                <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-[500px] overflow-hidden">
+                <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto overflow-hidden">
                     <!-- Controls Section (Left) -->
                     <div
                         class="lg:col-span-4 bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col h-full overflow-y-auto custom-scrollbar">
@@ -3309,14 +3309,14 @@
                                 <!-- <input type="checkbox" id="shadow-inset" class="w-4 h-4 text-blue-600 bg-slate-100 border-slate-300 rounded focus:ring-blue-500" onchange="updateCSS()"> -->
                                 <input id="shadow-inset" type="checkbox" onchange="updateCSS()" class="custom-checkbox">
                                 <label for="shadow-inset"
-                                    class="text-slate-600 font-medium text-sm select-none">Inset</label>
+                                    class="text-slate-600 font-medium text-sm select-none">Inset (bóng đổ vào bên trong)</label>
                             </div>
                         </div>
 
                         <!-- Gradient Controls -->
                         <div id="controls-gradient" class="css-controls hidden space-y-5">
                             <div class="space-y-2 relative">
-                                <label class="text-slate-600 font-medium text-sm">Type</label>
+                                <label class="text-slate-600 font-medium text-sm">Kiểu</label>
                                 <input type="hidden" id="gradient-type" value="linear">
                                 <button type="button" onclick="toggleGradientTypeDropdown()" id="gradient-type-btn"
                                     class="w-full bg-white border border-slate-200 rounded-lg py-2.5 px-3 text-left text-sm font-medium text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between transition-all hover:bg-slate-50">
@@ -3347,14 +3347,14 @@
                             </div>
                             <div class="space-y-2" id="gradient-angle-group">
                                 <div class="flex justify-between text-sm">
-                                    <label class="text-slate-600 font-medium">Angle</label>
+                                    <label class="text-slate-600 font-medium">Góc</label>
                                     <span id="val-gradient-angle" class="text-slate-400 font-mono">135deg</span>
                                 </div>
                                 <input type="range" id="gradient-angle" min="0" max="360" value="135"
                                     class="custom-range w-full" oninput="updateCSS()">
                             </div>
                             <div class="space-y-3 pt-2">
-                                <label class="text-slate-600 font-medium text-sm">Colors</label>
+                                <label class="text-slate-600 font-medium text-sm">Màu sắc</label>
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs text-slate-400">Start</span>
                                     <input type="color" id="gradient-color1" value="#3b82f6"
