@@ -8,17 +8,17 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "images/playstore.png",
+      "src": "images/appstore.PNG",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/png"
     },
     {
-      "src": "images/playstore.png",
+      "src": "images/appstore.PNG",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "images/playstore.png",
+      "src": "images/appstore.PNG",
       "sizes": "512x512",
       "type": "image/png"
     }

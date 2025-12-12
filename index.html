@@ -13,7 +13,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="HTools">
-    <link rel="apple-touch-icon" href="images/playstore.png">
+    <link rel="apple-touch-icon" href="images/appstore.PNG">
 
     <title>HTools</title>
 
@@ -81,11 +81,18 @@
         .text-\[16px\] {
             font-size: 18px !important;
         }
+
+        /* Safe area cho Dynamic Island iOS */
+        @supports(padding-top: env(safe-area-inset-top)) {
+            .safe-area-top {
+                padding-top: env(safe-area-inset-top);
+            }
+        }
     </style>
 </head>
 
 <body
-    class="h-screen overflow-hidden flex bg-slate-50 text-slate-900 font-sans antialiased selection:bg-blue-100 selection:text-blue-700">
+    class="h-screen overflow-hidden flex bg-slate-50 text-slate-900 font-sans antialiased selection:bg-blue-100 selection:text-blue-700 safe-area-top">
 
     <!-- Mobile Overlay Backdrop -->
     <div id="mobileOverlay" onclick="toggleMobileSidebar()"
