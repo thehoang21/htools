@@ -5156,7 +5156,7 @@ function initWorldMap() {
         
         // Add new marker
         currentMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(worldMap);
-        currentMarker.bindPopup(`<b>Tọa độ:</b><br>Latitude: ${lat}<br>Longitude: ${lng}`).openPopup();
+        currentMarker.bindPopup(`<b>Tọa độ:</b><br>Vĩ độ: ${lat}<br>Kinh độ: ${lng}`).openPopup();
         mapMarkersCount++;
         
         // Update coordinates display
