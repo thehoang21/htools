@@ -71,7 +71,7 @@
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* Cố định header chính trong main content cho iOS PWA */
+        /* Cố định header chính cho iOS PWA, luôn nằm dưới Dynamic Island */
         .main-header-fixed {
             position: fixed;
             left: 0;
@@ -80,11 +80,15 @@
             z-index: 40;
             background: white;
             width: 100%;
+            height: calc(4rem + env(safe-area-inset-top, 0px));
             padding-top: env(safe-area-inset-top, 0px);
+            display: flex;
+            align-items: flex-end;
         }
 
         .main-content-pwa {
-            padding-top: calc(4rem + env(safe-area-inset-top, 0px));
+            /* Không còn padding-top, chỉ cần margin-top đúng bằng header */
+            margin-top: calc(4rem + env(safe-area-inset-top, 0px));
         }
 
         /* Áp dụng safe-area cho sidebar/menu */
@@ -369,7 +373,7 @@
     <!-- MAIN CONTENT -->
     <div class="flex-1 flex flex-col h-screen overflow-hidden w-full bg-slate-50 relative">
         <header
-            class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 xl:px-8 shrink-0 shadow-sm z-30 main-header-fixed">
+            class="bg-white border-b border-slate-200 flex items-center justify-between px-4 xl:px-8 shrink-0 shadow-sm z-30 main-header-fixed">
             <div class="flex items-center gap-3">
                 <!-- Mobile/Tablet Portrait Menu Button -->
                 <button onclick="toggleMobileSidebar()"
