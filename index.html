@@ -71,20 +71,37 @@
     <link rel="stylesheet" href="style.css">
 
     <style>
-                /* Áp dụng safe-area cho sidebar/menu */
-                @supports(padding-top: env(safe-area-inset-top)) {
-                    #sidebar {
-                        padding-top: env(safe-area-inset-top);
-                    }
-                }
+        /* Cố định header chính trong main content cho iOS PWA */
+        .main-header-fixed {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 0;
+            z-index: 40;
+            background: white;
+            width: 100%;
+            padding-top: env(safe-area-inset-top, 0px);
+        }
 
-                /* Cố định header/navbar khi scroll */
-                .fixed-header {
-                    position: sticky;
-                    top: 0;
-                    z-index: 30;
-                    background: white;
-                }
+        .main-content-pwa {
+            padding-top: calc(4rem + env(safe-area-inset-top, 0px));
+        }
+
+        /* Áp dụng safe-area cho sidebar/menu */
+        @supports(padding-top: env(safe-area-inset-top)) {
+            #sidebar {
+                padding-top: env(safe-area-inset-top);
+            }
+        }
+
+        /* Cố định header/navbar khi scroll */
+        .fixed-header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background: white;
+        }
+
         /* Các utility bổ sung cho Material Symbols để căn chỉnh tốt hơn với Tailwind */
         .material-symbols-outlined {
             font-size: 20px;
@@ -352,7 +369,7 @@
     <!-- MAIN CONTENT -->
     <div class="flex-1 flex flex-col h-screen overflow-hidden w-full bg-slate-50 relative">
         <header
-            class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 xl:px-8 shrink-0 shadow-sm z-30 sticky top-0">
+            class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 xl:px-8 shrink-0 shadow-sm z-30 main-header-fixed">
             <div class="flex items-center gap-3">
                 <!-- Mobile/Tablet Portrait Menu Button -->
                 <button onclick="toggleMobileSidebar()"
@@ -366,7 +383,7 @@
         </header>
 
         <main
-            class="flex-1 overflow-y-auto p-4 xl:p-8 scroll-smooth pb-[env(safe-area-inset-bottom,20px)] relative xl:min-h-0">
+            class="flex-1 overflow-y-auto p-4 xl:p-8 scroll-smooth pb-[env(safe-area-inset-bottom,20px)] relative xl:min-h-0 main-content-pwa">
 
             <!-- TAB: HOME -->
             <div id="tab-home"
@@ -1239,20 +1256,25 @@
                                         74/2024/NĐ-CP):</p>
                                     <ul class="space-y-1 mb-3 text-sm">
                                         <li class="flex justify-between"><span class="text-slate-500">Vùng I:</span>
-                                            <span class="font-bold text-slate-800">4.960.000 đ</span></li>
+                                            <span class="font-bold text-slate-800">4.960.000 đ</span>
+                                        </li>
                                         <li class="flex justify-between"><span class="text-slate-500">Vùng II:</span>
-                                            <span class="font-bold text-slate-800">4.410.000 đ</span></li>
+                                            <span class="font-bold text-slate-800">4.410.000 đ</span>
+                                        </li>
                                         <li class="flex justify-between"><span class="text-slate-500">Vùng III:</span>
-                                            <span class="font-bold text-slate-800">3.860.000 đ</span></li>
+                                            <span class="font-bold text-slate-800">3.860.000 đ</span>
+                                        </li>
                                         <li class="flex justify-between"><span class="text-slate-500">Vùng IV:</span>
-                                            <span class="font-bold text-slate-800">3.450.000 đ</span></li>
+                                            <span class="font-bold text-slate-800">3.450.000 đ</span>
+                                        </li>
                                     </ul>
 
                                     <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
                                         <p class="font-bold text-slate-800 text-[11px] mb-1 flex items-center gap-1">
                                             <span
                                                 class="material-symbols-outlined text-[15px] text-amber-500">warning</span>
-                                            Lưu ý quan trọng:</p>
+                                            Lưu ý quan trọng:
+                                        </p>
                                         <p class="text-[13px] text-justify text-slate-500 leading-relaxed">Doanh nghiệp
                                             cần rà soát lại địa chỉ nơi làm việc theo danh sách mới. Nếu mức lương tối
                                             thiểu mới thấp hơn trước, vẫn tiếp tục áp dụng mức cũ.</p>
@@ -2935,7 +2957,8 @@
                         </div>
 
                         <!-- Tips Card -->
-                        <div class="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-6 flex-1">
+                        <div
+                            class="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-6 flex-1">
                             <h4 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
                                 <span class="material-symbols-outlined text-blue-600">lightbulb</span>
                                 Mẹo tạo mật khẩu mạnh
@@ -3647,34 +3670,40 @@
                                             <div onclick="selectRegexPattern('\\w+@\\w+\\.\\w+', 'Email')"
                                                 class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
                                                 <div class="font-medium break-words">Email</div>
-                                                <div class="text-xs text-slate-400 font-mono break-all">\w+@\w+\.\w+</div>
+                                                <div class="text-xs text-slate-400 font-mono break-all">\w+@\w+\.\w+
+                                                </div>
                                             </div>
                                             <div onclick="selectRegexPattern('^https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)$', 'URL')"
                                                 class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
                                                 <div class="font-medium break-words">URL</div>
-                                                <div class="text-xs text-slate-400 font-mono break-all">^https?://...</div>
+                                                <div class="text-xs text-slate-400 font-mono break-all">^https?://...
+                                                </div>
                                             </div>
                                             <div onclick="selectRegexPattern('^\\d{3}-?\\d{3}-?\\d{4}$', 'Phone (US)')"
                                                 class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
                                                 <div class="font-medium break-words">Phone (US)</div>
-                                                <div class="text-xs text-slate-400 font-mono break-all">^\d{3}-?\d{3}-?\d{4}$
+                                                <div class="text-xs text-slate-400 font-mono break-all">
+                                                    ^\d{3}-?\d{3}-?\d{4}$
                                                 </div>
                                             </div>
                                             <div onclick="selectRegexPattern('^\\d{4}-\\d{2}-\\d{2}$', 'Date (YYYY-MM-DD)')"
                                                 class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
                                                 <div class="font-medium break-words">Date (YYYY-MM-DD)</div>
-                                                <div class="text-xs text-slate-400 font-mono break-all">^\d{4}-\d{2}-\d{2}$</div>
+                                                <div class="text-xs text-slate-400 font-mono break-all">
+                                                    ^\d{4}-\d{2}-\d{2}$</div>
                                             </div>
                                             <div onclick="selectRegexPattern('^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$', 'Hex Color')"
                                                 class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
                                                 <div class="font-medium break-words">Hex Color</div>
-                                                <div class="text-xs text-slate-400 font-mono break-all">^#?([a-fA-F0-9]{6}...)
+                                                <div class="text-xs text-slate-400 font-mono break-all">
+                                                    ^#?([a-fA-F0-9]{6}...)
                                                 </div>
                                             </div>
                                             <div onclick="selectRegexPattern('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$', 'Strong Password')"
                                                 class="px-4 py-2.5 text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0">
                                                 <div class="font-medium break-words">Strong Password</div>
-                                                <div class="text-xs text-slate-400 font-mono break-all">^(?=.*[a-z])(?=.*[A-Z])...
+                                                <div class="text-xs text-slate-400 font-mono break-all">
+                                                    ^(?=.*[a-z])(?=.*[A-Z])...
                                                 </div>
                                             </div>
                                         </div>
